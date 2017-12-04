@@ -9,11 +9,13 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
 import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
+import fh.com.smartjacket.Mapquest.Mapquest;
 
 public class MainActivity extends Activity implements MessageReceivedCallback{
 
@@ -34,6 +36,11 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
         }catch (Exception e){
 
         }
+
+        Mapquest mq = new Mapquest();
+        String debug =  mq.debug();
+        Log.i("debug",debug);
+        tv.setText(debug);
 
     }
 
