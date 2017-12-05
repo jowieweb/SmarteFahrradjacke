@@ -11,16 +11,18 @@
   class BLEWrapper:  public BLEServerCallbacks ,  public BLECharacteristicCallbacks
   {
     public:
-      void start();
+      void start(void (*callback)(String));
       void loop();
       void onConnect(BLEServer* pServer);
       void onDisconnect(BLEServer* pServer);
       void onWrite(BLECharacteristic *pCharacteristic);
     private:
+    
       BLECharacteristic *pCharacteristic;
       bool deviceConnected = false;
       uint8_t txValue = 0;
-       const TickType_t xDelay = 1000 / portTICK_PERIOD_MS;
+      const TickType_t xDelay = 1000 / portTICK_PERIOD_MS;
+      void (*callback)(String); 
   };
 
 #endif

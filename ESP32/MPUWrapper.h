@@ -7,7 +7,7 @@ class MPUWrapper
 {
   public:
     MPUWrapper(int i2cAddress);
-    void init();
+    void init(bool printToSerial);
     void createTask(void (*func)(void*));
     void taskMPU();
     int getI2CAddress();
@@ -21,6 +21,7 @@ class MPUWrapper
     unsigned long timer = 0;
     float timeStep = 0.01;
     const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
+    boolean outputToSerial = true;
 
     
    

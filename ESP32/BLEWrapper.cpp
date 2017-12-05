@@ -5,15 +5,17 @@
 
 void BLEWrapper::onConnect(BLEServer* pServer) {
   deviceConnected = true;
+  Serial.println("DEV CONNECTED");
 };
 
 void BLEWrapper::onDisconnect(BLEServer* pServer) {
   deviceConnected = false;
+  Serial.println("DEV DISCONNECTED");
 }
 
-void BLEWrapper::start() {
+void BLEWrapper::start(void (*callback)(String)) {
   BLEDevice::init("UART Service");
-
+  this->callback = callback;
   // Create the BLE Server
   BLEServer *pServer = BLEDevice::createServer();
   pServer->setCallbacks(this);
@@ -46,21 +48,24 @@ void BLEWrapper::start() {
 
 void BLEWrapper::onWrite(BLECharacteristic *pCharacteristic) {
   std::string rxValue = pCharacteristic->getValue();
-
+  String recv = "";
   if (rxValue.length() > 0) {
-    Serial.println("*********");
-    Serial.print("Received Value: ");
-    for (int i = 0; i < rxValue.length(); i++)
-      Serial.print(rxValue[i]);
+   // Serial.println("*********");
+   // Serial.print("Received Value: ");
+    for (int i = 0; i < rxValue.length(); i++){
+      //Serial.print(rxValue[i]);
+      recv+=rxValue[i];
+    }
 
-    Serial.println();
-    Serial.println("*********");
+   // Serial.println();
+  //  Serial.println("*********");
   }
+  callback(recv);
 }
 
 void BLEWrapper::loop() {
   if (deviceConnected) {
-    Serial.println("*** Sent Value:  ***\n");// txValue);
+    //Serial.println("*** Sent Value:  ***\n");// txValue);
     pCharacteristic->setValue(&txValue, 1);
     pCharacteristic->notify();
     txValue++;

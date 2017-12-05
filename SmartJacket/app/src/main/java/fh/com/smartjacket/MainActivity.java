@@ -10,8 +10,10 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 
@@ -25,6 +27,7 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
 
     private BluetoothWrapper bw;
     private TextView tv;
+    private ToggleButton virbation;
     private MyLocationListener mll;
 
     @Override
@@ -33,8 +36,11 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
         setContentView(R.layout.activity_main);
 
         tv = findViewById(R.id.textbox1);
+        virbation = findViewById(R.id.vibration);
+        addVibrationActionListener();
 
-        bw = new BluetoothWrapper(this, this);
+
+            bw = new BluetoothWrapper(this, this);
 
         try{
             bw.init();
@@ -72,6 +78,18 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
             public void run() {
                 tv.setText("mytext "+new String(data));
                 tv.invalidate();
+            }
+        });
+    }
+
+    private void addVibrationActionListener(){
+        virbation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    bw.sendText("bv1");
+                } else {
+                    bw.sendText("bv0");
+                }
             }
         });
     }

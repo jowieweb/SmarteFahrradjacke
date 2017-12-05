@@ -12,15 +12,26 @@ void stupid(void * para) {
   }
 }
 
+
+void bleCallback(String recv){
+  Serial.println(recv);
+  if(recv == "bv1"){
+    digitalWrite(2,HIGH);
+  } else if (recv == "bv0"){
+    digitalWrite(2,LOW);
+  }
+}
+
 void setup() {
   Serial.begin(115200);
-  mpu.init();
+  pinMode(2,OUTPUT);
+  mpu.init(false);
   mpu.createTask(stupid);
   
-  mpu2.init();
+  mpu2.init(false);
   mpu2.createTask(stupid);
 
-  ble.start();
+  ble.start(&bleCallback);
 }
 
 void loop()

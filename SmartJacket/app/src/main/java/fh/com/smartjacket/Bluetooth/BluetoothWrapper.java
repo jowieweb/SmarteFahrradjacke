@@ -246,12 +246,19 @@ public class BluetoothWrapper {
             String read = new String(characteristic.getValue());
 
             Log.i("value",""+read);
-            BluetoothGattCharacteristic writeChara =  gatt.getService(serviceUuid).getCharacteristic(characteristicUuidWrite);
-            writeChara.setValue("hallo" + read);
-            mGatt.writeCharacteristic(writeChara);
+            //BluetoothGattCharacteristic writeChara =  gatt.getService(serviceUuid).getCharacteristic(characteristicUuidWrite);
+            //writeChara.setValue("hallo" + read);
+            //mGatt.writeCharacteristic(writeChara);
 
             callback.newMessage(characteristic.getValue());
         }
 
+
+
     };
+    public void sendText(String text){
+        BluetoothGattCharacteristic writeChara =  mGatt.getService(serviceUuid).getCharacteristic(characteristicUuidWrite);
+        writeChara.setValue(text);
+        mGatt.writeCharacteristic(writeChara);
+    }
 }
