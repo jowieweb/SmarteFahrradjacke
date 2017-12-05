@@ -86,7 +86,7 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
         virbation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    bw.sendText("bv1hallotestblahbubberichschreibvieltext");
+                    bw.sendText("bv1");
                 } else {
                     bw.sendText("bv0");
                 }
