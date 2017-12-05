@@ -12,10 +12,10 @@
   {
     public:
       void start(void (*callback)(String));
-      void loop();
       void onConnect(BLEServer* pServer);
       void onDisconnect(BLEServer* pServer);
       void onWrite(BLECharacteristic *pCharacteristic);
+      void sendText(String text);
     private:
     
       BLECharacteristic *pCharacteristic;

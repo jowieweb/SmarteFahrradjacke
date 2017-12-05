@@ -12,6 +12,10 @@ void stupid(void * para) {
   }
 }
 
+void mpuCallback(String value){
+  ble.sendText(value);
+  Serial.println(value);
+}
 
 void bleCallback(String recv){
   Serial.println(recv);
@@ -25,18 +29,17 @@ void bleCallback(String recv){
 void setup() {
   Serial.begin(115200);
   pinMode(2,OUTPUT);
-  mpu.init(false);
+  mpu.init(false, &mpuCallback);
   mpu.createTask(stupid);
   
-  mpu2.init(false);
+  mpu2.init(false, &mpuCallback);
   mpu2.createTask(stupid);
-
+  mpu2.enabledOutputToCallback(true);
   ble.start(&bleCallback);
 }
 
 void loop()
 {
-  ble.loop();
   delay(1000);
 
 }

@@ -76,7 +76,7 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                tv.setText("mytext "+new String(data));
+                tv.setText(new String(data));
                 tv.invalidate();
             }
         });
@@ -86,7 +86,7 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
         virbation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    bw.sendText("bv1");
+                    bw.sendText("bv1hallotestblahbubberichschreibvieltext");
                 } else {
                     bw.sendText("bv0");
                 }

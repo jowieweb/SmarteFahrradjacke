@@ -50,26 +50,28 @@ void BLEWrapper::onWrite(BLECharacteristic *pCharacteristic) {
   std::string rxValue = pCharacteristic->getValue();
   String recv = "";
   if (rxValue.length() > 0) {
-   // Serial.println("*********");
-   // Serial.print("Received Value: ");
-    for (int i = 0; i < rxValue.length(); i++){
+    // Serial.println("*********");
+    // Serial.print("Received Value: ");
+    for (int i = 0; i < rxValue.length(); i++) {
       //Serial.print(rxValue[i]);
-      recv+=rxValue[i];
+      recv += rxValue[i];
     }
 
-   // Serial.println();
-  //  Serial.println("*********");
+    // Serial.println();
+    //  Serial.println("*********");
   }
   callback(recv);
 }
 
-void BLEWrapper::loop() {
+void BLEWrapper::sendText(String text) {
   if (deviceConnected) {
-    //Serial.println("*** Sent Value:  ***\n");// txValue);
-    pCharacteristic->setValue(&txValue, 1);
+    const char *cstr = text.c_str();
+    
+
+
+    pCharacteristic->setValue(std::string(cstr, text.length()));
+    Serial.println(text.length());
     pCharacteristic->notify();
-    txValue++;
   }
-   //vTaskDelay( xDelay );
 }
 

@@ -7,10 +7,11 @@ class MPUWrapper
 {
   public:
     MPUWrapper(int i2cAddress);
-    void init(bool printToSerial);
+    void init(bool printToSerial, void (*)(String));
     void createTask(void (*func)(void*));
     void taskMPU();
     int getI2CAddress();
+    void enabledOutputToCallback(boolean);
   private:
     MPU6050 mpu;
     int i2cAddress = 0x68;
@@ -22,7 +23,8 @@ class MPUWrapper
     float timeStep = 0.01;
     const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
     boolean outputToSerial = true;
-
+    boolean outputToCallback = false;
+    void (*callback)(String);
     
    
 
