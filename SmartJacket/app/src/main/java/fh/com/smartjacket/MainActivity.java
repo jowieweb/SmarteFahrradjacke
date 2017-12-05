@@ -13,14 +13,19 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
 import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
 import fh.com.smartjacket.Mapquest.Mapquest;
+import fh.com.smartjacket.Mapquest.MyLocationListener;
+import fh.com.smartjacket.Mapquest.TurnPoint;
 
 public class MainActivity extends Activity implements MessageReceivedCallback{
 
     private BluetoothWrapper bw;
     private TextView tv;
+    private MyLocationListener mll;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,9 +43,14 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
         }
 
         Mapquest mq = new Mapquest();
-        String debug =  mq.debug();
-        Log.i("debug",debug);
-        tv.setText(debug);
+        ArrayList<TurnPoint> list =  mq.debugTurnPoints();
+        tv.setText("");
+        for(TurnPoint tp:list){
+            tv.append(tp.toString() + "\n");
+        }
+
+        mll = new MyLocationListener(this);
+        mll.init();
 
     }
 
