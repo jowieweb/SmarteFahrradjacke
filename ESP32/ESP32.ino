@@ -5,10 +5,13 @@ MPUWrapper mpu(0x69);
 MPUWrapper mpu2(0x68);
 BLEWrapper ble;
 
+SemaphoreHandle_t i2cMutex;
+
 void stupid(void * para) {
   MPUWrapper test = *((MPUWrapper*)para);
   while (true) {
     test.taskMPU();
+     
   }
 }
 
@@ -27,19 +30,22 @@ void bleCallback(String recv){
 }
 
 void setup() {
+  i2cMutex = xSemaphoreCreateMutex();
   Serial.begin(115200);
   pinMode(2,OUTPUT);
-  mpu.init(false, &mpuCallback);
+  mpu.init(false, &mpuCallback,i2cMutex);
   mpu.createTask(stupid);
   
-  mpu2.init(false, &mpuCallback);
+  mpu2.init(false, &mpuCallback, i2cMutex);
   mpu2.createTask(stupid);
   mpu2.enabledOutputToCallback(true);
   ble.start(&bleCallback);
+
+  //vTaskStartScheduler();
 }
 
 void loop()
 {
-  delay(1000);
+   vTaskDelay( 1000 );
 
 }

@@ -7,13 +7,14 @@ class MPUWrapper
 {
   public:
     MPUWrapper(int i2cAddress);
-    void init(bool printToSerial, void (*)(String));
+    void init(bool printToSerial, void (*)(String),SemaphoreHandle_t);
     void createTask(void (*func)(void*));
     void taskMPU();
     int getI2CAddress();
     void enabledOutputToCallback(boolean);
   private:
     MPU6050 mpu;
+    SemaphoreHandle_t mutex;
     int i2cAddress = 0x68;
     boolean runi = false;
     float pitch = 0;

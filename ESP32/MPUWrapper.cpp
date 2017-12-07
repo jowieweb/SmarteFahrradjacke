@@ -2,8 +2,11 @@
 
 MPUWrapper::MPUWrapper(int i2cAddress) {
   this->i2cAddress = i2cAddress;
+ 
+  
 }
-void MPUWrapper::init(bool printToSerial, void (*callback)(String)) {
+void MPUWrapper::init(bool printToSerial, void (*callback)(String),SemaphoreHandle_t mutex) {
+   this->mutex = mutex;
   while (!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G, i2cAddress))
   {
     Serial.print("Could not find a valid MPU6050 sensor at address");
@@ -25,7 +28,7 @@ void MPUWrapper::createTask(void (*func)(void*)) {
     "taskMPU",
     10000,
     this,
-    1,
+    i2cAddress- 0x67,
     NULL);
 }
 int MPUWrapper::getI2CAddress() {
@@ -38,6 +41,7 @@ void MPUWrapper::enabledOutputToCallback(boolean enabled){
 
 void MPUWrapper::taskMPU() {
   timer = millis();
+  xSemaphoreTake(mutex, 100);
   Vector norm = mpu.readNormalizeGyro();
 
   // Calculate Pitch, Roll and Yaw
@@ -64,8 +68,8 @@ void MPUWrapper::taskMPU() {
   if(outputToCallback){
     callback(output);
   }
-
-  
+  xSemaphoreGive(mutex);
+ 
   //delay((timeStep*1000) - (millis() - timer));
   vTaskDelay( xDelay );
 }
