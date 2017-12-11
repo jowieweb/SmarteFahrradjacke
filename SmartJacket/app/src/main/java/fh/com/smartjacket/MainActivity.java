@@ -15,13 +15,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
+import com.luckycatlabs.sunrisesunset.dto.Location;
+
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
 import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
 import fh.com.smartjacket.Mapquest.Mapquest;
 import fh.com.smartjacket.Mapquest.MyLocationListener;
 import fh.com.smartjacket.Mapquest.TurnPoint;
+
 
 public class MainActivity extends Activity implements MessageReceivedCallback{
 
@@ -40,7 +47,7 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
         addVibrationActionListener();
 
 
-            bw = new BluetoothWrapper(this, this);
+        bw = new BluetoothWrapper(this, this);
 
         try{
             bw.init();
@@ -57,6 +64,13 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
 
         mll = new MyLocationListener(this);
         mll.init();
+
+        Location location = new Location(52.296853, 8.904645);
+        SunriseSunsetCalculator calculator = new SunriseSunsetCalculator(location, TimeZone.getDefault());
+        String Sunrise =calculator.getOfficialSunriseForDate(Calendar.getInstance());
+        String sunset =calculator.getOfficialSunsetForDate(Calendar.getInstance());
+        Log.i("sunset", sunset);
+        Log.i("sunrise", Sunrise);
 
     }
 

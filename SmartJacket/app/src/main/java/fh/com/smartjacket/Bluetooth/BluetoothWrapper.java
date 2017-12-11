@@ -34,7 +34,7 @@ import java.util.UUID;
 /**
  * Created by jowie on 04.12.2017.
  */
-
+@TargetApi(21)
 public class BluetoothWrapper {
     private BluetoothAdapter mBluetoothAdapter;
     private int REQUEST_ENABLE_BT = 1;
@@ -51,15 +51,14 @@ public class BluetoothWrapper {
     private static final UUID characteristicUuid = UUID.fromString("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
     private static final UUID characteristicUuidWrite = UUID.fromString("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
     private MessageReceivedCallback callback;
+    private boolean isConnected = false;
 
-    public BluetoothWrapper(Activity act, MessageReceivedCallback callback){
+    public BluetoothWrapper(Activity act, MessageReceivedCallback callback) {
         activity = act;
         this.callback = callback;
-
-
     }
 
-    public void init() throws  Exception{
+    public void init() throws Exception {
         if (activity.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setTitle("This app needs location access");
@@ -82,22 +81,21 @@ public class BluetoothWrapper {
             throw new Exception("BLE NOT SUPPORTED!");
         }
         final BluetoothManager bluetoothManager =
-                (BluetoothManager)activity.getSystemService(Context.BLUETOOTH_SERVICE);
+                (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
     }
 
-    public void startScan(){
+    public void startScan() {
         if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             activity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         } else {
-            if (Build.VERSION.SDK_INT >= 21) {
-                mLEScanner = mBluetoothAdapter.getBluetoothLeScanner();
-                settings = new ScanSettings.Builder()
-                        .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                        .build();
-                filters = new ArrayList<ScanFilter>();
-            }
+            mLEScanner = mBluetoothAdapter.getBluetoothLeScanner();
+            settings = new ScanSettings.Builder()
+                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                    .build();
+            filters = new ArrayList<ScanFilter>();
+
             scanLeDevice(true);
         }
     }
@@ -107,31 +105,19 @@ public class BluetoothWrapper {
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (Build.VERSION.SDK_INT < 21) {
-                        mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                    } else {
                         mLEScanner.stopScan(mScanCallback);
 
-                    }
                 }
             }, SCAN_PERIOD);
-            if (Build.VERSION.SDK_INT < 21) {
-                mBluetoothAdapter.startLeScan(mLeScanCallback);
-            } else {
-                mLEScanner.startScan(filters, settings, mScanCallback);
-            }
+            mLEScanner.startScan(filters, settings, mScanCallback);
+
         } else {
-            if (Build.VERSION.SDK_INT < 21) {
-                mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            } else {
                 mLEScanner.stopScan(mScanCallback);
-            }
         }
     }
 
 
     private ScanCallback mScanCallback = new ScanCallback() {
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             Log.i("callbackType", String.valueOf(callbackType));
@@ -140,17 +126,6 @@ public class BluetoothWrapper {
             connectToDevice(btDevice);
         }
 
-        @Override
-        public void onBatchScanResults(List<ScanResult> results) {
-            for (ScanResult sr : results) {
-                Log.i("ScanResult - Results", sr.toString());
-            }
-        }
-
-        @Override
-        public void onScanFailed(int errorCode) {
-            Log.e("Scan Failed", "Error Code: " + errorCode);
-        }
     };
 
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
@@ -167,7 +142,7 @@ public class BluetoothWrapper {
                     });
                 }
             };
-    @TargetApi(21)
+
     public void connectToDevice(BluetoothDevice device) {
         if (mGatt == null) {
             mGatt = device.connectGatt(activity, false, gattCallback);
@@ -177,23 +152,24 @@ public class BluetoothWrapper {
 
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
-        @TargetApi(21)
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             Log.i("onConnectionStateChange", "Status: " + status);
             switch (newState) {
                 case BluetoothProfile.STATE_CONNECTED:
                     Log.i("gattCallback", "STATE_CONNECTED");
                     gatt.discoverServices();
+                    isConnected = true;
                     break;
                 case BluetoothProfile.STATE_DISCONNECTED:
                     Log.e("gattCallback", "STATE_DISCONNECTED");
+                    isConnected = false;
+                    startScan();
                     break;
                 default:
                     Log.e("gattCallback", "STATE_OTHER");
             }
-
         }
-        @TargetApi(21)
+
         public boolean setCharacteristicNotification(BluetoothGatt gatt, BluetoothDevice device, UUID serviceUuid, UUID characteristicUuid, boolean enable) {
             BluetoothGattCharacteristic characteristic = gatt.getService(serviceUuid).getCharacteristic(characteristicUuid);
             gatt.setCharacteristicNotification(characteristic, enable);
@@ -203,61 +179,27 @@ public class BluetoothWrapper {
         }
 
         @Override
-        @TargetApi(21)
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             List<BluetoothGattService> services = gatt.getServices();
             Log.i("onServicesDiscovered", services.toString());
-
-            setCharacteristicNotification(gatt, gatt.getDevice(),serviceUuid,characteristicUuid ,true);
+            setCharacteristicNotification(gatt, gatt.getDevice(), serviceUuid, characteristicUuid, true);
 
         }
 
 
-
-        @Override
-        @TargetApi(21)
-        public void onCharacteristicRead(BluetoothGatt gatt,BluetoothGattCharacteristic characteristic, int status) {
-
-            Log.i("onCharacteristicRead", characteristic.toString());
-            // gatt.disconnect();
-        }
-
-        @Override
-        public void onPhyUpdate(BluetoothGatt gatt, int txPhy, int rxPhy, int status) {
-            super.onPhyUpdate(gatt, txPhy, rxPhy, status);
-            Log.i("onPhyUpdate","onPhyUpdate");
-        }
-
-        @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            super.onCharacteristicWrite(gatt, characteristic, status);
-            Log.i("onCharacteristicWrite","onCharacteristicWrite");
-        }
-
-        @Override
-        public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
-            super.onReliableWriteCompleted(gatt, status);
-            Log.i("asd","asd");
-        }
-        @TargetApi(21)
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             super.onCharacteristicChanged(gatt, characteristic);
             String read = new String(characteristic.getValue());
-
-            Log.i("value",""+read);
-            //BluetoothGattCharacteristic writeChara =  gatt.getService(serviceUuid).getCharacteristic(characteristicUuidWrite);
-            //writeChara.setValue("hallo" + read);
-            //mGatt.writeCharacteristic(writeChara);
-
+            Log.i("value", "" + read);
             callback.newMessage(characteristic.getValue());
         }
 
 
-
     };
-    public void sendText(String text){
-        BluetoothGattCharacteristic writeChara =  mGatt.getService(serviceUuid).getCharacteristic(characteristicUuidWrite);
+
+    public void sendText(String text) {
+        BluetoothGattCharacteristic writeChara = mGatt.getService(serviceUuid).getCharacteristic(characteristicUuidWrite);
         writeChara.setValue(text);
         mGatt.writeCharacteristic(writeChara);
     }
