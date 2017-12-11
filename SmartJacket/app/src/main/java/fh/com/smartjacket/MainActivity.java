@@ -1,14 +1,7 @@
 package fh.com.smartjacket;
 
-import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.bluetooth.BluetoothManager;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.TextView;
@@ -24,6 +17,7 @@ import fh.com.smartjacket.Mapquest.MyLocationListener;
 import fh.com.smartjacket.Mapquest.TurnPoint;
 
 public class MainActivity extends Activity implements MessageReceivedCallback{
+    private static final String LOG_TAG = "MainActivity";
 
     private BluetoothWrapper bw;
     private TextView tv;
@@ -39,19 +33,21 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
         virbation = findViewById(R.id.vibration);
         addVibrationActionListener();
 
-
-            bw = new BluetoothWrapper(this, this);
+        bw = new BluetoothWrapper(this, this);
 
         try{
             bw.init();
-        }catch (Exception e){
 
+        } catch (Exception e){
+            Log.e(LOG_TAG, "Error initializing Bluetooth: " + e.getMessage());
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
         Mapquest mq = new Mapquest();
         ArrayList<TurnPoint> list =  mq.debugTurnPoints();
         tv.setText("");
-        for(TurnPoint tp:list){
+
+        for (TurnPoint tp:list) {
             tv.append(tp.toString() + "\n");
         }
 
