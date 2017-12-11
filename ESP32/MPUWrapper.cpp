@@ -5,7 +5,7 @@ MPUWrapper::MPUWrapper(int i2cAddress) {
  
   
 }
-void MPUWrapper::init(bool printToSerial, void (*callback)(String),SemaphoreHandle_t mutex) {
+void MPUWrapper::init(bool printToSerial, void (*callback)(MPUValues),SemaphoreHandle_t mutex) {
    this->mutex = mutex;
   while (!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G, i2cAddress))
   {
@@ -66,12 +66,17 @@ void MPUWrapper::taskMPU() {
     }
   }
   if(outputToCallback){
-    callback(output);
+    MPUValues value;
+    value.pitch = pitch;
+    value.roll = roll;
+    value.yaw = yaw;
+    value.text = output;
+    callback(value);
   }
   xSemaphoreGive(mutex);
  
-  //delay((timeStep*1000) - (millis() - timer));
-  vTaskDelay( xDelay );
+  vTaskDelay((timeStep*1000) - (millis() - timer));
+  //vTaskDelay( xDelay );
 }
 
 

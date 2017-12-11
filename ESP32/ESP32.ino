@@ -15,9 +15,12 @@ void stupid(void * para) {
   }
 }
 
-void mpuCallback(String value){
-  ble.sendText(value);
-  Serial.println(value);
+void mpuCallback(MPUValues value){
+  ble.sendText(value.text);
+  Serial.println(value.text);
+  if(value.yaw > 60 || value.yaw < -60){
+    Serial.println("ON");
+  }
 }
 
 void bleCallback(String recv){
@@ -35,10 +38,11 @@ void setup() {
   pinMode(2,OUTPUT);
   mpu.init(false, &mpuCallback,i2cMutex);
   mpu.createTask(stupid);
+  mpu.enabledOutputToCallback(true);
   
   mpu2.init(false, &mpuCallback, i2cMutex);
   mpu2.createTask(stupid);
-  mpu2.enabledOutputToCallback(true);
+  //mpu2.enabledOutputToCallback(true);
   ble.start(&bleCallback);
 
   //vTaskStartScheduler();
