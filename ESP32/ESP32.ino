@@ -10,6 +10,7 @@ SemaphoreHandle_t bleMutex;
 
 long timer;
 bool led = false;
+
 void stupid(void * para) {
   MPUWrapper test = *((MPUWrapper*)para);
   while (true) {
@@ -24,11 +25,17 @@ void mpuCallback(MPUValues value) {
     led = !led;
     digitalWrite(LED_BUILTIN, led);
     timer = tempTimer;
+    Serial.println("send");
+    Serial.flush();
     ble.sendText(value.text);
-    Serial.println(value.text);
+    Serial.println("done");
+    Serial.flush();
+    //Serial.println(value.text);
     if (value.yaw > 60 || value.yaw < -60) {
       Serial.println("ON");
     }
+    Serial.println("return");
+    Serial.flush();
   }
 
 }
@@ -49,19 +56,22 @@ void setup() {
   Serial.begin(115200);
   pinMode(2, OUTPUT);
   mpu.init(false, &mpuCallback, &i2cMutex);
-  mpu.createTask(stupid);
+ // mpu.createTask(stupid);
   mpu.enabledOutputToCallback(true);
 
-   mpu2.init(false, &mpuCallback, &i2cMutex);
-   mpu2.createTask(stupid);
+  mpu2.init(false, &mpuCallback, &i2cMutex);
+//  mpu2.createTask(stupid);
   mpu2.enabledOutputToCallback(true);
+
   ble.start(&bleCallback, &bleMutex);
 
-  //vTaskStartScheduler();
+
 }
 
 void loop()
 {
-  vTaskDelay( 1000 );
+  mpu.loop();
+  mpu2.loop();
+  
 
 }

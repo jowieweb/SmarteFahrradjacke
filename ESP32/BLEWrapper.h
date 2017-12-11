@@ -20,11 +20,13 @@
     
       BLECharacteristic *pCharacteristic;
 
-      SemaphoreHandle_t* bleMutex;
+      SemaphoreHandle_t bleMutex;
       bool deviceConnected = false;
       uint8_t txValue = 0;
       const TickType_t xDelay = 1000 / portTICK_PERIOD_MS;
       void (*callback)(String); 
+      long allowedToSend= 0;
+      uint8_t temp= 0;
   };
 
 #endif

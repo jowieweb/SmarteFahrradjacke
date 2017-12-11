@@ -4,8 +4,9 @@
 
 
 void BLEWrapper::onConnect(BLEServer* pServer) {
-  //deviceConnected = true;
+  deviceConnected = true;
   Serial.println("DEV CONNECTED");
+  allowedToSend = millis() + 1000;
 };
 
 void BLEWrapper::onDisconnect(BLEServer* pServer) {
@@ -13,8 +14,11 @@ void BLEWrapper::onDisconnect(BLEServer* pServer) {
   //Serial.println("DEV DISCONNECTED");
 }
 
+
+
+
 void BLEWrapper::start(void (*callback)(String), SemaphoreHandle_t* bleMutex) {
-  this->bleMutex = bleMutex;
+  this->bleMutex = *bleMutex;
   BLEDevice::init("UART Service");
   this->callback = callback;
   
@@ -39,8 +43,10 @@ void BLEWrapper::start(void (*callback)(String), SemaphoreHandle_t* bleMutex) {
  // Serial.println("Waiting a client connection to notify...");
 }
 
+
+
+
 void BLEWrapper::onWrite(BLECharacteristic *pCharacteristic) {
-  deviceConnected = true;
   std::string rxValue = pCharacteristic->getValue();
   String recv = "";
   if (rxValue.length() > 0) {
@@ -58,13 +64,15 @@ void BLEWrapper::onWrite(BLECharacteristic *pCharacteristic) {
 }
 
 void BLEWrapper::sendText(String text) {
-  if (deviceConnected) {
-    xSemaphoreTake(*bleMutex, 100);
+  if (deviceConnected && allowedToSend < millis()) {
+   // xSemaphoreTake(bleMutex, 100);
     const char *cstr = text.c_str();
     pCharacteristic->setValue(std::string(cstr, text.length()));
+  // pCharacteristic->setValue(&temp,1);
+   //temp++;
     //Serial.println(text.length());
     pCharacteristic->notify();
-    xSemaphoreGive(*bleMutex);
+   // xSemaphoreGive(bleMutex);
   }
 }
 

@@ -23,6 +23,7 @@ class MPUWrapper
     void taskMPU();
     int getI2CAddress();
     void enabledOutputToCallback(boolean);
+    void loop();
    
   private:
     MPU6050 mpu;
@@ -38,6 +39,9 @@ class MPUWrapper
     boolean outputToSerial = true;
     boolean outputToCallback = false;
     void (*callback)(MPUValues);
+    void getData();
+    
+
     
    
 
