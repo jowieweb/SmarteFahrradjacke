@@ -2,6 +2,10 @@ package fh.com.smartjacket;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.TextView;
@@ -15,8 +19,11 @@ import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
 import fh.com.smartjacket.Mapquest.Mapquest;
 import fh.com.smartjacket.Mapquest.MyLocationListener;
 import fh.com.smartjacket.Mapquest.TurnPoint;
+import fh.com.smartjacket.adapter.TabPagerAdapter;
+import fh.com.smartjacket.fragment.RouteFragment;
+import fh.com.smartjacket.fragment.SettingsFragment;
 
-public class MainActivity extends Activity implements MessageReceivedCallback{
+public class MainActivity extends AppCompatActivity implements MessageReceivedCallback{
     private static final String LOG_TAG = "MainActivity";
 
     private BluetoothWrapper bw;
@@ -29,6 +36,17 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        ViewPager viewPager = findViewById(R.id.viewPager);
+        setupViewPager(viewPager);
+
+        TabLayout tabLayout = findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+        setupTabs(tabLayout);
+
+        /*
         tv = findViewById(R.id.textbox1);
         virbation = findViewById(R.id.vibration);
         addVibrationActionListener();
@@ -53,12 +71,25 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
 
         mll = new MyLocationListener(this);
         mll.init();
+    */
+    }
 
+    private void setupViewPager(ViewPager viewPager) {
+        TabPagerAdapter adapter = new TabPagerAdapter(getSupportFragmentManager());
+
+        adapter.addFragment(new RouteFragment(), "Navigation");
+        adapter.addFragment(new SettingsFragment(), "Einstellungen");
+
+        viewPager.setAdapter(adapter);
+    }
+
+    private void setupTabs(TabLayout tabLayout) {
+        // TODO: Add icons to tabs
     }
 
     protected void onResume() {
         super.onResume();
-        bw.startScan();
+        //bw.startScan();
     }
 
     @Override
