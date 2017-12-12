@@ -6,8 +6,8 @@ LEDController::LEDController(byte dataPin, byte clockPin, int ledCount) {
   this->ledCount = ledCount;
   strip = Adafruit_WS2801(ledCount, dataPin, clockPin);
   strip.begin();
-  this->blinkColor = getColor(0, 0, 255,1);
-  this->blinkHighColor = getColor(255, 77, 166,1);
+  this->blinkColor = getColor(200, 0, 100,1);
+  this->blinkHighColor = getColor(255, 0, 190,1);
 }
 
 
