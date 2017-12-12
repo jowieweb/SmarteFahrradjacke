@@ -3,15 +3,29 @@
 #include <Wire.h>
 #include "MPU6050.h"
 
+
+
+typedef struct MPUValues { 
+    float pitch; 
+    float roll; 
+    float yaw;
+    String text; 
+    int i2cAddress;
+} MPUValues;
+
 class MPUWrapper
 {
   public:
+     
     MPUWrapper(int i2cAddress);
-    void init(bool printToSerial, void (*)(String),SemaphoreHandle_t);
+    void init(bool printToSerial, void (*)(MPUValues),SemaphoreHandle_t*);
     void createTask(void (*func)(void*));
     void taskMPU();
     int getI2CAddress();
     void enabledOutputToCallback(boolean);
+    void loop();
+    boolean isTriggerd();
+   
   private:
     MPU6050 mpu;
     SemaphoreHandle_t mutex;
@@ -25,7 +39,10 @@ class MPUWrapper
     const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
     boolean outputToSerial = true;
     boolean outputToCallback = false;
-    void (*callback)(String);
+    void (*callback)(MPUValues);
+    void getData();
+    
+
     
    
 

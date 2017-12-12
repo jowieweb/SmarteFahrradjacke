@@ -12,7 +12,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
+import com.luckycatlabs.sunrisesunset.dto.Location;
+
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
 import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
@@ -23,8 +29,13 @@ import fh.com.smartjacket.adapter.TabPagerAdapter;
 import fh.com.smartjacket.fragment.RouteFragment;
 import fh.com.smartjacket.fragment.SettingsFragment;
 
+<<<<<<< HEAD
 public class MainActivity extends AppCompatActivity implements MessageReceivedCallback{
     private static final String LOG_TAG = "MainActivity";
+=======
+
+public class MainActivity extends Activity implements MessageReceivedCallback{
+>>>>>>> 392259bbe1a988f32d9f64c5e7e1117338afbb1b
 
     private BluetoothWrapper bw;
     private TextView tv;
@@ -51,6 +62,10 @@ public class MainActivity extends AppCompatActivity implements MessageReceivedCa
         virbation = findViewById(R.id.vibration);
         addVibrationActionListener();
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 392259bbe1a988f32d9f64c5e7e1117338afbb1b
         bw = new BluetoothWrapper(this, this);
 
         try{
@@ -71,6 +86,13 @@ public class MainActivity extends AppCompatActivity implements MessageReceivedCa
 
         mll = new MyLocationListener(this);
         mll.init();
+
+        Location location = new Location(52.296853, 8.904645);
+        SunriseSunsetCalculator calculator = new SunriseSunsetCalculator(location, TimeZone.getDefault());
+        String Sunrise =calculator.getOfficialSunriseForDate(Calendar.getInstance());
+        String sunset =calculator.getOfficialSunsetForDate(Calendar.getInstance());
+        Log.i("sunset", sunset);
+        Log.i("sunrise", Sunrise);
     */
     }
 

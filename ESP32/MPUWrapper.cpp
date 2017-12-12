@@ -2,11 +2,12 @@
 
 MPUWrapper::MPUWrapper(int i2cAddress) {
   this->i2cAddress = i2cAddress;
- 
-  
+
+
 }
-void MPUWrapper::init(bool printToSerial, void (*callback)(String),SemaphoreHandle_t mutex) {
-   this->mutex = mutex;
+void MPUWrapper::init(bool printToSerial, void (*callback)(MPUValues), SemaphoreHandle_t* mutex) {
+  this->mutex = *mutex;
+
   while (!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G, i2cAddress))
   {
     Serial.print("Could not find a valid MPU6050 sensor at address");
@@ -14,64 +15,98 @@ void MPUWrapper::init(bool printToSerial, void (*callback)(String),SemaphoreHand
     Serial.println(", check wiring!");
     delay(500);
   }
-   outputToSerial = printToSerial;
-   mpu.calibrateGyro();
-   mpu.setThreshold(3);
-   this->callback = callback;
+  outputToSerial = printToSerial;
+  mpu.calibrateGyro();
+  mpu.setThreshold(1);
+  this->callback = callback;
 
 }
 
 
 void MPUWrapper::createTask(void (*func)(void*)) {
-  xTaskCreate(
-    func,
-    "taskMPU",
-    10000,
-    this,
-    i2cAddress- 0x67,
-    NULL);
+  #ifdef MULTITHREADING
+  xTaskCreate(    func,    "taskMPU",    20000,    this,    i2cAddress - 0x66,    NULL);
+  #endif
+
 }
 int MPUWrapper::getI2CAddress() {
   return i2cAddress;
 }
 
-void MPUWrapper::enabledOutputToCallback(boolean enabled){
+void MPUWrapper::enabledOutputToCallback(boolean enabled) {
   outputToCallback = enabled;
 }
 
 void MPUWrapper::taskMPU() {
   timer = millis();
-  xSemaphoreTake(mutex, 100);
+  if (timer < 2500) {
+    vTaskDelay(100);
+    return;
+  }
+  getData();  
+  vTaskDelay((timeStep * 1000) - (millis() - timer));
+
+}
+
+void MPUWrapper::getData() {
+
+#ifdef MULTITHREADING
+  if(xSemaphoreTake(mutex, 250)  =! pdTRUE ){
+    return;
+  }
+#endif
   Vector norm = mpu.readNormalizeGyro();
 
+#ifdef MULTITHREADING
+  xSemaphoreGive(mutex);
+#endif
+  
   // Calculate Pitch, Roll and Yaw
   pitch = pitch + norm.YAxis * timeStep;
   roll = roll + norm.XAxis * timeStep;
   yaw = yaw + norm.ZAxis * timeStep;
   String output = "p=";
-  output+= pitch;
-  output+=" r=";
-  output+=roll;
-  output+=" y=";
-  output+=yaw;
- 
+  output += pitch;
+  output += " r=";
+  output += roll;
+  output += " y=";
+  output += yaw;
+
+  if(yaw > 60 || yaw < -60){
+    runi = true;
+  } else {
+    runi = false;
+  }
+
   // Output raw
-  if(outputToSerial){
-   Serial.println(output);
+  if (outputToSerial) {
+    Serial.println(output);
     Serial.flush();
-    if (yaw > 50 || yaw < -50) {
-      runi = true;
-    } else {
-      runi = false;
-    }
   }
-  if(outputToCallback){
-    callback(output);
+  if (outputToCallback) {
+    MPUValues value;
+    value.pitch = pitch;
+    value.roll = roll;
+    value.yaw = yaw;
+    value.text = output;
+    value.i2cAddress = i2cAddress;
+    callback(value);
   }
-  xSemaphoreGive(mutex);
- 
-  //delay((timeStep*1000) - (millis() - timer));
-  vTaskDelay( xDelay );
 }
 
+void MPUWrapper::loop() {
+  long tempTimer =  millis();
+
+  if(tempTimer < timer){
+    return;
+  }
+
+  getData();
+  long timeNow = millis();
+  timer = (timeStep * 1000) + timeNow - (timeNow - tempTimer); //(timeStep * 1000) - (millis() - tempTimer);
+}
+
+boolean MPUWrapper::isTriggerd(){
+  return runi;
+}
 
