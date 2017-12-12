@@ -24,6 +24,7 @@ class MPUWrapper
     int getI2CAddress();
     void enabledOutputToCallback(boolean);
     void loop();
+    boolean isTriggerd();
    
   private:
     MPU6050 mpu;

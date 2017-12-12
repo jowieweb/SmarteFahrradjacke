@@ -17,14 +17,16 @@ void MPUWrapper::init(bool printToSerial, void (*callback)(MPUValues), Semaphore
   }
   outputToSerial = printToSerial;
   mpu.calibrateGyro();
-  mpu.setThreshold(3);
+  mpu.setThreshold(1);
   this->callback = callback;
 
 }
 
 
 void MPUWrapper::createTask(void (*func)(void*)) {
+  #ifdef MULTITHREADING
   xTaskCreate(    func,    "taskMPU",    20000,    this,    i2cAddress - 0x66,    NULL);
+  #endif
 
 }
 int MPUWrapper::getI2CAddress() {
@@ -41,20 +43,24 @@ void MPUWrapper::taskMPU() {
     vTaskDelay(100);
     return;
   }
-  getData();
-  //  } else {
-  //    Serial.print("noMUTEX!");
-  //  }
+  getData();  
   vTaskDelay((timeStep * 1000) - (millis() - timer));
 
 }
 
 void MPUWrapper::getData() {
 
-
-  //if(xSemaphoreTake(mutex, 250)  == pdTRUE ){
+#ifdef MULTITHREADING
+  if(xSemaphoreTake(mutex, 250)  =! pdTRUE ){
+    return;
+  }
+#endif
   Vector norm = mpu.readNormalizeGyro();
-  //   xSemaphoreGive(mutex);
+
+#ifdef MULTITHREADING
+  xSemaphoreGive(mutex);
+#endif
+  
   // Calculate Pitch, Roll and Yaw
   pitch = pitch + norm.YAxis * timeStep;
   roll = roll + norm.XAxis * timeStep;
@@ -66,15 +72,16 @@ void MPUWrapper::getData() {
   output += " y=";
   output += yaw;
 
+  if(yaw > 60 || yaw < -60){
+    runi = true;
+  } else {
+    runi = false;
+  }
+
   // Output raw
   if (outputToSerial) {
     Serial.println(output);
     Serial.flush();
-    if (yaw > 50 || yaw < -50) {
-      runi = true;
-    } else {
-      runi = false;
-    }
   }
   if (outputToCallback) {
     MPUValues value;
@@ -89,14 +96,17 @@ void MPUWrapper::getData() {
 
 void MPUWrapper::loop() {
   long tempTimer =  millis();
-  if ( tempTimer < 2500) {
+
+  if(tempTimer < timer){
     return;
   }
-  if(tempTimer <timer){
-    return;
-  }
+
   getData();
-  timer += (timeStep * 1000) - (millis() - tempTimer);
+  long timeNow = millis();
+  timer = (timeStep * 1000) + timeNow - (timeNow - tempTimer); //(timeStep * 1000) - (millis() - tempTimer);
 }
 
+boolean MPUWrapper::isTriggerd(){
+  return runi;
+}
 
