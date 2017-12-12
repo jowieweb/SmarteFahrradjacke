@@ -29,13 +29,8 @@ import fh.com.smartjacket.adapter.TabPagerAdapter;
 import fh.com.smartjacket.fragment.RouteFragment;
 import fh.com.smartjacket.fragment.SettingsFragment;
 
-<<<<<<< HEAD
 public class MainActivity extends AppCompatActivity implements MessageReceivedCallback{
     private static final String LOG_TAG = "MainActivity";
-=======
-
-public class MainActivity extends Activity implements MessageReceivedCallback{
->>>>>>> 392259bbe1a988f32d9f64c5e7e1117338afbb1b
 
     private BluetoothWrapper bw;
     private TextView tv;
@@ -62,10 +57,6 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
         virbation = findViewById(R.id.vibration);
         addVibrationActionListener();
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 392259bbe1a988f32d9f64c5e7e1117338afbb1b
         bw = new BluetoothWrapper(this, this);
 
         try{
