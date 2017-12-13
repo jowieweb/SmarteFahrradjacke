@@ -1,6 +1,9 @@
 package fh.com.smartjacket.fragment;
 
+import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +20,7 @@ import fh.com.smartjacket.R;
  * A Fragment that displays a MapQuest map with the current route to the destination.
  */
 public class RouteFragment extends Fragment {
+	private OnFragmentInteractionListener onFragmentInteractionListener;
 	private MapboxMap mapboxMap;
 	private MapView mapView;
 
@@ -47,6 +51,17 @@ public class RouteFragment extends Fragment {
 			}
 		});
 
+		FloatingActionButton fab = view.findViewById(R.id.addRouteActionButton);
+		fab.setOnClickListener(new View.OnClickListener() {
+
+			@Override
+			public void onClick(View view) {
+				if (onFragmentInteractionListener != null) {
+					onFragmentInteractionListener.onAddRouteButtonClicked();
+				}
+			}
+		});
+
 		return view;
 	}
 
@@ -72,5 +87,37 @@ public class RouteFragment extends Fragment {
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		this.mapView.onSaveInstanceState(outState);
+	}
+
+	@Override
+	public void onAttach(Context context) {
+		super.onAttach(context);
+
+		if (context instanceof OnFragmentInteractionListener) {
+			this.onFragmentInteractionListener = (OnFragmentInteractionListener) context;
+
+		} else {
+			throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
+		}
+	}
+
+	@Override
+	public void onDetach() {
+		super.onDetach();
+		this.onFragmentInteractionListener = null;
+	}
+
+	/**
+	 * This interface must be implemented by activities that contain this
+	 * fragment to allow an interaction in this fragment to be communicated
+	 * to the activity and potentially other fragments contained in that
+	 * activity.
+	 * <p>
+	 * See the Android Training lesson <a href=
+	 * "http://developer.android.com/training/basics/fragments/communicating.html"
+	 * >Communicating with Other Fragments</a> for more information.
+	 */
+	public interface OnFragmentInteractionListener {
+		void onAddRouteButtonClicked();
 	}
 }

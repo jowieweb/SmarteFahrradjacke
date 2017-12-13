@@ -1,6 +1,7 @@
-package fh.com.smartjacket;
+package fh.com.smartjacket.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -25,11 +26,13 @@ import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
 import fh.com.smartjacket.Mapquest.Mapquest;
 import fh.com.smartjacket.Mapquest.MyLocationListener;
 import fh.com.smartjacket.Mapquest.TurnPoint;
+import fh.com.smartjacket.R;
 import fh.com.smartjacket.adapter.TabPagerAdapter;
 import fh.com.smartjacket.fragment.RouteFragment;
 import fh.com.smartjacket.fragment.SettingsFragment;
 
-public class MainActivity extends AppCompatActivity implements MessageReceivedCallback{
+public class MainActivity extends AppCompatActivity implements MessageReceivedCallback, RouteFragment.OnFragmentInteractionListener {
+    public static final int PICK_ROUTE_REQUEST = 1337;
     private static final String LOG_TAG = "MainActivity";
 
     private BluetoothWrapper bw;
@@ -132,5 +135,18 @@ public class MainActivity extends AppCompatActivity implements MessageReceivedCa
                 }
             }
         });
+    }
+
+    @Override
+    public void onAddRouteButtonClicked() {
+        Intent intent = new Intent(this, ChooseRouteActivity.class);
+        startActivityForResult(intent, PICK_ROUTE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PICK_ROUTE_REQUEST) {
+            // TODO: Do stuff and show route
+        }
     }
 }
