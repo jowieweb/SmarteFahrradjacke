@@ -3,6 +3,7 @@
 #include "MPUWrapper.h"
 #include "BLEWrapper.h"
 #include "LEDController.h"
+#include "MotorController.h"
 
 #define dataPin 23
 #define clockPin 18
@@ -13,6 +14,7 @@ MPUWrapper mpu(0x68);
 MPUWrapper mpu2(0x69);
 BLEWrapper ble;
 LEDController leds(dataPin, clockPin, LEDLEN);
+MotorController motor(2);
 
 SemaphoreHandle_t i2cMutex;
 SemaphoreHandle_t bleMutex;
@@ -49,6 +51,7 @@ void mpuCallback(MPUValues value) {
       else {
         leds.blink(false, true);
       }
+        motor.spinMotor(true,255,255);
       Serial.println("ON");
 
     } else {
@@ -63,6 +66,7 @@ void mpuCallback(MPUValues value) {
           leds.blink(true, false);
         }
       }
+    
 
     }
 
@@ -74,11 +78,12 @@ void mpuCallback(MPUValues value) {
 void bleCallback(String recv) {
   //Serial.println(recv);
   if (recv == "bv1") {
-    digitalWrite(2, HIGH);
+    motor.spinMotor();
   } else if (recv == "bv0") {
-    digitalWrite(2, LOW);
+    motor.stopMotor();
   }
 }
+
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -86,7 +91,8 @@ void setup() {
   i2cMutex = xSemaphoreCreateMutex();
   bleMutex = xSemaphoreCreateMutex();
   Serial.begin(115200);
-  pinMode(2, OUTPUT);
+
+  
 
   mpu.init(false, &mpuCallback, &i2cMutex);
   mpu.enabledOutputToCallback(true);
@@ -101,12 +107,8 @@ void setup() {
   mpu2.createTask(stupid);
 #endif
 
-  ble.start(&bleCallback, &bleMutex);
-
+   ble.start(&bleCallback, &bleMutex);
 }
-
-
-long blinkitimer = 0;
 
 
 void loop()
@@ -118,6 +120,7 @@ void loop()
 #endif
 
   leds.loop();
+  motor.loop();
 
 }
 
