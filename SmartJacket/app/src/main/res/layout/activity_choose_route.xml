@@ -14,27 +14,15 @@
 		android:elevation="4dp"/>
 
 	<EditText
-		android:id="@+id/chooseRouteActivityFromEditText"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_alignParentStart="true"
-		android:layout_below="@+id/chooseRouteActivityToolbar"
-		android:layout_marginStart="16dp"
-		android:layout_toStartOf="@+id/chooseRouteActivityMyLocationImageButton"
-		android:ems="10"
-		android:inputType="textPersonName"
-		android:text="Von"/>
-
-	<EditText
 		android:id="@+id/chooseRouteActivityToEditText"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_alignEnd="@+id/chooseRouteActivityMyLocationImageButton"
-		android:layout_alignStart="@+id/chooseRouteActivityFromEditText"
-		android:layout_below="@+id/chooseRouteActivityFromEditText"
+		android:layout_alignBottom="@+id/chooseRouteActivitySearchAddressImageButton"
+		android:layout_alignParentStart="true"
+		android:layout_marginLeft="16dp"
+		android:layout_toStartOf="@+id/chooseRouteActivitySearchAddressImageButton"
 		android:ems="10"
-		android:inputType="textPersonName"
-		android:text="Nach"/>
+		android:inputType="textPersonName"/>
 
 	<Button
 		android:id="@+id/chooseRouteActivityStartNavigationButton"
@@ -45,14 +33,35 @@
 		android:layout_marginBottom="16dp"
 		android:text="Navigation starten"/>
 
-	<ImageButton
-		android:id="@+id/chooseRouteActivityMyLocationImageButton"
+	<TextView
+		android:id="@+id/chooseRouteActivityPositionTextView"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_above="@+id/chooseRouteActivityToEditText"
 		android:layout_alignParentEnd="true"
+		android:layout_alignStart="@+id/chooseRouteActivityToEditText"
 		android:layout_below="@+id/chooseRouteActivityToolbar"
-		android:layout_marginEnd="16dp"
-		app:srcCompat="@drawable/ic_my_location"/>
+		android:layout_marginRight="16dp"
+		android:layout_marginTop="16dp"
+		android:text="Standort: "/>
+
+	<ImageButton
+		android:id="@+id/chooseRouteActivitySearchAddressImageButton"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentEnd="true"
+		android:layout_below="@+id/textView2"
+		android:layout_marginRight="16dp"
+		app:srcCompat="@drawable/ic_action_search"/>
+
+	<TextView
+		android:id="@+id/textView2"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentEnd="true"
+		android:layout_alignStart="@+id/chooseRouteActivityPositionTextView"
+		android:layout_below="@+id/chooseRouteActivityPositionTextView"
+		android:layout_marginRight="16dp"
+		android:layout_marginTop="10dp"
+		android:text="Ziel:"/>
 
 </RelativeLayout>

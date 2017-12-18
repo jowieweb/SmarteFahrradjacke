@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import java.util.Calendar;
 
@@ -30,6 +31,7 @@ public class ChooseRouteActivity extends AppCompatActivity implements LocationLi
 	private static final String LOG_TAG = "ChooseRouteActivity";
 	private static final int PERMISSION_REQUEST_FINE_LOCATION = 1;
 	private LocationManager locationManager;
+	private TextView currentPositionTextView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,29 +41,34 @@ public class ChooseRouteActivity extends AppCompatActivity implements LocationLi
 		Toolbar toolbar = findViewById(R.id.chooseRouteActivityToolbar);
 		setSupportActionBar(toolbar);
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		setTitle("Zieleingabe");
 
-		ImageButton myLocationButton = findViewById(R.id.chooseRouteActivityMyLocationImageButton);
-		myLocationButton.setOnClickListener((View view) -> {
-			if (this.locationManager == null) {
-				this.locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		this.currentPositionTextView = findViewById(R.id.chooseRouteActivityPositionTextView);
 
-				int accessLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-				if (accessLocationPermission != PackageManager.PERMISSION_GRANTED) {
-					ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_FINE_LOCATION);
-
-				} else {
-					requestCurrentLocation();
-				}
-
-			} else {
-				requestCurrentLocation();
-			}
+		ImageButton searchAddressImageButton = findViewById(R.id.chooseRouteActivitySearchAddressImageButton);
+		searchAddressImageButton.setOnClickListener((View view) -> {
+			// TODO: Search address via web API
 		});
 
 		Button startNavigationButton = findViewById(R.id.chooseRouteActivityStartNavigationButton);
 		startNavigationButton.setOnClickListener((View view) -> {
 			// TODO: Get address information and start navigation
 		});
+
+		if (this.locationManager == null) {
+			this.locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+			int accessLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+			if (accessLocationPermission != PackageManager.PERMISSION_GRANTED) {
+				ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_FINE_LOCATION);
+
+			} else {
+				requestCurrentLocation();
+			}
+
+		} else {
+			requestCurrentLocation();
+		}
 	}
 
 	@Override
@@ -89,7 +96,8 @@ public class ChooseRouteActivity extends AppCompatActivity implements LocationLi
 		if (lastKnownLocation != null && lastKnownLocation.getTime() < Calendar.getInstance().getTimeInMillis() - 2 * 60 * 1000) {
 
 			// Last known location is not older than 2 minutes -> use it
-			// TODO: Do something with location
+			setCurrentPosition(lastKnownLocation);
+
 			return;
 		}
 
@@ -117,6 +125,11 @@ public class ChooseRouteActivity extends AppCompatActivity implements LocationLi
 		}
 	}
 
+	private void setCurrentPosition(Location location) {
+		// TODO: Search for address details for the given location
+		this.currentPositionTextView.setText("Standort: Artilleriestraße 9, 32427 Minden, Germany");
+	}
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -134,7 +147,7 @@ public class ChooseRouteActivity extends AppCompatActivity implements LocationLi
 		double latitude = location.getLatitude();
 
 		Log.d(LOG_TAG, "Got new Location! Lat: " + latitude + ", Long: " + longitude);
-		// TODO: Do something with the location
+		setCurrentPosition(location);
 	}
 
 	@Override
