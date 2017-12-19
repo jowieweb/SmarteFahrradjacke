@@ -64,6 +64,15 @@
 		android:layout_marginTop="10dp"
 		android:text="Ziel:"/>
 
-/>
+
+	<ImageView
+		android:id="@+id/chooseActivityRouteImageView"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_above="@+id/chooseRouteActivityStartNavigationButton"
+		android:layout_alignStart="@+id/chooseRouteActivityToEditText"
+		android:layout_below="@+id/chooseRouteActivityToEditText"
+		android:layout_marginRight="16dp"
+		app:srcCompat="@android:color/background_light"/>
 
 </RelativeLayout>
