@@ -74,7 +74,7 @@ public class MyLocationListener implements android.location.LocationListener {
             setLastLocation(lastKnownLocation);
         }
 
-        this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 20, 1, this);
+        this.locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2000, 10, this);
     }
 
     private void setLastLocation(Location location) {

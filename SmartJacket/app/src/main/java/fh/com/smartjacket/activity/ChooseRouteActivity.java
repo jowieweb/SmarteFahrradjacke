@@ -61,12 +61,14 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 			// TODO: Search address via web API
 			ArrayList<String> suggestions =  gms.suggest(searchTextView.getText().toString(), lambdaLoc);
 			searchTextView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, suggestions));
+			searchTextView.showDropDown();
 		});
 
 
 		searchTextView.setOnKeyListener((View view, int i, KeyEvent keyEvent) -> {
 			ArrayList<String> suggestions =  gms.suggest(searchTextView.getText().toString(), lambdaLoc);
 			searchTextView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, suggestions));
+			searchTextView.showDropDown();
 			return false;
 		});
 
