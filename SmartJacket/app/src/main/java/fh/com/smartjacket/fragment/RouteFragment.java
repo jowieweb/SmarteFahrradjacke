@@ -1,25 +1,34 @@
 package fh.com.smartjacket.fragment;
 
 import android.content.Context;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.constants.MyLocationTracking;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapquest.mapping.MapQuestAccountManager;
 import com.mapquest.mapping.maps.MapView;
 import com.mapquest.mapping.maps.MapboxMap;
 import com.mapquest.mapping.maps.OnMapReadyCallback;
 
+import fh.com.smartjacket.Mapquest.LocationChangeListener;
 import fh.com.smartjacket.R;
+import fh.com.smartjacket.activity.MainActivity;
 
 /**
  * A Fragment that displays a MapQuest map with the current route to the destination.
  */
-public class RouteFragment extends Fragment {
+public class RouteFragment extends Fragment implements LocationChangeListener {
+	private static final String LOG_TAG = "RouteFragment";
 	private OnFragmentInteractionListener onFragmentInteractionListener;
 	private MapboxMap mapboxMap;
 	private MapView mapView;
@@ -32,7 +41,10 @@ public class RouteFragment extends Fragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		((MainActivity)getActivity()).setOnLocationListener(this);
+
 		MapQuestAccountManager.start(getActivity().getApplicationContext());
+
 	}
 
 	@Override
@@ -43,22 +55,12 @@ public class RouteFragment extends Fragment {
 
 		this.mapView = view.findViewById(R.id.mapquestMapView);
 		this.mapView.onCreate(savedInstanceState);
-
-		this.mapView.getMapAsync(new OnMapReadyCallback() {
-			@Override
-			public void onMapReady(MapboxMap mapboxMap) {
-				mapboxMap = mapboxMap;
-			}
-		});
+		this.mapView.getMapAsync((MapboxMap mapboxMap) -> { this.mapboxMap = mapboxMap; } );
 
 		FloatingActionButton fab = view.findViewById(R.id.addRouteActionButton);
-		fab.setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View view) {
-				if (onFragmentInteractionListener != null) {
-					onFragmentInteractionListener.onAddRouteButtonClicked();
-				}
+		fab.setOnClickListener((View v) -> {
+			if (onFragmentInteractionListener != null) {
+				onFragmentInteractionListener.onAddRouteButtonClicked();
 			}
 		});
 
@@ -105,6 +107,16 @@ public class RouteFragment extends Fragment {
 	public void onDetach() {
 		super.onDetach();
 		this.onFragmentInteractionListener = null;
+	}
+
+	@Override
+	public void onLocationChange(Location location) {
+		if (this.mapboxMap != null) {
+			mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+			this.mapboxMap.addMarker(new MarkerOptions().setPosition(new LatLng(location.getLatitude(), location.getLongitude())));
+		}
+
+		Log.d(LOG_TAG, "Lat: " + location.getLatitude() + " Long: " + location.getLongitude());
 	}
 
 	/**

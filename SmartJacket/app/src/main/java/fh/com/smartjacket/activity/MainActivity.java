@@ -1,37 +1,26 @@
 package fh.com.smartjacket.activity;
 
-import android.app.Activity;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
-
-import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
-import com.luckycatlabs.sunrisesunset.dto.Location;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
 
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
 import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
-import fh.com.smartjacket.Mapquest.Mapquest;
+import fh.com.smartjacket.Mapquest.LocationChangeListener;
 import fh.com.smartjacket.Mapquest.MyLocationListener;
-import fh.com.smartjacket.Mapquest.TurnPoint;
 import fh.com.smartjacket.R;
 import fh.com.smartjacket.adapter.TabPagerAdapter;
 import fh.com.smartjacket.fragment.RouteFragment;
 import fh.com.smartjacket.fragment.SettingsFragment;
 
-public class MainActivity extends AppCompatActivity implements MessageReceivedCallback, RouteFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements LocationChangeListener, MessageReceivedCallback, RouteFragment.OnFragmentInteractionListener {
     public static final int PICK_ROUTE_REQUEST = 1337;
     private static final String LOG_TAG = "MainActivity";
 
@@ -39,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements MessageReceivedCa
     private TextView tv;
     private ToggleButton virbation;
     private MyLocationListener mll;
+    private LocationChangeListener onLocationChangeListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +44,10 @@ public class MainActivity extends AppCompatActivity implements MessageReceivedCa
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
         setupTabs(tabLayout);
+
+        mll = new MyLocationListener(this);
+        mll.setOnLocationChangeListener(this);
+        mll.init();
 
         /*
         tv = findViewById(R.id.textbox1);
@@ -77,9 +71,6 @@ public class MainActivity extends AppCompatActivity implements MessageReceivedCa
         for (TurnPoint tp:list) {
             tv.append(tp.toString() + "\n");
         }
-
-        mll = new MyLocationListener(this);
-        mll.init();
 
         Location location = new Location(52.296853, 8.904645);
         SunriseSunsetCalculator calculator = new SunriseSunsetCalculator(location, TimeZone.getDefault());
@@ -139,7 +130,10 @@ public class MainActivity extends AppCompatActivity implements MessageReceivedCa
 
     @Override
     public void onAddRouteButtonClicked() {
+        Location location = this.mll.getLastLocation();
         Intent intent = new Intent(this, ChooseRouteActivity.class);
+        intent.putExtra("location", location);
+
         startActivityForResult(intent, PICK_ROUTE_REQUEST);
     }
 
@@ -147,6 +141,17 @@ public class MainActivity extends AppCompatActivity implements MessageReceivedCa
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PICK_ROUTE_REQUEST) {
             // TODO: Do stuff and show route
+        }
+    }
+
+    public void setOnLocationListener(LocationChangeListener locationChangeListener) {
+        this.onLocationChangeListener = locationChangeListener;
+    }
+
+    @Override
+    public void onLocationChange(Location location) {
+        if (this.onLocationChangeListener != null) {
+            this.onLocationChangeListener.onLocationChange(location);
         }
     }
 }
