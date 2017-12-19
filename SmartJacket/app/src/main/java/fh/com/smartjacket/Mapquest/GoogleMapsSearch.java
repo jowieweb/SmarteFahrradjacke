@@ -15,22 +15,55 @@ import java.util.ArrayList;
 
 public class GoogleMapsSearch {
     private static final String LOG_TAG = "GoogleMapsSearch";
-    //https://maps.googleapis.com/maps/api/place/autocomplete/json?input=ring&location=52.296907,8.904590&types=address&radius=5000&strictbounds&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs
 
-    private String prefix = "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=";
-    private String suffix ="&types=address&radius=5000&strictbounds&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs";
+    //https://maps.googleapis.com/maps/api/place/autocomplete/json?input=ring&location=52.296907,8.904590&types=address&radius=5000&strictbounds&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs
+    private String suggestprefix = "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=";
+    private String suggestsuffix ="&types=address&radius=5000&strictbounds&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs";
+
+    //https://maps.googleapis.com/maps/api/place/textsearch/json?query=ringst&location=52.296907,8.904590&radius=1&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs
+    private String findprefix = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=";
+    private String findsuffix = "&radius=25000&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs";
 
     public  void GoogleMapsSearch(){
 
     }
+
+
+    public Location getLocationOfAddress(String address, Location currentLocation){
+        Location retval = new Location("");
+        String querryURL = findprefix + address + "&location=" + currentLocation.getLatitude() + "," + currentLocation.getLongitude() + findsuffix;
+        RetrieveContentTask rct = new RetrieveContentTask();
+        String text ="";
+        try {
+            text = rct.execute(querryURL).get();
+            JSONObject json = new JSONObject(text);
+            JSONArray results = json.getJSONArray("results");
+            JSONObject loc =  results.getJSONObject(0).getJSONObject("geometry").getJSONObject("location");
+            String lat = loc.getString("lat");
+            String lng = loc.getString("lng");
+            retval.setLatitude(Double.parseDouble(lat));
+            retval.setLongitude(Double.parseDouble(lng));
+            Log.i(LOG_TAG,"found at lat:" + lat + " lng:" + lng);
+
+        } catch (Exception e) {
+
+        }
+
+
+
+        return  retval;
+    }
+
+
+
 
     /**
      * querry the google api for suggestions
      * @param whatToSearch the userinput
      * @param loc user location
      */
-    public  ArrayList<String> suggest(String whatToSearch, Location loc){
-        String querryURL = prefix + whatToSearch + "&location=" + loc.getLatitude() + "," + loc.getLongitude() + suffix;
+    public ArrayList<String> suggest(String whatToSearch, Location loc){
+        String querryURL = suggestprefix + whatToSearch + "&location=" + loc.getLatitude() + "," + loc.getLongitude() + suggestsuffix;
         RetrieveContentTask rct = new RetrieveContentTask();
         String retval ="";
         try {
@@ -41,8 +74,6 @@ public class GoogleMapsSearch {
         }
 
        return parseSuggestions(retval);
-
-
     }
 
 

@@ -32,6 +32,8 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 	private OnFragmentInteractionListener onFragmentInteractionListener;
 	private MapboxMap mapboxMap;
 	private MapView mapView;
+	//ugly af... aber wie komme ich an den intent den ich in ChooseRoute zurückwerfe?
+	public static Location locationToNavigate = null;
 
 	public RouteFragment() {
 		// Required empty public constructor
@@ -71,6 +73,11 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 	public void onResume() {
 		super.onResume();
 		this.mapView.onResume();
+		if(locationToNavigate != null) {
+			Log.i(LOG_TAG, "GEFUNDEN! " + locationToNavigate.toString());
+			mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(locationToNavigate.getLatitude(), locationToNavigate.getLongitude()), 15));
+		}
+
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package fh.com.smartjacket.activity;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.location.Location;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NavUtils;
@@ -21,6 +23,7 @@ import java.util.ArrayList;
 
 import fh.com.smartjacket.Mapquest.GoogleMapsSearch;
 import fh.com.smartjacket.R;
+import fh.com.smartjacket.fragment.RouteFragment;
 
 public class ChooseRouteActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 	private static final String LOG_TAG = "ChooseRouteActivity";
@@ -56,8 +59,8 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 		final Location lambdaLoc = location;
 		searchAddressImageButton.setOnClickListener((View view) -> {
 			// TODO: Search address via web API
-
-
+			ArrayList<String> suggestions =  gms.suggest(searchTextView.getText().toString(), lambdaLoc);
+			searchTextView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, suggestions));
 		});
 
 
@@ -73,6 +76,21 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 		Button startNavigationButton = findViewById(R.id.chooseRouteActivityStartNavigationButton);
 		startNavigationButton.setOnClickListener((View view) -> {
 			// TODO: Get address information and start navigation
+			Location loc = 	gms.getLocationOfAddress(searchTextView.getText().toString(), lambdaLoc);
+			searchTextView.setText("Long: " + loc.getLongitude() + " Lat: " + loc.getLatitude());
+
+			Intent data = new Intent();
+
+			data.putExtra("location", loc);
+
+			if (getParent() == null) {
+				setResult(Activity.RESULT_OK, data);
+			} else {
+				getParent().setResult(Activity.RESULT_OK, data);
+			}
+			RouteFragment.locationToNavigate = loc;
+
+			finish();
 		});
 	}
 
