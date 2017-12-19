@@ -1,14 +1,12 @@
-package fh.com.smartjacket;
+package fh.com.smartjacket.activity;
 
-import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.bluetooth.BluetoothManager;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.TextView;
@@ -28,9 +26,14 @@ import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
 import fh.com.smartjacket.Mapquest.Mapquest;
 import fh.com.smartjacket.Mapquest.MyLocationListener;
 import fh.com.smartjacket.Mapquest.TurnPoint;
+import fh.com.smartjacket.R;
+import fh.com.smartjacket.adapter.TabPagerAdapter;
+import fh.com.smartjacket.fragment.RouteFragment;
+import fh.com.smartjacket.fragment.SettingsFragment;
 
-
-public class MainActivity extends Activity implements MessageReceivedCallback{
+public class MainActivity extends AppCompatActivity implements MessageReceivedCallback, RouteFragment.OnFragmentInteractionListener {
+    public static final int PICK_ROUTE_REQUEST = 1337;
+    private static final String LOG_TAG = "MainActivity";
 
     private BluetoothWrapper bw;
     private TextView tv;
@@ -42,23 +45,36 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        ViewPager viewPager = findViewById(R.id.viewPager);
+        setupViewPager(viewPager);
+
+        TabLayout tabLayout = findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
+        setupTabs(tabLayout);
+
+        /*
         tv = findViewById(R.id.textbox1);
         virbation = findViewById(R.id.vibration);
         addVibrationActionListener();
-
 
         bw = new BluetoothWrapper(this, this);
 
         try{
             bw.init();
-        }catch (Exception e){
 
+        } catch (Exception e){
+            Log.e(LOG_TAG, "Error initializing Bluetooth: " + e.getMessage());
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
         Mapquest mq = new Mapquest();
         ArrayList<TurnPoint> list =  mq.debugTurnPoints();
         tv.setText("");
-        for(TurnPoint tp:list){
+
+        for (TurnPoint tp:list) {
             tv.append(tp.toString() + "\n");
         }
 
@@ -71,12 +87,25 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
         String sunset =calculator.getOfficialSunsetForDate(Calendar.getInstance());
         Log.i("sunset", sunset);
         Log.i("sunrise", Sunrise);
+    */
+    }
 
+    private void setupViewPager(ViewPager viewPager) {
+        TabPagerAdapter adapter = new TabPagerAdapter(getSupportFragmentManager());
+
+        adapter.addFragment(new RouteFragment(), "Navigation");
+        adapter.addFragment(new SettingsFragment(), "Einstellungen");
+
+        viewPager.setAdapter(adapter);
+    }
+
+    private void setupTabs(TabLayout tabLayout) {
+        // TODO: Add icons to tabs
     }
 
     protected void onResume() {
         super.onResume();
-        bw.startScan();
+        //bw.startScan();
     }
 
     @Override
@@ -106,5 +135,18 @@ public class MainActivity extends Activity implements MessageReceivedCallback{
                 }
             }
         });
+    }
+
+    @Override
+    public void onAddRouteButtonClicked() {
+        Intent intent = new Intent(this, ChooseRouteActivity.class);
+        startActivityForResult(intent, PICK_ROUTE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PICK_ROUTE_REQUEST) {
+            // TODO: Do stuff and show route
+        }
     }
 }
