@@ -76,6 +76,12 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 		if(locationToNavigate != null) {
 			Log.i(LOG_TAG, "GEFUNDEN! " + locationToNavigate.toString());
 			mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(locationToNavigate.getLatitude(), locationToNavigate.getLongitude()), 15));
+
+			MarkerOptions markerOptions = new MarkerOptions();
+			markerOptions.position( new LatLng(locationToNavigate.getLatitude(), locationToNavigate.getLongitude()));
+			markerOptions.title("Ziel");
+			markerOptions.snippet("Ich bin zu faul rausfinden was die adresse war\nkönnen wir machen wenn der intent geht");
+			mapboxMap.addMarker(markerOptions);
 		}
 
 	}
