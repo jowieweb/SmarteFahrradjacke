@@ -9,11 +9,15 @@ import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
+
+import java.util.ArrayList;
 
 import fh.com.smartjacket.Mapquest.GoogleMapsSearch;
 import fh.com.smartjacket.R;
@@ -21,7 +25,7 @@ import fh.com.smartjacket.R;
 public class ChooseRouteActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 	private static final String LOG_TAG = "ChooseRouteActivity";
 	private TextView currentPositionTextView;
-	private TextView searchTextView;
+	private AutoCompleteTextView searchTextView;
 	private GoogleMapsSearch gms = new GoogleMapsSearch();
 
 	@Override
@@ -39,7 +43,12 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		setTitle("Zieleingabe");
 
+
+
 		this.searchTextView = findViewById(R.id.chooseRouteActivityToEditText);
+
+
+
 		this.currentPositionTextView = findViewById(R.id.chooseRouteActivityPositionTextView);
 		this.currentPositionTextView.setText("Long: " + location.getLongitude() + " Lat: " + location.getLatitude());
 
@@ -53,8 +62,9 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 
 
 		searchTextView.setOnKeyListener((View view, int i, KeyEvent keyEvent) -> {
-			gms.suggest(searchTextView.getText().toString(), lambdaLoc);
-			return  false;
+			ArrayList<String> suggestions =  gms.suggest(searchTextView.getText().toString(), lambdaLoc);
+			searchTextView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, suggestions));
+			return false;
 		});
 
 

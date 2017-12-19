@@ -13,7 +13,7 @@
 		android:theme="@style/ThemeOverlay.AppCompat.Dark"
 		android:elevation="4dp"/>
 
-	<EditText
+	<AutoCompleteTextView
 		android:id="@+id/chooseRouteActivityToEditText"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
@@ -63,5 +63,7 @@
 		android:layout_marginRight="16dp"
 		android:layout_marginTop="10dp"
 		android:text="Ziel:"/>
+
+/>
 
 </RelativeLayout>

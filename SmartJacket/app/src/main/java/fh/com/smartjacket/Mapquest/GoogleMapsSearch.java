@@ -29,7 +29,7 @@ public class GoogleMapsSearch {
      * @param whatToSearch the userinput
      * @param loc user location
      */
-    public void suggest(String whatToSearch, Location loc){
+    public  ArrayList<String> suggest(String whatToSearch, Location loc){
         String querryURL = prefix + whatToSearch + "&location=" + loc.getLatitude() + "," + loc.getLongitude() + suffix;
         RetrieveContentTask rct = new RetrieveContentTask();
         String retval ="";
@@ -40,7 +40,7 @@ public class GoogleMapsSearch {
 
         }
 
-        ArrayList<String> retList = parseSuggestions(retval);
+       return parseSuggestions(retval);
 
 
     }
