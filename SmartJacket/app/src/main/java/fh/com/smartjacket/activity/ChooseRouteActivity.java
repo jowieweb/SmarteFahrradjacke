@@ -9,6 +9,8 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
@@ -28,13 +30,14 @@ import java.util.ArrayList;
 
 import fh.com.smartjacket.Mapquest.GoogleMapsSearch;
 import fh.com.smartjacket.Mapquest.Mapquest;
+import fh.com.smartjacket.Mapquest.SuggestionListener;
 import fh.com.smartjacket.R;
 import fh.com.smartjacket.fragment.RouteFragment;
 
-public class ChooseRouteActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
+public class ChooseRouteActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, SuggestionListener {
 	private static final String LOG_TAG = "ChooseRouteActivity";
 	private AutoCompleteTextView searchTextView;
-	private GoogleMapsSearch gms = new GoogleMapsSearch();
+	private GoogleMapsSearch gms = new GoogleMapsSearch(this);
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -64,21 +67,44 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 		searchAddressImageButton.setOnClickListener((View view) -> {
 			new SearchForLocationFromAddressTask(this).execute(this.searchTextView.getText().toString());
 
-			ArrayList<String> suggestions =  gms.suggest(searchTextView.getText().toString(), lambdaLoc);
-			searchTextView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, suggestions));
-			searchTextView.showDropDown();
+			//ArrayList<String> suggestions =  gms.suggest(searchTextView.getText().toString(), lambdaLoc);
+			//searchTextView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, suggestions));
+			//searchTextView.showDropDown();
 		});
 
 
-		searchTextView.setOnKeyListener((View view, int i, KeyEvent keyEvent) -> {
-			ArrayList<String> suggestions =  gms.suggest(searchTextView.getText().toString(), lambdaLoc);
-			searchTextView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, suggestions));
-			searchTextView.showDropDown();
+		/* searchTextView.addT((View view, int i, KeyEvent keyEvent) -> {
+			Log.i(LOG_TAG, "KEYDOWN");
+			if(keyEvent.)
+			gms.suggest(searchTextView.getText().toString(), lambdaLoc);
+
 			return false;
-		});
+		}); */
+		searchTextView. addTextChangedListener(new TextWatcher() {
+
+		   @Override
+		   public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+		   }
+
+		   public void onTextChanged(CharSequence s, int start, int before,
+									 int count) {
+			   if (!s.equals("")) {
+				   Log.i(LOG_TAG, "KEYDOWN");
+				   gms.suggest(searchTextView.getText().toString(), lambdaLoc);
+			   }
+
+		   }
+
+		   @Override
+		   public void afterTextChanged(Editable editable) {
+
+		   }
+	   });
 
 
-		Button startNavigationButton = findViewById(R.id.chooseRouteActivityStartNavigationButton);
+
+			Button startNavigationButton = findViewById(R.id.chooseRouteActivityStartNavigationButton);
 		startNavigationButton.setOnClickListener((View view) -> {
 			// TODO: Get address information and start navigation
 			Location loc = 	gms.getLocationOfAddress(searchTextView.getText().toString(), lambdaLoc);
@@ -108,6 +134,12 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 		}
 
 		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public void suggest(String[] suggestions) {
+		searchTextView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, suggestions));
+		searchTextView.showDropDown();
 	}
 
 	private static class SearchForLocationFromAddressTask extends AsyncTask<String, Void, Location> {

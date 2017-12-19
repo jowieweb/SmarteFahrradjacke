@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * Created by jowie on 19.12.2017.
  */
 
-public class GoogleMapsSearch {
+public class GoogleMapsSearch implements ContentReadyListener{
     private static final String LOG_TAG = "GoogleMapsSearch";
 
     //https://maps.googleapis.com/maps/api/place/autocomplete/json?input=ring&location=52.296907,8.904590&types=address&radius=5000&strictbounds&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs
@@ -24,8 +24,10 @@ public class GoogleMapsSearch {
     private String findprefix = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=";
     private String findsuffix = "&radius=25000&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs";
 
-    public  void GoogleMapsSearch(){
+    private  SuggestionListener suggestionListener;
 
+    public  GoogleMapsSearch(SuggestionListener suggestionListener){
+        this.suggestionListener = suggestionListener;
     }
 
 
@@ -62,22 +64,22 @@ public class GoogleMapsSearch {
      * @param whatToSearch the userinput
      * @param loc user location
      */
-    public ArrayList<String> suggest(String whatToSearch, Location loc){
+    public void suggest(String whatToSearch, Location loc){
         String querryURL = suggestprefix + whatToSearch + "&location=" + loc.getLatitude() + "," + loc.getLongitude() + suggestsuffix;
-        RetrieveContentTask rct = new RetrieveContentTask();
+        RetrieveContentTask rct = new RetrieveContentTask(this);
         String retval ="";
         try {
-            retval = rct.execute(querryURL).get();
+            rct.execute(querryURL);
 
         } catch (Exception e) {
-
+            Log.e(LOG_TAG, e.toString());
         }
 
-       return parseSuggestions(retval);
+       //return parseSuggestions(retval);
     }
 
 
-    private ArrayList<String> parseSuggestions(String text) {
+    private String[] parseSuggestions(String text) {
 
         ArrayList<String> suggestions = new ArrayList<>();
         try {
@@ -93,12 +95,17 @@ public class GoogleMapsSearch {
 
 
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e){
+            Log.e(LOG_TAG, e.toString());
         }
-        return suggestions;
+
+        String retArr[] = new String[suggestions.size()];
+        suggestions.toArray(retArr);
+        return retArr;
     }
 
+    @Override
+    public void contentReady(String content) {
+        suggestionListener.suggest( parseSuggestions(content));
+    }
 }

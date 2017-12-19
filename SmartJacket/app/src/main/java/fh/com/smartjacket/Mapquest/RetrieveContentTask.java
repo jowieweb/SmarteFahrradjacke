@@ -1,6 +1,7 @@
 package fh.com.smartjacket.Mapquest;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,11 +15,18 @@ import java.net.URLConnection;
  */
 
 public class RetrieveContentTask extends AsyncTask<String, Void, String> {
+    private  ContentReadyListener crl;
     private Exception exception;
     private  StringBuffer buf = new StringBuffer();
+    private static final String LOG_TAG = "RETRIEVE_CONTENT_TASK";
+
 
     public RetrieveContentTask(){
 
+    }
+
+    public  RetrieveContentTask(ContentReadyListener crl){
+        this.crl = crl;
     }
 
     @Override
@@ -44,10 +52,8 @@ public class RetrieveContentTask extends AsyncTask<String, Void, String> {
 
             br.close();
 
-        } catch (MalformedURLException e) {
-
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            Log.e(LOG_TAG, e.toString());
         }
 
         return buf.toString();
@@ -55,7 +61,10 @@ public class RetrieveContentTask extends AsyncTask<String, Void, String> {
 
     protected void onPostExecute(String page)
     {
-
+        if(crl != null) {
+            Log.i(LOG_TAG, "POSTEXCEC" + page);
+            crl.contentReady(page);
+        }
     }
 
 
