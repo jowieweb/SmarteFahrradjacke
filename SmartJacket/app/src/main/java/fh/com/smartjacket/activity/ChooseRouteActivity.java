@@ -1,5 +1,7 @@
 package fh.com.smartjacket.activity;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
@@ -11,6 +13,8 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -20,14 +24,16 @@ import com.squareup.picasso.Picasso;
 
 import java.lang.ref.WeakReference;
 
+import java.util.ArrayList;
+
 import fh.com.smartjacket.Mapquest.GoogleMapsSearch;
 import fh.com.smartjacket.Mapquest.Mapquest;
 import fh.com.smartjacket.R;
+import fh.com.smartjacket.fragment.RouteFragment;
 
 public class ChooseRouteActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
 	private static final String LOG_TAG = "ChooseRouteActivity";
-	private TextView searchTextView;
-	private Location destinationLocation;
+	private AutoCompleteTextView searchTextView;
 	private GoogleMapsSearch gms = new GoogleMapsSearch();
 
 	@Override
@@ -46,7 +52,10 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 		setTitle("Zieleingabe");
 
 		ImageView routeImageView = findViewById(R.id.chooseActivityRouteImageView);
+
 		this.searchTextView = findViewById(R.id.chooseRouteActivityToEditText);
+
+
 		TextView currentPositionTextView = findViewById(R.id.chooseRouteActivityPositionTextView);
 		currentPositionTextView.setText("Long: " + location.getLongitude() + " Lat: " + location.getLatitude());
 
@@ -54,24 +63,37 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 		final Location lambdaLoc = location;
 		searchAddressImageButton.setOnClickListener((View view) -> {
 			new SearchForLocationFromAddressTask(this).execute(this.searchTextView.getText().toString());
+
+			ArrayList<String> suggestions =  gms.suggest(searchTextView.getText().toString(), lambdaLoc);
+			searchTextView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, suggestions));
 		});
 
 
 		searchTextView.setOnKeyListener((View view, int i, KeyEvent keyEvent) -> {
-			gms.suggest(searchTextView.getText().toString(), lambdaLoc);
-			return  false;
+			ArrayList<String> suggestions =  gms.suggest(searchTextView.getText().toString(), lambdaLoc);
+			searchTextView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, suggestions));
+			return false;
 		});
 
 
 		Button startNavigationButton = findViewById(R.id.chooseRouteActivityStartNavigationButton);
 		startNavigationButton.setOnClickListener((View view) -> {
+			// TODO: Get address information and start navigation
+			Location loc = 	gms.getLocationOfAddress(searchTextView.getText().toString(), lambdaLoc);
+			searchTextView.setText("Long: " + loc.getLongitude() + " Lat: " + loc.getLatitude());
 
-			if (this.destinationLocation != null) {
-				// TODO: Location of the destination is available -> Do something with it
+			Intent data = new Intent();
 
+			data.putExtra("location", loc);
+
+			if (getParent() == null) {
+				setResult(Activity.RESULT_OK, data);
 			} else {
-				// TODO: Show error
+				getParent().setResult(Activity.RESULT_OK, data);
 			}
+			RouteFragment.locationToNavigate = loc;
+
+			finish();
 		});
 	}
 
@@ -84,10 +106,6 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 		}
 
 		return super.onOptionsItemSelected(item);
-	}
-
-	public void setDestinationLocation(Location location) {
-		this.destinationLocation = location;
 	}
 
 	private static class SearchForLocationFromAddressTask extends AsyncTask<String, Void, Location> {
@@ -110,8 +128,6 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 				// Get map image of destination
 				Picasso.with(this.activity.get()).load(Mapquest.getStaticMapApiUrlForLocation(location)).into((ImageView)this.activity.get().findViewById(R.id.chooseActivityRouteImageView));
 			}
-
-			this.activity.get().setDestinationLocation(location);
 		}
 	}
 }
