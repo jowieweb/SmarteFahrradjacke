@@ -49,12 +49,12 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_alignParentEnd="true"
-		android:layout_below="@+id/textView2"
+		android:layout_below="@+id/chooseRouteActivityDestinationLabel"
 		android:layout_marginRight="16dp"
 		app:srcCompat="@drawable/ic_action_search"/>
 
 	<TextView
-		android:id="@+id/textView2"
+		android:id="@+id/chooseRouteActivityDestinationLabel"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_alignParentEnd="true"

@@ -80,48 +80,54 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 
 			return false;
 		}); */
-		searchTextView. addTextChangedListener(new TextWatcher() {
+		this.searchTextView.addTextChangedListener(new TextWatcher() {
 
-		   @Override
-		   public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+			@Override
+			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-		   }
-
-		   public void onTextChanged(CharSequence s, int start, int before,
-									 int count) {
-			   if (!s.equals("")) {
-				   Log.i(LOG_TAG, "KEYDOWN");
-				   gms.suggest(searchTextView.getText().toString(), lambdaLoc);
-			   }
-
-		   }
-
-		   @Override
-		   public void afterTextChanged(Editable editable) {
-
-		   }
-	   });
-
-
-
-			Button startNavigationButton = findViewById(R.id.chooseRouteActivityStartNavigationButton);
-		startNavigationButton.setOnClickListener((View view) -> {
-			// TODO: Get address information and start navigation
-			Location loc = 	gms.getLocationOfAddress(searchTextView.getText().toString(), lambdaLoc);
-			searchTextView.setText("Long: " + loc.getLongitude() + " Lat: " + loc.getLatitude());
-
-			Intent data = new Intent();
-
-			data.putExtra("location", loc);
-
-			if (getParent() == null) {
-				setResult(Activity.RESULT_OK, data);
-			} else {
-				getParent().setResult(Activity.RESULT_OK, data);
 			}
-			RouteFragment.locationToNavigate = loc;
 
-			finish();
+			public void onTextChanged(CharSequence s, int start, int before,
+									  int count) {
+				if (!s.equals("")) {
+					Log.i(LOG_TAG, "KEYDOWN");
+					gms.suggest(searchTextView.getText().toString(), lambdaLoc);
+				}
+
+			}
+
+			@Override
+			public void afterTextChanged(Editable editable) {
+
+			}
+		});
+
+
+
+		Button startNavigationButton = findViewById(R.id.chooseRouteActivityStartNavigationButton);
+		startNavigationButton.setOnClickListener((View view) -> {
+			String searchInput = this.searchTextView.getText().toString();
+
+			if (!searchInput.isEmpty()) {
+				Location loc = gms.getLocationOfAddress(searchTextView.getText().toString(), lambdaLoc);
+				this.searchTextView.setText("Long: " + loc.getLongitude() + " Lat: " + loc.getLatitude());
+
+				Intent data = new Intent();
+
+				data.putExtra("location", loc);
+
+				if (getParent() == null) {
+					setResult(Activity.RESULT_OK, data);
+				} else {
+					getParent().setResult(Activity.RESULT_OK, data);
+				}
+				RouteFragment.locationToNavigate = loc;
+
+				finish();
+
+			} else {
+				this.searchTextView.setError("Bitte Ziel eingeben!");
+			}
 		});
 	}
 
