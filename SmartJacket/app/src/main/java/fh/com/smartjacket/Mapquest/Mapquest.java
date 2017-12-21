@@ -55,7 +55,7 @@ public class Mapquest {
         String retval = getURL(from.getLatitude() + "%2C" + from.getLongitude(), to.getLatitude() +"%2C" +to.getLongitude());
         RetrieveContentTask rct = new RetrieveContentTask();
         try {
-            retval = rct.execute(getExampleURL()).get();
+            retval = rct.execute(retval).get();
             return paraseRoute(retval);
         } catch (Exception e) {
 
@@ -72,17 +72,17 @@ public class Mapquest {
                     .getJSONObject("shape")
                     .getJSONArray("shapePoints");
 
-            // get every other shape point
-            int pointcount = points.length() / 2;
+
 
             // create a shape point list
             ArrayList<LatLng> shapePoints = new ArrayList<>();
 
+
             // fill list with every even value as lat and odd value as lng
-            for (int point = 0; point < pointcount; point = point + 1) {
+            for (int i = 0; i < points.length()/2;i++) {
                 shapePoints.add(new LatLng(
-                        (double) points.get(point * 2),
-                        (double) points.get(point * 2 + 1)
+                        (double) points.get(i * 2),
+                        (double) points.get(i * 2 + 1)
                 ));
             }
             return new Route(turnPoints, shapePoints);

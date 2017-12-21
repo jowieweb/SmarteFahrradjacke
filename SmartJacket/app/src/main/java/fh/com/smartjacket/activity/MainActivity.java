@@ -51,8 +51,6 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         mll = new MyLocationListener(this);
         mll.setOnLocationChangeListener(this);
         mll.init();
-        Mapquest mq = new Mapquest();
-       mq.getRoute(new LatLng(52.2968497,8.9015869), new LatLng(52.299373, 8.907951));
 
         /*
         tv = findViewById(R.id.textbox1);

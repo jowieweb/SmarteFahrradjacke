@@ -50,6 +50,7 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 			location = new Location("dummyprovider");
 
 		} else {
+
 			GetAddressFromLocationTask task = new GetAddressFromLocationTask();
 			task.execute(location);
 		}
@@ -72,19 +73,8 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 		searchAddressImageButton.setOnClickListener((View view) -> {
 			new SearchForLocationFromAddressTask(this).execute(this.searchTextView.getText().toString());
 
-			//ArrayList<String> suggestions =  gms.suggest(searchTextView.getText().toString(), lambdaLoc);
-			//searchTextView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, suggestions));
-			//searchTextView.showDropDown();
 		});
 
-
-		/* searchTextView.addT((View view, int i, KeyEvent keyEvent) -> {
-			Log.i(LOG_TAG, "KEYDOWN");
-			if(keyEvent.)
-			gms.suggest(searchTextView.getText().toString(), lambdaLoc);
-
-			return false;
-		}); */
 		this.searchTextView.addTextChangedListener(new TextWatcher() {
 
 			@Override
@@ -92,10 +82,8 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 
 			}
 
-			public void onTextChanged(CharSequence s, int start, int before,
-									  int count) {
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
 				if (!s.equals("")) {
-					Log.i(LOG_TAG, "KEYDOWN");
 					gms.suggest(searchTextView.getText().toString(), lambdaLoc);
 				}
 
