@@ -141,12 +141,18 @@ public class Mapquest {
                     JSONObject firstLocation = locations.getJSONObject(0);
 
                     String street = firstLocation.getString("street");
-                    String houseNo = street.substring(0, street.indexOf(' '));
-                    street = street.substring(street.indexOf(' ') + 1);
                     String plz = firstLocation.getString("postalCode");
                     String city = firstLocation.getString("adminArea5");
 
-                    address = street + " " + houseNo + ", " + plz + " " + city;
+                    if (street.indexOf(' ') != -1 && street.substring(0, street.indexOf(' ')).matches("-?\\d+")) {
+                        String houseNo = street.substring(0, street.indexOf(' '));
+                        street = street.substring(street.indexOf(' ') + 1);
+                        address = street + " " + houseNo + ", " + plz + " " + city;
+
+                    } else {
+                        address = street + ", " + plz + " " + city;
+                    }
+
                 }
 
             }
