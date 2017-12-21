@@ -11,8 +11,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.constants.MyLocationTracking;
@@ -39,6 +41,8 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 	private Location currentLocation = new Location("");
 	//ugly af... aber wie komme ich an den intent den ich in ChooseRoute zurückwerfe?
 	public static Location locationToNavigate = null;
+
+	private PolylineOptions routePolyline = null;
 
 	public RouteFragment() {
 		// Required empty public constructor
@@ -88,17 +92,23 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 			markerOptions.snippet("Ich bin zu faul rausfinden was die adresse war\nkönnen wir machen wenn der intent geht");
 			mapboxMap.addMarker(markerOptions);
 
+
 			if(currentLocation.getLatitude() ==  0.0 && currentLocation.getLongitude() == 0.0){
+				Toast.makeText(this.getContext(), "No Location!",Toast.LENGTH_LONG).show();
 				return;
 			}
+
 			Mapquest mq = new Mapquest();
 			Route r =mq.getRoute(new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()), new LatLng(locationToNavigate.getLatitude(),locationToNavigate.getLongitude()));
+			if(routePolyline != null){
+				mapboxMap.removePolyline(routePolyline.getPolyline());
+			}
 			PolylineOptions polyline = new PolylineOptions();
 			polyline.addAll(r.getShape())
 					.width(5)
 					.color(Color.BLUE)
 					.alpha((float)0.75);
-
+			routePolyline = polyline;
 			mapboxMap.addPolyline(polyline);
 		}
 
