@@ -106,15 +106,14 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 				this.searchTextView.setText("Long: " + loc.getLongitude() + " Lat: " + loc.getLatitude());
 
 				Intent data = new Intent();
-
 				data.putExtra("location", loc);
+				data.putExtra("desinationName", searchInput);
 
 				if (getParent() == null) {
 					setResult(Activity.RESULT_OK, data);
 				} else {
 					getParent().setResult(Activity.RESULT_OK, data);
 				}
-				RouteFragment.locationToNavigate = loc;
 
 				finish();
 

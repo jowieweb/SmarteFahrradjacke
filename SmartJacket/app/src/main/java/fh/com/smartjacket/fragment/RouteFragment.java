@@ -16,9 +16,12 @@ import android.widget.Toast;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
+import com.mapbox.mapboxsdk.camera.CameraPosition;
+import com.mapbox.mapboxsdk.camera.CameraUpdate;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.constants.MyLocationTracking;
 import com.mapbox.mapboxsdk.geometry.LatLng;
+import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapquest.mapping.MapQuestAccountManager;
 import com.mapquest.mapping.maps.MapView;
 import com.mapquest.mapping.maps.MapboxMap;
@@ -39,10 +42,11 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 	private MapboxMap mapboxMap;
 	private MapView mapView;
 	private Location currentLocation = new Location("");
-	//ugly af... aber wie komme ich an den intent den ich in ChooseRoute zurückwerfe?
-	public static Location locationToNavigate = null;
+
+	public  Location locationToNavigate = null;
 
 	private PolylineOptions routePolyline = null;
+	private MarkerOptions destinationMarker = null;
 
 	public RouteFragment() {
 		// Required empty public constructor
@@ -82,35 +86,48 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 	public void onResume() {
 		super.onResume();
 		this.mapView.onResume();
-		if(locationToNavigate != null) {
-			Log.i(LOG_TAG, "GEFUNDEN! " + locationToNavigate.toString());
-			mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(locationToNavigate.getLatitude(), locationToNavigate.getLongitude()), 15));
 
-			MarkerOptions markerOptions = new MarkerOptions();
-			markerOptions.position( new LatLng(locationToNavigate.getLatitude(), locationToNavigate.getLongitude()));
-			markerOptions.title("Ziel");
-			markerOptions.snippet("Ich bin zu faul rausfinden was die adresse war\nkönnen wir machen wenn der intent geht");
-			mapboxMap.addMarker(markerOptions);
+	}
 
-
-			if(currentLocation.getLatitude() ==  0.0 && currentLocation.getLongitude() == 0.0){
-				Toast.makeText(this.getContext(), "No Location!",Toast.LENGTH_LONG).show();
-				return;
-			}
-
-			Mapquest mq = new Mapquest();
-			Route r =mq.getRoute(new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()), new LatLng(locationToNavigate.getLatitude(),locationToNavigate.getLongitude()));
-			if(routePolyline != null){
-				mapboxMap.removePolyline(routePolyline.getPolyline());
-			}
-			PolylineOptions polyline = new PolylineOptions();
-			polyline.addAll(r.getShape())
-					.width(5)
-					.color(Color.BLUE)
-					.alpha((float)0.75);
-			routePolyline = polyline;
-			mapboxMap.addPolyline(polyline);
+	public void setNewDestination(Location loc, String destinationName){
+		locationToNavigate = loc;
+		if(mapboxMap == null){
+			return;
 		}
+		if(destinationMarker != null)
+			mapboxMap.removeMarker(destinationMarker.getMarker());
+
+		if(routePolyline != null)
+			mapboxMap.removePolyline(routePolyline.getPolyline());
+
+
+
+		//mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(locationToNavigate.getLatitude(), locationToNavigate.getLongitude()), 15));
+		MarkerOptions markerOptions = new MarkerOptions();
+		markerOptions.position( new LatLng(locationToNavigate.getLatitude(), locationToNavigate.getLongitude()));
+		markerOptions.title("Destination");
+		markerOptions.snippet(destinationName);
+		mapboxMap.addMarker(markerOptions);
+		destinationMarker = markerOptions;
+
+		Mapquest mq = new Mapquest();
+		if(currentLocation.getLongitude() == 0 && currentLocation.getLatitude()==0){
+			Toast.makeText(this.getContext(), "NO POSITION FOUND!", Toast.LENGTH_SHORT).show();
+			return;
+		}
+		Route r =mq.getRoute(new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()), new LatLng(locationToNavigate.getLatitude(),locationToNavigate.getLongitude()));
+		if( r == null)
+		{
+			Toast.makeText(this.getContext(), "ROUTE IS NULL!", Toast.LENGTH_SHORT).show();
+		}
+		PolylineOptions polyline = new PolylineOptions();
+		polyline.addAll(r.getShape()).width(5).color(Color.BLUE).alpha((float)0.75);
+		routePolyline = polyline;
+		mapboxMap.addPolyline(polyline);
+		LatLng middel = r.midPoint();
+		Log.i(LOG_TAG, "Distance: " + r.getDistance() + " ZOOM Level" + r.getZoomlevel());
+		mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(middel,r.getZoomlevel()));
+
 
 	}
 

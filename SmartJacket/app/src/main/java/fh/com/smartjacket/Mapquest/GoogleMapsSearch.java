@@ -18,11 +18,11 @@ public class GoogleMapsSearch implements ContentReadyListener{
 
     //https://maps.googleapis.com/maps/api/place/autocomplete/json?input=ring&location=52.296907,8.904590&types=address&radius=5000&strictbounds&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs
     private String suggestprefix = "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=";
-    private String suggestsuffix ="&types=address&radius=5000&strictbounds&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs";
+    private String suggestsuffix ="&types=address&radius=50000&strictbounds&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs";
 
     //https://maps.googleapis.com/maps/api/place/textsearch/json?query=ringst&location=52.296907,8.904590&radius=1&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs
     private String findprefix = "https://maps.googleapis.com/maps/api/place/textsearch/json?query=";
-    private String findsuffix = "&radius=25000&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs";
+    private String findsuffix = "&radius=50000&key=AIzaSyA3kqIUTIuGnYOuR8v44oBkcyDOpsovQzs";
 
     private  SuggestionListener suggestionListener;
 

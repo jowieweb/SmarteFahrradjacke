@@ -7,6 +7,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -33,6 +34,8 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     private MyLocationListener mll;
     private LocationChangeListener onLocationChangeListener;
 
+    private RouteFragment routeFragment = new RouteFragment();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         mll = new MyLocationListener(this);
         mll.setOnLocationChangeListener(this);
         mll.init();
+        routeFragment.onLocationChange(this.mll.getLastLocation());
+
 
         /*
         tv = findViewById(R.id.textbox1);
@@ -87,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     private void setupViewPager(ViewPager viewPager) {
         TabPagerAdapter adapter = new TabPagerAdapter(getSupportFragmentManager());
 
-        adapter.addFragment(new RouteFragment(), "Navigation");
+        adapter.addFragment(routeFragment, "Navigation");
         adapter.addFragment(new SettingsFragment(), "Einstellungen");
 
         viewPager.setAdapter(adapter);
@@ -144,6 +149,12 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PICK_ROUTE_REQUEST) {
             // TODO: Do stuff and show route
+            Log.i(LOG_TAG, "GOT DATA IN MAINACTIVITY");
+            Location loc = data.getParcelableExtra("location");
+            String desName = data.getSerializableExtra("desinationName").toString();
+            if(loc != null && desName != null) {
+                routeFragment.setNewDestination(loc, desName);
+            }
         }
     }
 

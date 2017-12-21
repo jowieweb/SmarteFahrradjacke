@@ -1,6 +1,7 @@
 package fh.com.smartjacket.Mapquest;
 
 import android.location.Location;
+import android.util.Log;
 
 import com.mapbox.mapboxsdk.geometry.LatLng;
 
@@ -29,6 +30,7 @@ public class Mapquest {
     private static final String STATIC_MAP_API_BASE_URL = "https://www.mapquestapi.com/staticmap/v5/map";
     private static final String GEOCODING_API_BASE_URL = "https://www.mapquestapi.com/geocoding/v1/address";
     private static final String REVERSE_GEOCODING_API_BASE_URL = "https://www.mapquestapi.com/geocoding/v1/reverse";
+    private static final String LOG_TAG = "MAPQUEST";
 
     private ArrayList<TurnPoint> turnPoints = new ArrayList<>();
 
@@ -53,6 +55,7 @@ public class Mapquest {
 
     public Route getRoute(LatLng from, LatLng to){
         String retval = getURL(from.getLatitude() + "%2C" + from.getLongitude(), to.getLatitude() +"%2C" +to.getLongitude());
+        Log.i(LOG_TAG,"CreateRout from " + retval);
         RetrieveContentTask rct = new RetrieveContentTask();
         try {
             retval = rct.execute(retval).get();
@@ -67,13 +70,30 @@ public class Mapquest {
     private Route paraseRoute(String text){
         ArrayList<TurnPoint> turnPoints = getTurnPoints(text);
         try{
-            JSONArray points = new JSONObject(text)
-                    .getJSONObject("route")
-                    .getJSONObject("shape")
-                    .getJSONArray("shapePoints");
+            JSONObject route = new JSONObject(text).getJSONObject("route");
+            JSONArray points =route.getJSONObject("shape").getJSONArray("shapePoints");
+            double distance =  0;
+            try {
+                distance =route.getDouble("distance");
+            }catch (Exception e){
+                Log.e(LOG_TAG, "Cant parse distance " +  e.toString());
+            }
+            LatLng upperLeft = new LatLng();
+            LatLng lowerRight = new LatLng();
 
+            try{
+                JSONObject lr = route.getJSONObject("boundingBox").getJSONObject("lr");
+                JSONObject ul = route.getJSONObject("boundingBox").getJSONObject("ul");
 
+                upperLeft.setLatitude(Double.parseDouble(ul.getString("lat")));
+                upperLeft.setLongitude(Double.parseDouble(ul.getString("lng")));
 
+                lowerRight.setLatitude(lr.getDouble("lat"));
+                lowerRight.setLongitude(lr.getDouble("lng"));
+
+            }catch (Exception e){
+                Log.e(LOG_TAG, "cant get boundingbox" +  e.toString());
+            }
             // create a shape point list
             ArrayList<LatLng> shapePoints = new ArrayList<>();
 
@@ -85,7 +105,7 @@ public class Mapquest {
                         (double) points.get(i * 2 + 1)
                 ));
             }
-            return new Route(turnPoints, shapePoints);
+            return new Route(turnPoints, shapePoints,distance,upperLeft,lowerRight);
         }
         catch (Exception e)     {}
         return  null;
