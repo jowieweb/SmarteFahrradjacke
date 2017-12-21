@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+				xmlns:app="http://schemas.android.com/apk/res-auto"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent">
+
+	<ImageView
+		android:id="@+id/app_notification_list_item_app_icon"
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"
+		app:srcCompat="?android:attr/windowBackground"/>
+
+	<TextView
+		android:id="@+id/app_notification_list_item_app_name"
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"
+		android:layout_below="@+id/app_notification_list_item_app_icon"
+		android:layout_toEndOf="@+id/app_notification_list_item_app_icon"/>
+</RelativeLayout>

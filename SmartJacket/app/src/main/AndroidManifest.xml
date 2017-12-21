@@ -31,6 +31,16 @@
         <activity android:name=".activity.ChooseRouteActivity"
                   android:parentActivityName=".activity.MainActivity">
         </activity>
+
+        <service
+            android:name="fh.com.smartjacket.notifiction.MyNotificationListenerService"
+            android:label="NotificationListener"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE" >
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+
+        </service>
     </application>
 
 </manifest>
