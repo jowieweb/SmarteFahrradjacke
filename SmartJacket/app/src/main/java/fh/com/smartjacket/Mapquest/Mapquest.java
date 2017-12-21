@@ -12,7 +12,10 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -26,6 +29,7 @@ public class Mapquest {
     private static final String suffix = "&outFormat=json&ambiguities=ignore&routeType=bicycle&doReverseGeocode=false&enhancedNarrative=false&avoidTimedConditions=false";
     private static final String STATIC_MAP_API_BASE_URL = "https://www.mapquestapi.com/staticmap/v5/map";
     private static final String GEOCODING_API_BASE_URL = "https://www.mapquestapi.com/geocoding/v1/address";
+    private static final String REVERSE_GEOCODING_API_BASE_URL = "https://www.mapquestapi.com/geocoding/v1/reverse";
 
     private ArrayList<TurnPoint> turnPoints = new ArrayList<>();
 
@@ -47,16 +51,12 @@ public class Mapquest {
         return STATIC_MAP_API_BASE_URL + "?key=" + key + "&center=" + location.getLatitude() + "," + location.getLongitude() + "&zoom=15";
     }
 
-    /**
-     * Searches for the coordinates of a given address.
-     * This method blocks! Run it in an extra thread.
-     * @param address Address
-     * @return Location or null, if no location could be found.
-     */
-    public static Location getLocationFromAddress(String address) {
+    private static String downloadStringFromUrl(String url) {
+        String result = null;
+
         try {
-            URL url = new URL(getCoordinatesFromAddressRequestUrl(address));
-            HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+            URL u = new URL(url);
+            HttpsURLConnection connection = (HttpsURLConnection) u.openConnection();
 
             connection.connect();
 
@@ -69,8 +69,69 @@ public class Mapquest {
             }
 
             br.close();
+            result = sb.toString();
 
-            String jsonResult = sb.toString();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        return result;
+    }
+
+    public static String getAddressFromLocation(Location location) {
+        String address = "";
+
+        String lat = String.format(Locale.US, "%.6f", location.getLatitude());
+        String lng = String.format(Locale.US, "%.6f", location.getLongitude());
+
+        String url = REVERSE_GEOCODING_API_BASE_URL + "?key=" + key + "&location=" + lat + "," + lng;
+
+        address = downloadStringFromUrl(url);
+
+        try {
+            JSONObject resultObj = new JSONObject(address);
+            JSONArray results = resultObj.getJSONArray("results");
+
+            if (results.length() > 0) {
+                JSONArray locations = results.getJSONObject(0).getJSONArray("locations");
+                if (locations.length() > 0) {
+
+                    JSONObject firstLocation = locations.getJSONObject(0);
+
+                    String street = firstLocation.getString("street");
+                    String houseNo = street.substring(0, street.indexOf(' '));
+                    street = street.substring(street.indexOf(' ') + 1);
+                    String plz = firstLocation.getString("postalCode");
+                    String city = firstLocation.getString("adminArea5");
+
+                    address = street + " " + houseNo + ", " + plz + " " + city;
+                }
+
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return address;
+    }
+
+    /**
+     * Searches for the coordinates of a given address.
+     * This method blocks! Run it in an extra thread.
+     * @param address Address
+     * @return Location or null, if no location could be found.
+     */
+    public static Location getLocationFromAddress(String address) {
+        try {
+            String jsonResult = downloadStringFromUrl(getCoordinatesFromAddressRequestUrl(address));
+            if (jsonResult == null) {
+                return null;
+            }
+
             JSONObject json = new JSONObject(jsonResult);
             JSONArray resultArray = json.getJSONArray("results");
 
@@ -92,10 +153,6 @@ public class Mapquest {
                 }
             }
 
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
         }

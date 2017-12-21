@@ -37,6 +37,7 @@ import fh.com.smartjacket.fragment.RouteFragment;
 public class ChooseRouteActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, SuggestionListener {
 	private static final String LOG_TAG = "ChooseRouteActivity";
 	private AutoCompleteTextView searchTextView;
+	private TextView currentPositionTextView;
 	private GoogleMapsSearch gms = new GoogleMapsSearch(this);
 
 	@Override
@@ -47,6 +48,10 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 		Location location = getIntent().getParcelableExtra("location");
 		if (location == null) {
 			location = new Location("dummyprovider");
+
+		} else {
+			GetAddressFromLocationTask task = new GetAddressFromLocationTask();
+			task.execute(location);
 		}
 
 		Toolbar toolbar = findViewById(R.id.chooseRouteActivityToolbar);
@@ -59,8 +64,8 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 		this.searchTextView = findViewById(R.id.chooseRouteActivityToEditText);
 
 
-		TextView currentPositionTextView = findViewById(R.id.chooseRouteActivityPositionTextView);
-		currentPositionTextView.setText("Long: " + location.getLongitude() + " Lat: " + location.getLatitude());
+		this.currentPositionTextView = findViewById(R.id.chooseRouteActivityPositionTextView);
+		this.currentPositionTextView.setText("Long: " + location.getLongitude() + " Lat: " + location.getLatitude());
 
 		ImageButton searchAddressImageButton = findViewById(R.id.chooseRouteActivitySearchAddressImageButton);
 		final Location lambdaLoc = location;
@@ -167,6 +172,21 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 
 				// Get map image of destination
 				Picasso.with(this.activity.get()).load(Mapquest.getStaticMapApiUrlForLocation(location)).into((ImageView)this.activity.get().findViewById(R.id.chooseActivityRouteImageView));
+			}
+		}
+	}
+
+	private class GetAddressFromLocationTask extends  AsyncTask<Location, Void, String> {
+
+		@Override
+		protected String doInBackground(Location... locations) {
+			return Mapquest.getAddressFromLocation(locations[0]);
+		}
+
+		@Override
+		protected void onPostExecute(String address) {
+			if (address != null && !address.isEmpty()) {
+				currentPositionTextView.setText("Standort: " + address);
 			}
 		}
 	}
