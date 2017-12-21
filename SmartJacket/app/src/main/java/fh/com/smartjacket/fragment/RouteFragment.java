@@ -88,12 +88,15 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 			markerOptions.snippet("Ich bin zu faul rausfinden was die adresse war\nkönnen wir machen wenn der intent geht");
 			mapboxMap.addMarker(markerOptions);
 
+			if(currentLocation.getLatitude() ==  0.0 && currentLocation.getLongitude() == 0.0){
+				return;
+			}
 			Mapquest mq = new Mapquest();
 			Route r =mq.getRoute(new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()), new LatLng(locationToNavigate.getLatitude(),locationToNavigate.getLongitude()));
 			PolylineOptions polyline = new PolylineOptions();
 			polyline.addAll(r.getShape())
 					.width(5)
-					.color(Color.GRAY)
+					.color(Color.BLUE)
 					.alpha((float)0.75);
 
 			mapboxMap.addPolyline(polyline);
