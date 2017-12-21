@@ -1,6 +1,7 @@
 package fh.com.smartjacket.fragment;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.constants.MyLocationTracking;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -21,6 +23,8 @@ import com.mapquest.mapping.maps.MapboxMap;
 import com.mapquest.mapping.maps.OnMapReadyCallback;
 
 import fh.com.smartjacket.Mapquest.LocationChangeListener;
+import fh.com.smartjacket.Mapquest.Mapquest;
+import fh.com.smartjacket.Mapquest.Route;
 import fh.com.smartjacket.R;
 import fh.com.smartjacket.activity.MainActivity;
 
@@ -32,6 +36,7 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 	private OnFragmentInteractionListener onFragmentInteractionListener;
 	private MapboxMap mapboxMap;
 	private MapView mapView;
+	private Location currentLocation = new Location("");
 	//ugly af... aber wie komme ich an den intent den ich in ChooseRoute zurückwerfe?
 	public static Location locationToNavigate = null;
 
@@ -82,6 +87,16 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 			markerOptions.title("Ziel");
 			markerOptions.snippet("Ich bin zu faul rausfinden was die adresse war\nkönnen wir machen wenn der intent geht");
 			mapboxMap.addMarker(markerOptions);
+
+			Mapquest mq = new Mapquest();
+			Route r =mq.getRoute(new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()), new LatLng(locationToNavigate.getLatitude(),locationToNavigate.getLongitude()));
+			PolylineOptions polyline = new PolylineOptions();
+			polyline.addAll(r.getShape())
+					.width(5)
+					.color(Color.GRAY)
+					.alpha((float)0.75);
+
+			mapboxMap.addPolyline(polyline);
 		}
 
 	}
@@ -128,6 +143,7 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 			mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
 			this.mapboxMap.addMarker(new MarkerOptions().setPosition(new LatLng(location.getLatitude(), location.getLongitude())));
 		}
+		currentLocation = location;
 
 		Log.d(LOG_TAG, "Lat: " + location.getLatitude() + " Long: " + location.getLongitude());
 	}
