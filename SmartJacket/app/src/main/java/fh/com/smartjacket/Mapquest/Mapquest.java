@@ -47,8 +47,10 @@ public class Mapquest {
     }
 
     public static String getStaticMapApiUrlForLocation(Location location) {
-        return STATIC_MAP_API_BASE_URL + "?key=" + key + "&center=" + location.getLatitude() + "," + location.getLongitude() + "&zoom=15";
+        return STATIC_MAP_API_BASE_URL + "?key=" + key + "&center=" + location.getLatitude() + "," + location.getLongitude() +
+                "&zoom=16&shape=radius:0.01km|fill:ff0000|border:000000|" + location.getLatitude() + "," + location.getLongitude();
     }
+
     public Route getRoute(LatLng from, LatLng to){
         String retval = getURL(from.getLatitude() + "%2C" + from.getLongitude(), to.getLatitude() +"%2C" +to.getLongitude());
         RetrieveContentTask rct = new RetrieveContentTask();
