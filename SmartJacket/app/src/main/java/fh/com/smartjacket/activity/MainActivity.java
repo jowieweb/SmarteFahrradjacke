@@ -11,9 +11,12 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.mapbox.mapboxsdk.geometry.LatLng;
+
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
 import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
 import fh.com.smartjacket.Mapquest.LocationChangeListener;
+import fh.com.smartjacket.Mapquest.Mapquest;
 import fh.com.smartjacket.Mapquest.MyLocationListener;
 import fh.com.smartjacket.R;
 import fh.com.smartjacket.adapter.TabPagerAdapter;
@@ -48,6 +51,8 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         mll = new MyLocationListener(this);
         mll.setOnLocationChangeListener(this);
         mll.init();
+        Mapquest mq = new Mapquest();
+       mq.getRoute(new LatLng(52.2968497,8.9015869), new LatLng(52.299373, 8.907951));
 
         /*
         tv = findViewById(R.id.textbox1);

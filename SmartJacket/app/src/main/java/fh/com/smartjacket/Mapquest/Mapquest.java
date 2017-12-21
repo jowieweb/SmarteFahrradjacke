@@ -2,6 +2,8 @@ package fh.com.smartjacket.Mapquest;
 
 import android.location.Location;
 
+import com.mapbox.mapboxsdk.geometry.LatLng;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,10 +11,12 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -23,7 +27,7 @@ import javax.net.ssl.HttpsURLConnection;
 public class Mapquest {
     private static final String key = "YNF4GZfIelpgaU7ApDMhhDXyMoPYEcT7";
     private static final String urlPrefix = "https://www.mapquestapi.com/directions/v2/route?key=YNF4GZfIelpgaU7ApDMhhDXyMoPYEcT7&from=";
-    private static final String suffix = "&outFormat=json&ambiguities=ignore&routeType=bicycle&doReverseGeocode=false&enhancedNarrative=false&avoidTimedConditions=false";
+    private static final String suffix = "&outFormat=json&ambiguities=ignore&routeType=bicycle&generalize=0";
     private static final String STATIC_MAP_API_BASE_URL = "https://www.mapquestapi.com/staticmap/v5/map";
     private static final String GEOCODING_API_BASE_URL = "https://www.mapquestapi.com/geocoding/v1/address";
 
@@ -36,7 +40,7 @@ public class Mapquest {
 
 
     private String getExampleURL() {
-        return "https://www.mapquestapi.com/directions/v2/route?key=YNF4GZfIelpgaU7ApDMhhDXyMoPYEcT7&from=Artilleriestra%C3%9Fe+15%2C+32427+Minden%2C+Germany&to=Ringstra%C3%9Fe+111%2C+32427+Minden%2C+Germany&outFormat=json&ambiguities=ignore&routeType=bicycle&doReverseGeocode=false&enhancedNarrative=false&avoidTimedConditions=false";
+        return "https://www.mapquestapi.com/directions/v2/route?key=YNF4GZfIelpgaU7ApDMhhDXyMoPYEcT7&from=Artilleriestra%C3%9Fe+15%2C+32427+Minden%2C+Germany&to=Ringstra%C3%9Fe+111%2C+32427+Minden%2C+Germany&outFormat=json&ambiguities=ignore&routeType=bicycle&generalize=0";
     }
 
     public static String getCoordinatesFromAddressRequestUrl(String search) {
@@ -47,12 +51,47 @@ public class Mapquest {
         return STATIC_MAP_API_BASE_URL + "?key=" + key + "&center=" + location.getLatitude() + "," + location.getLongitude() + "&zoom=15";
     }
 
-    /**
-     * Searches for the coordinates of a given address.
-     * This method blocks! Run it in an extra thread.
-     * @param address Address
-     * @return Location or null, if no location could be found.
-     */
+    public Route getRoute(LatLng from, LatLng to){
+       String retval = getURL(from.getLatitude() + "%2C" + from.getLongitude(), to.getLatitude() +"%2C" +to.getLongitude());
+        RetrieveContentTask rct = new RetrieveContentTask();
+        try {
+            retval = rct.execute(getExampleURL()).get();
+            return paraseRoute(retval);
+        } catch (Exception e) {
+
+        }
+
+        return null;
+    }
+
+    private Route paraseRoute(String text){
+        ArrayList<TurnPoint> turnPoints = getTurnPoints(text);
+        try{
+            JSONArray points = new JSONObject(text)
+                    .getJSONObject("route")
+                    .getJSONObject("shape")
+                    .getJSONArray("shapePoints");
+
+            // get every other shape point
+            int pointcount = points.length() / 2;
+
+            // create a shape point list
+            ArrayList<LatLng> shapePoints = new ArrayList<>();
+
+            // fill list with every even value as lat and odd value as lng
+            for (int point = 0; point < pointcount; point = point + 1) {
+                shapePoints.add(new LatLng(
+                        (double) points.get(point * 2),
+                        (double) points.get(point * 2 + 1)
+                ));
+            }
+            return new Route(turnPoints, shapePoints);
+        }
+        catch (Exception e)     {}
+        return  null;
+
+    }
+
     public static Location getLocationFromAddress(String address) {
         try {
             URL url = new URL(getCoordinatesFromAddressRequestUrl(address));
@@ -123,6 +162,8 @@ public class Mapquest {
         }
         return turnPoints;
     }
+
+
 
 
     public String debug() {
