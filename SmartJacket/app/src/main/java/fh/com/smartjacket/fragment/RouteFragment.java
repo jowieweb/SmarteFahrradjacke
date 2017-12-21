@@ -1,9 +1,16 @@
 package fh.com.smartjacket.fragment;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -13,19 +20,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.mapbox.mapboxsdk.annotations.Icon;
+import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
-import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
-import com.mapbox.mapboxsdk.camera.CameraPosition;
-import com.mapbox.mapboxsdk.camera.CameraUpdate;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
-import com.mapbox.mapboxsdk.constants.MyLocationTracking;
 import com.mapbox.mapboxsdk.geometry.LatLng;
-import com.mapbox.mapboxsdk.geometry.LatLngBounds;
 import com.mapquest.mapping.MapQuestAccountManager;
 import com.mapquest.mapping.maps.MapView;
 import com.mapquest.mapping.maps.MapboxMap;
-import com.mapquest.mapping.maps.OnMapReadyCallback;
+
+import java.util.Random;
 
 import fh.com.smartjacket.Mapquest.LocationChangeListener;
 import fh.com.smartjacket.Mapquest.Mapquest;
@@ -38,15 +43,16 @@ import fh.com.smartjacket.activity.MainActivity;
  */
 public class RouteFragment extends Fragment implements LocationChangeListener {
 	private static final String LOG_TAG = "RouteFragment";
+	
 	private OnFragmentInteractionListener onFragmentInteractionListener;
 	private MapboxMap mapboxMap;
 	private MapView mapView;
 	private Location currentLocation = new Location("");
 
 	public  Location locationToNavigate = null;
-
 	private PolylineOptions routePolyline = null;
 	private MarkerOptions destinationMarker = null;
+	private MarkerOptions currentLocationMarker = null;
 
 	public RouteFragment() {
 		// Required empty public constructor
@@ -89,8 +95,14 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 
 	}
 
+	/**
+	 * set the new destination
+	 * @param loc the location
+	 * @param destinationName the name. displayed on the map marker
+	 */
 	public void setNewDestination(Location loc, String destinationName){
 		locationToNavigate = loc;
+		/* check for a valid destination and current location */
 		if(mapboxMap == null){
 			return;
 		}
@@ -100,9 +112,12 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 		if(routePolyline != null)
 			mapboxMap.removePolyline(routePolyline.getPolyline());
 
+		if(currentLocation.getLongitude() == 0 && currentLocation.getLatitude()==0){
+			Toast.makeText(this.getContext(), "NO POSITION FOUND!", Toast.LENGTH_SHORT).show();
+			return;
+		}
 
-
-		//mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(locationToNavigate.getLatitude(), locationToNavigate.getLongitude()), 15));
+		/* create the marker */
 		MarkerOptions markerOptions = new MarkerOptions();
 		markerOptions.position( new LatLng(locationToNavigate.getLatitude(), locationToNavigate.getLongitude()));
 		markerOptions.title("Destination");
@@ -110,20 +125,21 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 		mapboxMap.addMarker(markerOptions);
 		destinationMarker = markerOptions;
 
+		/* create the route */
 		Mapquest mq = new Mapquest();
-		if(currentLocation.getLongitude() == 0 && currentLocation.getLatitude()==0){
-			Toast.makeText(this.getContext(), "NO POSITION FOUND!", Toast.LENGTH_SHORT).show();
-			return;
-		}
 		Route r =mq.getRoute(new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()), new LatLng(locationToNavigate.getLatitude(),locationToNavigate.getLongitude()));
 		if( r == null)
 		{
 			Toast.makeText(this.getContext(), "ROUTE IS NULL!", Toast.LENGTH_SHORT).show();
 		}
+
+		/* create the polyline */
 		PolylineOptions polyline = new PolylineOptions();
 		polyline.addAll(r.getShape()).width(5).color(Color.BLUE).alpha((float)0.75);
 		routePolyline = polyline;
 		mapboxMap.addPolyline(polyline);
+
+		/*move the camera */
 		LatLng middel = r.midPoint();
 		Log.i(LOG_TAG, "Distance: " + r.getDistance() + " ZOOM Level" + r.getZoomlevel());
 		mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(middel,r.getZoomlevel()));
@@ -169,14 +185,60 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 
 	@Override
 	public void onLocationChange(Location location) {
+		if(location == null){
+			return;
+		}
 		if (this.mapboxMap != null) {
 			mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
-			this.mapboxMap.addMarker(new MarkerOptions().setPosition(new LatLng(location.getLatitude(), location.getLongitude())));
+			if(currentLocationMarker != null){
+				//TODO: warum geht das nicht? Es passiert einfach nix...
+				mapboxMap.removeMarker(currentLocationMarker.getMarker());
+			}
+
+			MarkerOptions toAdd = new MarkerOptions().setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+			//TODO wenn man über den zurück knopf kommt ist die activity null - warum?
+			if(getActivity() == null)
+			{
+				return;
+			}
+			Bitmap test = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.currentlocation);
+			toAdd.setIcon(IconFactory.recreate("a",test));
+			toAdd.setTitle("current Position");
+			toAdd.setSnippet("this is your current position");
+			this.mapboxMap.addMarker(toAdd);
+			currentLocationMarker = toAdd;
 		}
 		currentLocation = location;
 
 		Log.d(LOG_TAG, "Lat: " + location.getLatitude() + " Long: " + location.getLongitude());
 	}
+
+
+
+	private Bitmap getCircleBitmap(Bitmap bitmap) {
+		final Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
+				bitmap.getHeight(), Bitmap.Config.ARGB_8888);
+		final Canvas canvas = new Canvas(output);
+
+		final int color = Color.RED;
+		final Paint paint = new Paint();
+		final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+		final RectF rectF = new RectF(rect);
+
+		paint.setAntiAlias(true);
+		canvas.drawARGB(0, 0, 0, 0);
+		paint.setColor(color);
+		canvas.drawOval(rectF, paint);
+
+		paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+		canvas.drawBitmap(bitmap, rect, rect, paint);
+
+		bitmap.recycle();
+
+		return output;
+	}
+
+
 
 	/**
 	 * This interface must be implemented by activities that contain this
