@@ -53,8 +53,10 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
 
         mll = new MyLocationListener(this);
         mll.setOnLocationChangeListener(this);
-        mll.init();
+
         routeFragment.onLocationChange(this.mll.getLastLocation());
+        Log.d(LOG_TAG,""+ mll.getLastLocation());
+
 
 
         /*

@@ -77,7 +77,12 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 
 		this.mapView = view.findViewById(R.id.mapquestMapView);
 		this.mapView.onCreate(savedInstanceState);
-		this.mapView.getMapAsync((MapboxMap mapboxMap) -> { this.mapboxMap = mapboxMap; } );
+		this.mapView.getMapAsync((MapboxMap mapboxMap) -> {
+			this.mapboxMap = mapboxMap;
+			if (currentLocation != null) {
+				onLocationChange(currentLocation);
+			}
+		});
 
 		FloatingActionButton fab = view.findViewById(R.id.addRouteActionButton);
 		fab.setOnClickListener((View v) -> {
