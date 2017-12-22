@@ -127,8 +127,12 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case android.R.id.home:
+				/*
 				NavUtils.navigateUpFromSameTask(this);
 				return true;
+				*/
+				finish();
+				return  true;
 		}
 
 		return super.onOptionsItemSelected(item);
