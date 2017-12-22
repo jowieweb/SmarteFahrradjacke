@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
+import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
@@ -51,8 +52,8 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 
 	public  Location locationToNavigate = null;
 	private PolylineOptions routePolyline = null;
-	private MarkerOptions destinationMarker = null;
-	private MarkerOptions currentLocationMarker = null;
+	private Marker destinationMarker = null;
+	private Marker currentLocationMarker = null;
 
 	public RouteFragment() {
 		// Required empty public constructor
@@ -107,7 +108,7 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 			return;
 		}
 		if(destinationMarker != null)
-			mapboxMap.removeMarker(destinationMarker.getMarker());
+			mapboxMap.removeMarker(destinationMarker);
 
 		if(routePolyline != null)
 			mapboxMap.removePolyline(routePolyline.getPolyline());
@@ -122,8 +123,7 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 		markerOptions.position( new LatLng(locationToNavigate.getLatitude(), locationToNavigate.getLongitude()));
 		markerOptions.title("Destination");
 		markerOptions.snippet(destinationName);
-		mapboxMap.addMarker(markerOptions);
-		destinationMarker = markerOptions;
+		destinationMarker = mapboxMap.addMarker(markerOptions);
 
 		/* create the route */
 		Mapquest mq = new Mapquest();
@@ -188,54 +188,27 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 		if(location == null){
 			return;
 		}
-		if (this.mapboxMap != null) {
-			mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
-			if(currentLocationMarker != null){
-				//TODO: warum geht das nicht? Es passiert einfach nix...
-				mapboxMap.removeMarker(currentLocationMarker.getMarker());
-			}
-
-			MarkerOptions toAdd = new MarkerOptions().setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
-			//TODO wenn man über den zurück knopf kommt ist die activity null - warum?
-			if(getActivity() == null)
-			{
-				return;
-			}
-			Bitmap test = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.currentlocation);
-			toAdd.setIcon(IconFactory.recreate("a",test));
-			toAdd.setTitle("current Position");
-			toAdd.setSnippet("this is your current position");
-			this.mapboxMap.addMarker(toAdd);
-			currentLocationMarker = toAdd;
-		}
 		currentLocation = location;
-
 		Log.d(LOG_TAG, "Lat: " + location.getLatitude() + " Long: " + location.getLongitude());
-	}
+
+		if(getActivity() == null)
+			return;
+		if( this.mapboxMap == null)
+			return;
+
+		mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
 
 
+		if(currentLocationMarker != null){
+			mapboxMap.removeMarker(currentLocationMarker);
+		}
 
-	private Bitmap getCircleBitmap(Bitmap bitmap) {
-		final Bitmap output = Bitmap.createBitmap(bitmap.getWidth(),
-				bitmap.getHeight(), Bitmap.Config.ARGB_8888);
-		final Canvas canvas = new Canvas(output);
+		MarkerOptions options = new MarkerOptions();
+		options.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+		Bitmap test = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.currentlocation);
+		options.setIcon(IconFactory.recreate("a",test));
+		currentLocationMarker = mapboxMap.addMarker(options);
 
-		final int color = Color.RED;
-		final Paint paint = new Paint();
-		final Rect rect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-		final RectF rectF = new RectF(rect);
-
-		paint.setAntiAlias(true);
-		canvas.drawARGB(0, 0, 0, 0);
-		paint.setColor(color);
-		canvas.drawOval(rectF, paint);
-
-		paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-		canvas.drawBitmap(bitmap, rect, rect, paint);
-
-		bitmap.recycle();
-
-		return output;
 	}
 
 

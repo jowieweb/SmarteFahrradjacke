@@ -148,6 +148,9 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PICK_ROUTE_REQUEST) {
+            if(data == null)
+                return;
+
             Log.i(LOG_TAG, "GOT DATA IN MAINACTIVITY");
             Location loc = data.getParcelableExtra("location");
             String desName = data.getSerializableExtra("desinationName").toString();
