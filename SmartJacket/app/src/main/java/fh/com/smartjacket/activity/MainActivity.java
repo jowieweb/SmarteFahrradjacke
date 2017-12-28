@@ -12,12 +12,9 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import com.mapbox.mapboxsdk.geometry.LatLng;
-
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
 import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
 import fh.com.smartjacket.Mapquest.LocationChangeListener;
-import fh.com.smartjacket.Mapquest.Mapquest;
 import fh.com.smartjacket.Mapquest.MyLocationListener;
 import fh.com.smartjacket.R;
 import fh.com.smartjacket.adapter.TabPagerAdapter;
@@ -141,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     @Override
     public void onAddRouteButtonClicked() {
         Location location = this.mll.getLastLocation();
-        Intent intent = new Intent(this, ChooseRouteActivity.class);
+        Intent intent = new Intent(this, RouteChooserActivity.class);
         intent.putExtra("location", location);
 
         startActivityForResult(intent, PICK_ROUTE_REQUEST);

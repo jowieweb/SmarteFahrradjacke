@@ -5,14 +5,12 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -26,16 +24,13 @@ import com.squareup.picasso.Picasso;
 
 import java.lang.ref.WeakReference;
 
-import java.util.ArrayList;
-
 import fh.com.smartjacket.Mapquest.GoogleMapsSearch;
 import fh.com.smartjacket.Mapquest.Mapquest;
 import fh.com.smartjacket.Mapquest.SuggestionListener;
 import fh.com.smartjacket.R;
-import fh.com.smartjacket.fragment.RouteFragment;
 
-public class ChooseRouteActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, SuggestionListener {
-	private static final String LOG_TAG = "ChooseRouteActivity";
+public class RouteChooserActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, SuggestionListener {
+	private static final String LOG_TAG = "RouteChooserActivity";
 	private AutoCompleteTextView searchTextView;
 	private TextView currentPositionTextView;
 	private GoogleMapsSearch gms = new GoogleMapsSearch(this);
@@ -145,9 +140,9 @@ public class ChooseRouteActivity extends AppCompatActivity implements ActivityCo
 	}
 
 	private static class SearchForLocationFromAddressTask extends AsyncTask<String, Void, Location> {
-		private WeakReference<ChooseRouteActivity> activity;
+		private WeakReference<RouteChooserActivity> activity;
 
-		public SearchForLocationFromAddressTask(ChooseRouteActivity activity) {
+		public SearchForLocationFromAddressTask(RouteChooserActivity activity) {
 			this.activity = new WeakReference<>(activity);
 		}
 

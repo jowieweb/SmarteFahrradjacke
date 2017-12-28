@@ -1,28 +1,32 @@
 package fh.com.smartjacket.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
 import fh.com.smartjacket.R;
+import fh.com.smartjacket.activity.AppChooserActivity;
 import fh.com.smartjacket.adapter.AppNotificationListAdapter;
-import fh.com.smartjacket.pojo.AppVibrationConfig;
+import fh.com.smartjacket.pojo.AppNotification;
 
 /**
  *
  */
-public class SettingsFragment extends Fragment {
+public class SettingsFragment extends Fragment implements View.OnClickListener {
+	private static final int PICK_APP_REQUEST = 1338;
 	private AppNotificationListAdapter adapter;
-	private ArrayList<AppVibrationConfig> apps = new ArrayList<>();
+	private ArrayList<AppNotification> apps = new ArrayList<>();
 
 	public SettingsFragment() {
 		// Required empty public constructor
-		this.apps.add(new AppVibrationConfig("Peter"));
+		//this.apps.add(new AppNotification("Peter"));
 	}
 
 	@Override
@@ -31,10 +35,20 @@ public class SettingsFragment extends Fragment {
 		// Inflate the layout for this fragment
 		View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
+		Button chooseAppButton = view.findViewById(R.id.fragmentSettingsChooseAppButton);
+		chooseAppButton.setOnClickListener(this);
+
 		ListView appListView = view.findViewById(R.id.fragmentSettingsAppNotificationListView);
 		this.adapter = new AppNotificationListAdapter(getActivity(), this.apps);
 		appListView.setAdapter(this.adapter);
 
 		return view;
+	}
+
+	@Override
+	public void onClick(View view) {
+		Intent intent = new Intent(getActivity(), AppChooserActivity.class);
+
+		startActivityForResult(intent, PICK_APP_REQUEST);
 	}
 }
