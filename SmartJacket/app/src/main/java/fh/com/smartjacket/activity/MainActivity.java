@@ -1,5 +1,6 @@
 package fh.com.smartjacket.activity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
@@ -172,6 +173,10 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
                 break;
 
             case PICK_APP_REQUEST:
+                if (resultCode != Activity.RESULT_OK || data == null) {
+                    return;
+                }
+
                 AppNotification appNotification = new AppNotification(data.getStringExtra("selected_app"));
                 appNotification.restoreData(this);
                 if (this.onAppChosenListener != null) {

@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -35,6 +36,17 @@ public class AppChooserActivity extends AppCompatActivity {
 		ArrayList<AppNotification> installedApps = getInstalledApps();
 		appListView.setAdapter(new AppListAdapter(this, installedApps));
 		appListView.setOnItemClickListener((adapterView, view, i, l) -> returnSelectedApp((AppNotification) adapterView.getItemAtPosition(i)));
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case android.R.id.home:
+				finish();
+				return true;
+		}
+
+		return super.onOptionsItemSelected(item);
 	}
 
 	private void returnSelectedApp(AppNotification app) {
