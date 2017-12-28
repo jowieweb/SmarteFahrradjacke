@@ -20,9 +20,12 @@ import fh.com.smartjacket.R;
 import fh.com.smartjacket.adapter.TabPagerAdapter;
 import fh.com.smartjacket.fragment.RouteFragment;
 import fh.com.smartjacket.fragment.SettingsFragment;
+import fh.com.smartjacket.listener.OnAppChosenListener;
+import fh.com.smartjacket.pojo.AppNotification;
 
 public class MainActivity extends AppCompatActivity implements LocationChangeListener, MessageReceivedCallback, RouteFragment.OnFragmentInteractionListener {
     public static final int PICK_ROUTE_REQUEST = 1337;
+    private static final int PICK_APP_REQUEST = 1338;
     private static final String LOG_TAG = "MainActivity";
 
     private BluetoothWrapper bw;
@@ -30,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     private ToggleButton virbation;
     private MyLocationListener mll;
     private LocationChangeListener onLocationChangeListener;
+    private OnAppChosenListener onAppChosenListener;
 
     private RouteFragment routeFragment = new RouteFragment();
 
@@ -146,21 +150,35 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == PICK_ROUTE_REQUEST) {
-            if(data == null)
-                return;
+        switch (requestCode) {
+            case PICK_ROUTE_REQUEST:
+                if(data == null)
+                    return;
 
-            Log.i(LOG_TAG, "GOT DATA IN MAINACTIVITY");
-            Location loc = data.getParcelableExtra("location");
-            String desName = data.getSerializableExtra("desinationName").toString();
-            if(loc != null && desName != null) {
-                routeFragment.setNewDestination(loc, desName);
-            }
+                Log.i(LOG_TAG, "GOT DATA IN MAINACTIVITY");
+                Location loc = data.getParcelableExtra("location");
+                String desName = data.getSerializableExtra("desinationName").toString();
+                if(loc != null && desName != null) {
+                    routeFragment.setNewDestination(loc, desName);
+                }
+                break;
+
+            case PICK_APP_REQUEST:
+                AppNotification appNotification = new AppNotification(data.getStringExtra("selected_app"));
+                appNotification.restoreData(this);
+                if (this.onAppChosenListener != null) {
+                    this.onAppChosenListener.OnAppChosen(appNotification);
+                }
+                break;
         }
     }
 
     public void setOnLocationListener(LocationChangeListener locationChangeListener) {
         this.onLocationChangeListener = locationChangeListener;
+    }
+
+    public void setOnAppChosenListener(OnAppChosenListener onAppChosenListener) {
+        this.onAppChosenListener = onAppChosenListener;
     }
 
     @Override

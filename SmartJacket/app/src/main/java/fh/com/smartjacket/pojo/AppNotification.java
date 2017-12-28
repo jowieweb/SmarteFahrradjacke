@@ -1,5 +1,9 @@
 package fh.com.smartjacket.pojo;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 
 /**
@@ -15,6 +19,38 @@ public class AppNotification {
 		this.appName = appName;
 		this.appPackageName = appPackageName;
 		this.appIcon = appIcon;
+	}
+
+	public AppNotification(String appPackageName) {
+		this.appPackageName = appPackageName;
+	}
+
+	/**
+	 * Retrieves name and icon of the app.
+	 * @param context Context
+	 */
+	public void restoreData(Context context) {
+		if (context == null) {
+			return;
+		}
+
+		PackageManager pkgMan = context.getPackageManager();
+		Intent intent = pkgMan.getLaunchIntentForPackage(this.appPackageName);
+		if (intent == null) {
+			return;
+		}
+
+		try {
+			this.appIcon = pkgMan.getActivityIcon(intent);
+
+			ApplicationInfo info = pkgMan.getApplicationInfo(this.appPackageName, 0);
+			if (info != null) {
+				this.appName = (String) pkgMan.getApplicationLabel(info);
+			}
+
+		} catch (PackageManager.NameNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public String getAppName() {

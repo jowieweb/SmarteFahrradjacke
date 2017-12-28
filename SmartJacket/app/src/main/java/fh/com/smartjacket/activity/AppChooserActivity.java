@@ -1,5 +1,6 @@
 package fh.com.smartjacket.activity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -18,7 +19,6 @@ import fh.com.smartjacket.adapter.AppListAdapter;
 import fh.com.smartjacket.pojo.AppNotification;
 
 public class AppChooserActivity extends AppCompatActivity {
-	private ArrayList<AppNotification> installedApps;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +32,16 @@ public class AppChooserActivity extends AppCompatActivity {
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 		setTitle("Bitte App auswählen");
 
-		this.installedApps = getInstalledApps();
-		appListView.setAdapter(new AppListAdapter(this, this.installedApps));
+		ArrayList<AppNotification> installedApps = getInstalledApps();
+		appListView.setAdapter(new AppListAdapter(this, installedApps));
+		appListView.setOnItemClickListener((adapterView, view, i, l) -> returnSelectedApp((AppNotification) adapterView.getItemAtPosition(i)));
+	}
+
+	private void returnSelectedApp(AppNotification app) {
+		Intent intent = new Intent();
+		intent.putExtra("selected_app", app.getAppPackageName());
+		setResult(Activity.RESULT_OK, intent);
+		finish();
 	}
 
 	/**

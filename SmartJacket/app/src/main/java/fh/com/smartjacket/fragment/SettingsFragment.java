@@ -13,13 +13,15 @@ import java.util.ArrayList;
 
 import fh.com.smartjacket.R;
 import fh.com.smartjacket.activity.AppChooserActivity;
+import fh.com.smartjacket.activity.MainActivity;
 import fh.com.smartjacket.adapter.AppNotificationListAdapter;
+import fh.com.smartjacket.listener.OnAppChosenListener;
 import fh.com.smartjacket.pojo.AppNotification;
 
 /**
  *
  */
-public class SettingsFragment extends Fragment implements View.OnClickListener {
+public class SettingsFragment extends Fragment implements View.OnClickListener, OnAppChosenListener {
 	private static final int PICK_APP_REQUEST = 1338;
 	private AppNotificationListAdapter adapter;
 	private ArrayList<AppNotification> apps = new ArrayList<>();
@@ -42,6 +44,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
 		this.adapter = new AppNotificationListAdapter(getActivity(), this.apps);
 		appListView.setAdapter(this.adapter);
 
+		((MainActivity)getActivity()).setOnAppChosenListener(this);
+
 		return view;
 	}
 
@@ -49,6 +53,12 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
 	public void onClick(View view) {
 		Intent intent = new Intent(getActivity(), AppChooserActivity.class);
 
-		startActivityForResult(intent, PICK_APP_REQUEST);
+		getActivity().startActivityForResult(intent, PICK_APP_REQUEST);
+	}
+
+	@Override
+	public void OnAppChosen(AppNotification app) {
+		this.apps.add(app);
+		this.adapter.notifyDataSetChanged();
 	}
 }
