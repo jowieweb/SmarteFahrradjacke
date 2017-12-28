@@ -1,5 +1,7 @@
 package fh.com.smartjacket.Mapquest;
 
+import android.location.Location;
+
 import org.json.JSONObject;
 
 /**
@@ -9,6 +11,7 @@ import org.json.JSONObject;
 public class TurnPoint {
     private double lat;
     private double lng;
+    private Location location;
     private String narrativ;
 
     public TurnPoint(JSONObject json)throws Exception{
@@ -16,6 +19,9 @@ public class TurnPoint {
         lat = json.getJSONObject("startPoint").getDouble("lat");
         lng = json.getJSONObject("startPoint").getDouble("lng");
         narrativ = json.getString("narrative");
+        location  = new Location("");
+        location.setLongitude(lng);
+        location.setLatitude(lat);
 
     }
 
@@ -39,4 +45,6 @@ public class TurnPoint {
                 ", narrativ='" + narrativ + '\'' +
                 '}';
     }
+
+    public Location getLocation(){ return location;}
 }

@@ -24,6 +24,7 @@ import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
+import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -36,6 +37,7 @@ import java.util.Random;
 import fh.com.smartjacket.Mapquest.LocationChangeListener;
 import fh.com.smartjacket.Mapquest.Mapquest;
 import fh.com.smartjacket.Mapquest.Route;
+import fh.com.smartjacket.Mapquest.TurnPoint;
 import fh.com.smartjacket.R;
 import fh.com.smartjacket.activity.MainActivity;
 
@@ -51,9 +53,10 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 	private Location currentLocation = new Location("");
 
 	public  Location locationToNavigate = null;
-	private PolylineOptions routePolyline = null;
+	private Polyline routePolyline = null;
 	private Marker destinationMarker = null;
 	private Marker currentLocationMarker = null;
+	private Route routeToDestination = null;
 
 	public RouteFragment() {
 		// Required empty public constructor
@@ -116,7 +119,7 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 			mapboxMap.removeMarker(destinationMarker);
 
 		if(routePolyline != null)
-			mapboxMap.removePolyline(routePolyline.getPolyline());
+			mapboxMap.removePolyline(routePolyline);
 
 		if(currentLocation.getLongitude() == 0 && currentLocation.getLatitude()==0){
 			Toast.makeText(this.getContext(), "NO POSITION FOUND!", Toast.LENGTH_SHORT).show();
@@ -136,12 +139,14 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 		if( r == null)
 		{
 			Toast.makeText(this.getContext(), "ROUTE IS NULL!", Toast.LENGTH_SHORT).show();
+			return;
 		}
-
+		routeToDestination = r;
 		/* create the polyline */
 		PolylineOptions polyline = new PolylineOptions();
 		polyline.addAll(r.getShape()).width(5).color(Color.BLUE).alpha((float)0.75);
-		routePolyline = polyline;
+
+		routePolyline = polyline.getPolyline();
 		mapboxMap.addPolyline(polyline);
 
 		/*move the camera */
@@ -193,29 +198,58 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 		if(location == null){
 			return;
 		}
-		currentLocation = location;
 		Log.d(LOG_TAG, "Lat: " + location.getLatitude() + " Long: " + location.getLongitude());
-
 		if(getActivity() == null)
 			return;
 		if( this.mapboxMap == null)
 			return;
 
 		mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.getLatitude(), location.getLongitude()), 15));
+		currentLocation = location;
+
+		setCurrentLocationMarker(location);
+		checkNavigation(location);
 
 
+	}
+
+	private void checkNavigation(Location location) {
+		if(locationToNavigate == null)
+			return;
+		if(routePolyline == null)
+			return;
+		if(routeToDestination == null)
+			return;
+
+
+		if(location.distanceTo(locationToNavigate)<25){
+			Log.d(LOG_TAG, "Navigation finished!");
+			mapboxMap.removePolyline(routePolyline);
+			mapboxMap.removeMarker(destinationMarker);
+			routeToDestination = null;
+			destinationMarker = null;
+			routePolyline = null;
+			return;
+		}
+		for (TurnPoint tp: routeToDestination.getTurnPoints()) {
+			if(location.distanceTo(tp.getLocation())< 20){
+				//found one
+				Log.d(LOG_TAG, "Navigation found point " + tp);
+				//TODO: do stuff with it
+			}
+		}
+	}
+
+	private void setCurrentLocationMarker(Location location) {
 		if(currentLocationMarker != null){
 			mapboxMap.removeMarker(currentLocationMarker);
 		}
-
 		MarkerOptions options = new MarkerOptions();
 		options.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
 		Bitmap test = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.currentlocation);
 		options.setIcon(IconFactory.recreate("a",test));
 		currentLocationMarker = mapboxMap.addMarker(options);
-
 	}
-
 
 
 	/**
