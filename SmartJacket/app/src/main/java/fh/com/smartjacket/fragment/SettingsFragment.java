@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
@@ -44,10 +45,17 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 		ListView appListView = view.findViewById(R.id.fragmentSettingsAppNotificationListView);
 		this.adapter = new AppNotificationListAdapter(getActivity(), this.apps);
 		appListView.setAdapter(this.adapter);
+		appListView.setOnItemLongClickListener((adapterView, view1, i, l) -> removeSelectedAppFromList((AppNotification) adapterView.getItemAtPosition(i)));
 
 		((MainActivity)getActivity()).setOnAppChosenListener(this);
 
 		return view;
+	}
+
+	private boolean removeSelectedAppFromList(AppNotification app) {
+		this.apps.remove(app);
+		this.adapter.notifyDataSetChanged();
+		return true;
 	}
 
 	@Override
