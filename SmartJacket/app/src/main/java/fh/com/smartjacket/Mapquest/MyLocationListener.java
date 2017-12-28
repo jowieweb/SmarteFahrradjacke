@@ -110,7 +110,7 @@ public class MyLocationListener implements android.location.LocationListener {
         String msg = "New Latitude: " + location.getLatitude()
                 + "New Longitude: " + location.getLongitude();
 
-        Toast.makeText(activity.getBaseContext(), msg, Toast.LENGTH_LONG).show();
+        //Toast.makeText(activity.getBaseContext(), msg, Toast.LENGTH_LONG).show();
         Log.d(LOG_TAG, msg);
 
         if (this.locationChangeListener != null) {

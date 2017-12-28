@@ -25,6 +25,7 @@ class MPUWrapper
     void enabledOutputToCallback(boolean);
     void loop();
     boolean isTriggerd();
+    Vector getAccel();
    
   private:
     MPU6050 mpu;
@@ -41,6 +42,7 @@ class MPUWrapper
     boolean outputToCallback = false;
     void (*callback)(MPUValues);
     void getData();
+   
     
 
     

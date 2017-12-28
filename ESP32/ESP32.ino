@@ -12,12 +12,14 @@
 
 MPUWrapper mpu(0x68);
 MPUWrapper mpu2(0x69);
-BLEWrapper ble;
+BLEWrapper *ble;
 LEDController leds(dataPin, clockPin, LEDLEN);
 MotorController motor(2);
 
 SemaphoreHandle_t i2cMutex;
 SemaphoreHandle_t bleMutex;
+
+boolean BLEEnabled = false;
 
 #ifdef MULTITHREADING
 void stupid(void * para) {
@@ -43,7 +45,9 @@ void mpuCallback(MPUValues value) {
     Serial.print(value.i2cAddress);
     Serial.println(value.text);
 
-    ble.sendText(value.text);
+    if(BLEEnabled){
+      ble->sendText(value.text);
+    }
     if (value.yaw > 60 || value.yaw < -60) {
       if (value.i2cAddress == 0x68) {
         leds.blink(true, true);
@@ -98,7 +102,7 @@ void setup() {
   mpu.enabledOutputToCallback(true);
 
 
-  mpu2.init(true, &mpuCallback, &i2cMutex);
+  mpu2.init(false, &mpuCallback, &i2cMutex);
   mpu2.enabledOutputToCallback(true);
 
 #ifdef MULTITHREADING
@@ -107,12 +111,22 @@ void setup() {
   mpu2.createTask(stupid);
 #endif
 
-   ble.start(&bleCallback, &bleMutex);
+  pinMode(32,INPUT_PULLUP);
 }
+
 
 
 void loop()
 {
+if(!BLEEnabled){
+  if(!digitalRead(32)){
+    BLEEnabled = true;
+    Serial.println("\n\n\nENABLEDBLE\n\n\n");
+    ble = new BLEWrapper();
+    ble->start(&bleCallback, &bleMutex);
+  }
+}
+
 
 #ifndef MULTITHREADING
   mpu.loop();

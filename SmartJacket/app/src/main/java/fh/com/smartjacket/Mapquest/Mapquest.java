@@ -107,7 +107,7 @@ public class Mapquest {
             }
             return new Route(turnPoints, shapePoints,distance,upperLeft,lowerRight);
         }
-        catch (Exception e)     {}
+        catch (Exception e)     {Log.e(LOG_TAG, "ParseRoute" + e.toString());}
         return  null;
 
     }
