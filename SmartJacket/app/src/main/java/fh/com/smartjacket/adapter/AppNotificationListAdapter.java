@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -38,7 +39,10 @@ public class AppNotificationListAdapter extends ArrayAdapter<AppNotification> {
 		}
 
 		TextView appNameTextView = convertView.findViewById(R.id.app_notification_list_item_app_name);
+		ImageView appIconView = convertView.findViewById(R.id.app_notification_list_item_app_icon);
+
 		appNameTextView.setText(config.getAppName());
+		appIconView.setImageDrawable(config.getAppIcon());
 
 		return convertView;
 	}
