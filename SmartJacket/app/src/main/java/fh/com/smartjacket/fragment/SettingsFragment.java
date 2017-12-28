@@ -1,5 +1,6 @@
 package fh.com.smartjacket.fragment;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -52,13 +53,22 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 	@Override
 	public void onClick(View view) {
 		Intent intent = new Intent(getActivity(), AppChooserActivity.class);
-
 		getActivity().startActivityForResult(intent, PICK_APP_REQUEST);
+	}
+
+	@Override
+	public void onAttach(Context context) {
+		super.onAttach(context);
 	}
 
 	@Override
 	public void OnAppChosen(AppNotification app) {
 		this.apps.add(app);
 		this.adapter.notifyDataSetChanged();
+	}
+
+	@Override
+	public void onDetach() {
+		super.onDetach();
 	}
 }

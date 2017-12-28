@@ -3,13 +3,7 @@ package fh.com.smartjacket.fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -20,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.mapbox.mapboxsdk.annotations.Icon;
 import com.mapbox.mapboxsdk.annotations.IconFactory;
 import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
@@ -32,21 +25,20 @@ import com.mapquest.mapping.MapQuestAccountManager;
 import com.mapquest.mapping.maps.MapView;
 import com.mapquest.mapping.maps.MapboxMap;
 
-import java.util.Random;
-
 import fh.com.smartjacket.Mapquest.LocationChangeListener;
 import fh.com.smartjacket.Mapquest.Mapquest;
 import fh.com.smartjacket.Mapquest.Route;
 import fh.com.smartjacket.Mapquest.TurnPoint;
 import fh.com.smartjacket.R;
 import fh.com.smartjacket.activity.MainActivity;
+import fh.com.smartjacket.listener.OnFragmentInteractionListener;
 
 /**
  * A Fragment that displays a MapQuest map with the current route to the destination.
  */
 public class RouteFragment extends Fragment implements LocationChangeListener {
 	private static final String LOG_TAG = "RouteFragment";
-	
+
 	private OnFragmentInteractionListener onFragmentInteractionListener;
 	private MapboxMap mapboxMap;
 	private MapView mapView;
@@ -252,17 +244,5 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 	}
 
 
-	/**
-	 * This interface must be implemented by activities that contain this
-	 * fragment to allow an interaction in this fragment to be communicated
-	 * to the activity and potentially other fragments contained in that
-	 * activity.
-	 * <p>
-	 * See the Android Training lesson <a href=
-	 * "http://developer.android.com/training/basics/fragments/communicating.html"
-	 * >Communicating with Other Fragments</a> for more information.
-	 */
-	public interface OnFragmentInteractionListener {
-		void onAddRouteButtonClicked();
-	}
+
 }
