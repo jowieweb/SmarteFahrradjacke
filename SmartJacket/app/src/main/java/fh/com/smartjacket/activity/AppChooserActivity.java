@@ -1,5 +1,6 @@
 package fh.com.smartjacket.activity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -8,6 +9,9 @@ import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -19,6 +23,7 @@ import fh.com.smartjacket.pojo.AppNotification;
 
 public class AppChooserActivity extends AppCompatActivity {
 	private ArrayList<AppNotification> installedApps;
+	private static final String LOG_TAG ="APPCHOOSERACTIVITY";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +39,23 @@ public class AppChooserActivity extends AppCompatActivity {
 
 		this.installedApps = getInstalledApps();
 		appListView.setAdapter(new AppListAdapter(this, this.installedApps));
+		appListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+				Log.d(LOG_TAG,"CLICK " + i + " " + installedApps.get(i).getAppName());
+				Intent data = new Intent();
+				Bundle b = new Bundle();
+
+				b.putSerializable("AppNotification", installedApps.get(i));
+				data.putExtras(b);
+				if (getParent() == null) {
+					setResult(Activity.RESULT_OK, data);
+				} else {
+					getParent().setResult(Activity.RESULT_OK, data);
+				}
+				finish();
+			}
+		});
 	}
 
 	/**

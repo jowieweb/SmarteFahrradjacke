@@ -20,9 +20,11 @@ import fh.com.smartjacket.R;
 import fh.com.smartjacket.adapter.TabPagerAdapter;
 import fh.com.smartjacket.fragment.RouteFragment;
 import fh.com.smartjacket.fragment.SettingsFragment;
+import fh.com.smartjacket.pojo.AppNotification;
 
 public class MainActivity extends AppCompatActivity implements LocationChangeListener, MessageReceivedCallback, RouteFragment.OnFragmentInteractionListener {
     public static final int PICK_ROUTE_REQUEST = 1337;
+    public static final int PICK_APP_REQUEST = 1338;
     private static final String LOG_TAG = "MainActivity";
 
     private BluetoothWrapper bw;
@@ -145,6 +147,13 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     }
 
     @Override
+    public void onAddAppNotificationButtonClicked() {
+        Intent intent = new Intent(this, AppChooserActivity.class);
+
+        startActivityForResult(intent, PICK_APP_REQUEST);
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PICK_ROUTE_REQUEST) {
             if(data == null)
@@ -156,6 +165,17 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
             if(loc != null && desName != null) {
                 routeFragment.setNewDestination(loc, desName);
             }
+        } else if (requestCode == PICK_APP_REQUEST){
+            if(data == null)
+                return;
+
+            Bundle b =data.getExtras();
+            AppNotification an =  (AppNotification) b.getSerializable("AppNotification");
+            if(an == null) {
+                Log.d(LOG_TAG, "EXTRA IS NULL!");
+                return;
+            }
+            Log.d(LOG_TAG, an.getAppName());
         }
     }
 

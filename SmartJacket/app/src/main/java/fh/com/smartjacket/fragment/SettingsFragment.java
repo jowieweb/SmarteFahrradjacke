@@ -1,5 +1,6 @@
 package fh.com.smartjacket.fragment;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 
 import fh.com.smartjacket.R;
 import fh.com.smartjacket.activity.AppChooserActivity;
+import fh.com.smartjacket.activity.MainActivity;
 import fh.com.smartjacket.adapter.AppNotificationListAdapter;
 import fh.com.smartjacket.pojo.AppNotification;
 
@@ -20,7 +22,8 @@ import fh.com.smartjacket.pojo.AppNotification;
  *
  */
 public class SettingsFragment extends Fragment implements View.OnClickListener {
-	private static final int PICK_APP_REQUEST = 1338;
+
+	private RouteFragment.OnFragmentInteractionListener onFragmentInteractionListener;
 	private AppNotificationListAdapter adapter;
 	private ArrayList<AppNotification> apps = new ArrayList<>();
 
@@ -47,8 +50,27 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
 
 	@Override
 	public void onClick(View view) {
-		Intent intent = new Intent(getActivity(), AppChooserActivity.class);
-
-		startActivityForResult(intent, PICK_APP_REQUEST);
+		this.onFragmentInteractionListener.onAddAppNotificationButtonClicked();
 	}
+
+	@Override
+	public void onAttach(Context context) {
+		super.onAttach(context);
+
+		if (context instanceof RouteFragment.OnFragmentInteractionListener) {
+			this.onFragmentInteractionListener = (RouteFragment.OnFragmentInteractionListener) context;
+
+		} else {
+			throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
+		}
+	}
+
+	@Override
+	public void onDetach() {
+		super.onDetach();
+		this.onFragmentInteractionListener = null;
+	}
+
+
+
 }

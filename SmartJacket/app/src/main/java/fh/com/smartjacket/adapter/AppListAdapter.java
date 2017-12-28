@@ -41,7 +41,7 @@ public class AppListAdapter extends ArrayAdapter<AppNotification> {
 		ImageView appIconImageView = convertView.findViewById(R.id.app_list_item_app_icon_image_view);
 
 		appNameTextView.setText(app.getAppName());
-		appIconImageView.setImageDrawable(app.getAppIcon());
+		appIconImageView.setImageBitmap(app.getAppIcon());
 
 		return convertView;
 	}
