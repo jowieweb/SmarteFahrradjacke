@@ -110,3 +110,15 @@ boolean MPUWrapper::isTriggerd(){
   return runi;
 }
 
+Vector MPUWrapper::getAccel(){
+  Vector ret = mpu.readNormalizeAccel();
+  
+  Serial.print("\n\n\n");
+  Serial.print(ret.XAxis);
+  Serial.print("\t");
+  Serial.print(ret.YAxis);
+  Serial.print("\t");  
+  Serial.print(ret.ZAxis);
+  Serial.print("\t");
+}
+
