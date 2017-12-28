@@ -18,11 +18,12 @@ import fh.com.smartjacket.Mapquest.LocationChangeListener;
 import fh.com.smartjacket.Mapquest.MyLocationListener;
 import fh.com.smartjacket.R;
 import fh.com.smartjacket.adapter.TabPagerAdapter;
+import fh.com.smartjacket.fragment.OnFragmentInteractionListener;
 import fh.com.smartjacket.fragment.RouteFragment;
 import fh.com.smartjacket.fragment.SettingsFragment;
 import fh.com.smartjacket.pojo.AppNotification;
 
-public class MainActivity extends AppCompatActivity implements LocationChangeListener, MessageReceivedCallback, RouteFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements LocationChangeListener, MessageReceivedCallback, OnFragmentInteractionListener {
     public static final int PICK_ROUTE_REQUEST = 1337;
     public static final int PICK_APP_REQUEST = 1338;
     private static final String LOG_TAG = "MainActivity";

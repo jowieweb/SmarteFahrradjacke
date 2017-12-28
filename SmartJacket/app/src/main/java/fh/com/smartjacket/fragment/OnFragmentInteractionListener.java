@@ -12,7 +12,7 @@ package fh.com.smartjacket.fragment;
  * >Communicating with Other Fragments</a> for more information.
  */
 
-interface OnFragmentInteractionListener {
+public interface OnFragmentInteractionListener {
 
         void onAddRouteButtonClicked();
         void onAddAppNotificationButtonClicked();

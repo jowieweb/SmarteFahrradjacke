@@ -77,8 +77,30 @@ public class AppNotification implements Serializable {
 		drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
 		drawable.draw(canvas);
 
-		return bitmap;
+		//return bitmap;
+
+
+
+		int [] allpixels = new int [bitmap.getHeight() * bitmap.getWidth()];
+
+		bitmap.getPixels(allpixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+
+		for(int i = 0; i < allpixels.length; i++)
+		{
+			int c = allpixels[i];
+			if(allpixels[i] == Color.TRANSPARENT)
+			{
+				allpixels[i] = Color.WHITE;
+			}
+		}
+
+		bitmap.setPixels(allpixels,0,bitmap.getWidth(),0, 0, bitmap.getWidth(),bitmap.getHeight());
+
+		return  bitmap;
 	}
+
+
+
 
 
 

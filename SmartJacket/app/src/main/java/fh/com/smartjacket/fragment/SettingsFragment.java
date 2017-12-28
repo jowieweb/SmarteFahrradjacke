@@ -23,7 +23,7 @@ import fh.com.smartjacket.pojo.AppNotification;
  */
 public class SettingsFragment extends Fragment implements View.OnClickListener {
 
-	private RouteFragment.OnFragmentInteractionListener onFragmentInteractionListener;
+	private OnFragmentInteractionListener onFragmentInteractionListener;
 	private AppNotificationListAdapter adapter;
 	private ArrayList<AppNotification> apps = new ArrayList<>();
 
@@ -57,8 +57,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener {
 	public void onAttach(Context context) {
 		super.onAttach(context);
 
-		if (context instanceof RouteFragment.OnFragmentInteractionListener) {
-			this.onFragmentInteractionListener = (RouteFragment.OnFragmentInteractionListener) context;
+		if (context instanceof OnFragmentInteractionListener) {
+			this.onFragmentInteractionListener = (OnFragmentInteractionListener) context;
 
 		} else {
 			throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
