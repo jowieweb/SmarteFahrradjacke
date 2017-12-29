@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -118,19 +119,39 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
 	@Override
 	public void OnAppChosen(AppNotification app) {
-		this.apps.add(app);
+		if (isAppInList(app)) {
+			Toast.makeText(getActivity(), "App ist schon vorhanden.", Toast.LENGTH_SHORT).show();
 
-		// Sort app notification list. After loading the list from SharedPreferences, the list is unordered. So we should sort the list after
-		// adding an element to have a more consistent user experience. :P
-		Collections.sort(this.apps, new AppNotificationComparator());
+		} else {
+			this.apps.add(app);
 
-		this.adapter.notifyDataSetChanged();
+			// Sort app notification list. After loading the list from SharedPreferences, the list is unordered. So we should sort the list after
+			// adding an element to have a more consistent user experience. :P
+			Collections.sort(this.apps, new AppNotificationComparator());
 
-		saveNotificationAppList();
+			this.adapter.notifyDataSetChanged();
+
+			saveNotificationAppList();
+		}
 	}
 
 	@Override
 	public void onDetach() {
 		super.onDetach();
+	}
+
+	/**
+	 * Checks if a given app is in the notification app list.
+	 * @param app App
+	 * @return true if app is in notification app list, false otherwise.
+	 */
+	private boolean isAppInList(AppNotification app) {
+		for (AppNotification a: this.apps) {
+			if (a.getAppPackageName().equals(app.getAppPackageName())) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
