@@ -13,11 +13,13 @@ import android.view.MenuItem;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import fh.com.smartjacket.R;
 import fh.com.smartjacket.adapter.AppListAdapter;
 import fh.com.smartjacket.pojo.AppNotification;
+import fh.com.smartjacket.pojo.AppNotificationComparator;
 
 public class AppChooserActivity extends AppCompatActivity {
 
@@ -34,6 +36,8 @@ public class AppChooserActivity extends AppCompatActivity {
 		setTitle("Bitte App auswählen");
 
 		ArrayList<AppNotification> installedApps = getInstalledApps();
+		Collections.sort(installedApps, new AppNotificationComparator());
+
 		appListView.setAdapter(new AppListAdapter(this, installedApps));
 		appListView.setOnItemClickListener((adapterView, view, i, l) -> returnSelectedApp((AppNotification) adapterView.getItemAtPosition(i)));
 	}
