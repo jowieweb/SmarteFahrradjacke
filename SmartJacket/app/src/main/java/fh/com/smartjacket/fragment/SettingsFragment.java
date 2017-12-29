@@ -100,6 +100,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 					this.apps.add(appNotification);
 				}
 			}
+
+			Collections.sort(this.apps, new AppNotificationComparator());
 		}
 	}
 
@@ -118,7 +120,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 	public void OnAppChosen(AppNotification app) {
 		this.apps.add(app);
 
-		// Sort app notification list. After loading the list from SharedPreferences, the list is sorted. So we should sort the list after
+		// Sort app notification list. After loading the list from SharedPreferences, the list is unordered. So we should sort the list after
 		// adding an element to have a more consistent user experience. :P
 		Collections.sort(this.apps, new AppNotificationComparator());
 
