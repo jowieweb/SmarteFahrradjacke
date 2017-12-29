@@ -5,5 +5,5 @@ package fh.com.smartjacket.Bluetooth;
  */
 
 public interface MessageReceivedCallback {
-    public void newMessage(byte[] data);
+    public void BLEMessageReceived(byte[] data);
 }

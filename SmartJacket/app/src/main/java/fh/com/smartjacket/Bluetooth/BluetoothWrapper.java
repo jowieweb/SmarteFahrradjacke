@@ -36,7 +36,9 @@ import java.util.UUID;
  */
 @TargetApi(21)
 public class BluetoothWrapper {
+
     private BluetoothAdapter mBluetoothAdapter;
+    private  static String LOG_TAG ="BLEWRAPPER";
     private int REQUEST_ENABLE_BT = 1;
     private Handler mHandler;
     private static final long SCAN_PERIOD = 10000;
@@ -58,7 +60,7 @@ public class BluetoothWrapper {
         this.callback = callback;
     }
 
-    public void init() throws Exception {
+    public boolean init()  {
         if (activity.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setTitle("This app needs location access");
@@ -72,17 +74,16 @@ public class BluetoothWrapper {
             });
             builder.show();
         }
-
-
         mHandler = new Handler();
 
         if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(activity, "BLE Not Supported", Toast.LENGTH_SHORT).show();
-            throw new Exception("BLE NOT SUPPORTED!");
+           return  false;
         }
-        final BluetoothManager bluetoothManager =
-                (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
+        final android.bluetooth.BluetoothManager bluetoothManager = (android.bluetooth.BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
+        startScan();
+        return true;
     }
 
     public void startScan() {
@@ -91,11 +92,8 @@ public class BluetoothWrapper {
             activity.startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
         } else {
             mLEScanner = mBluetoothAdapter.getBluetoothLeScanner();
-            settings = new ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                    .build();
+            settings = new ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build();
             filters = new ArrayList<ScanFilter>();
-
             scanLeDevice(true);
         }
     }
@@ -106,7 +104,6 @@ public class BluetoothWrapper {
                 @Override
                 public void run() {
                         mLEScanner.stopScan(mScanCallback);
-
                 }
             }, SCAN_PERIOD);
             mLEScanner.startScan(filters, settings, mScanCallback);
@@ -120,8 +117,6 @@ public class BluetoothWrapper {
     private ScanCallback mScanCallback = new ScanCallback() {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            Log.i("callbackType", String.valueOf(callbackType));
-            Log.i("result", result.toString());
             BluetoothDevice btDevice = result.getDevice();
             connectToDevice(btDevice);
         }
@@ -131,12 +126,11 @@ public class BluetoothWrapper {
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
             new BluetoothAdapter.LeScanCallback() {
                 @Override
-                public void onLeScan(final BluetoothDevice device, int rssi,
-                                     byte[] scanRecord) {
+                public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
                     activity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Log.i("onLeScan", device.toString());
+                            Log.i(LOG_TAG,  "leScan: " +  device.toString());
                             connectToDevice(device);
                         }
                     });
@@ -153,15 +147,15 @@ public class BluetoothWrapper {
     private final BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            Log.i("onConnectionStateChange", "Status: " + status);
+            Log.i(LOG_TAG,"onConnectionStateChange: " + status);
             switch (newState) {
                 case BluetoothProfile.STATE_CONNECTED:
-                    Log.i("gattCallback", "STATE_CONNECTED");
+                    Log.i(LOG_TAG, "!!STATE_CONNECTED!!");
                     gatt.discoverServices();
                     isConnected = true;
                     break;
                 case BluetoothProfile.STATE_DISCONNECTED:
-                    Log.e("gattCallback", "STATE_DISCONNECTED");
+                    Log.i(LOG_TAG, "!!STATE_DISCONNECTED!!");
                     isConnected = false;
                     startScan();
                     break;
@@ -192,10 +186,8 @@ public class BluetoothWrapper {
             super.onCharacteristicChanged(gatt, characteristic);
             String read = new String(characteristic.getValue());
             Log.i("value", "" + read);
-            callback.newMessage(characteristic.getValue());
+            callback.BLEMessageReceived(characteristic.getValue());
         }
-
-
     };
 
     public void sendText(String text) {

@@ -1,4 +1,5 @@
 //#define MULTITHREADING
+//#define SENDMPUTOBLE
 
 #include "MPUWrapper.h"
 #include "BLEWrapper.h"
@@ -8,6 +9,8 @@
 #define dataPin 23
 #define clockPin 18
 #define LEDLEN 4
+#define ENABLEDBLE 32
+#define CTXBUTTON 25
 
 
 MPUWrapper mpu(0x68);
@@ -20,6 +23,7 @@ SemaphoreHandle_t i2cMutex;
 SemaphoreHandle_t bleMutex;
 
 boolean BLEEnabled = false;
+long lastButtonDown = 0;
 
 #ifdef MULTITHREADING
 void stupid(void * para) {
@@ -44,10 +48,13 @@ void mpuCallback(MPUValues value) {
     timer = tempTimer;
     Serial.print(value.i2cAddress);
     Serial.println(value.text);
-
-    if(BLEEnabled){
+    
+#ifdef SENDMPUTOBLE
+    if (BLEEnabled) {
       ble->sendText(value.text);
     }
+#endif
+
     if (value.yaw > 60 || value.yaw < -60) {
       if (value.i2cAddress == 0x68) {
         leds.blink(true, true);
@@ -55,7 +62,7 @@ void mpuCallback(MPUValues value) {
       else {
         leds.blink(false, true);
       }
-        motor.spinMotor(true,255,255);
+      motor.spinMotor(true, 255, 255);
       Serial.println("ON");
 
     } else {
@@ -70,7 +77,7 @@ void mpuCallback(MPUValues value) {
           leds.blink(true, false);
         }
       }
-    
+
 
     }
 
@@ -96,7 +103,7 @@ void setup() {
   bleMutex = xSemaphoreCreateMutex();
   Serial.begin(115200);
 
-  
+
 
   mpu.init(false, &mpuCallback, &i2cMutex);
   mpu.enabledOutputToCallback(true);
@@ -111,21 +118,25 @@ void setup() {
   mpu2.createTask(stupid);
 #endif
 
-  pinMode(32,INPUT_PULLUP);
+  pinMode(ENABLEDBLE, INPUT_PULLUP);
+  pinMode(CTXBUTTON, INPUT_PULLUP);
+
+  attachInterrupt(digitalPinToInterrupt(CTXBUTTON), ctxButtonDown, FALLING);
 }
 
 
 
 void loop()
 {
-if(!BLEEnabled){
-  if(!digitalRead(32)){
-    BLEEnabled = true;
-    Serial.println("\n\n\nENABLEDBLE\n\n\n");
-    ble = new BLEWrapper();
-    ble->start(&bleCallback, &bleMutex);
+  if (!BLEEnabled) {
+    if (!digitalRead(ENABLEDBLE)) {
+      BLEEnabled = true;
+      Serial.println("\n\n\nENABLEDBLE\n\n\n");
+      ble = new BLEWrapper();
+      ble->start(&bleCallback, &bleMutex);
+    }
   }
-}
+  
 
 
 #ifndef MULTITHREADING
@@ -138,6 +149,17 @@ if(!BLEEnabled){
 
 }
 
+void ctxButtonDown(){
+  if(!BLEEnabled || !ble){
+    return;
+  } 
+  if(lastButtonDown +500 > millis()){
+    return;
+  }
+  lastButtonDown = millis();
+  ble->sendText("btn");
+  
+}
 
 
 

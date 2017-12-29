@@ -24,13 +24,12 @@ import fh.com.smartjacket.listener.OnAppChosenListener;
 import fh.com.smartjacket.pojo.AppNotification;
 import fh.com.smartjacket.pojo.LightCalculator;
 
-public class MainActivity extends AppCompatActivity implements LocationChangeListener, MessageReceivedCallback, OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements LocationChangeListener, OnFragmentInteractionListener {
     public static final int PICK_ROUTE_REQUEST = 1337;
     private static final int PICK_APP_REQUEST = 1338;
     private static final String LOG_TAG = "MainActivity";
 
     private BluetoothWrapper bw;
-    private TextView tv;
     private MyLocationListener mll;
     private LocationChangeListener onLocationChangeListener;
     private OnAppChosenListener onAppChosenListener;
@@ -59,16 +58,11 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         routeFragment.onLocationChange(this.mll.getLastLocation());
         Log.d(LOG_TAG,""+ mll.getLastLocation());
 
-      /*  bw = new BluetoothWrapper(this, this);
 
-        try{
-            bw.init();
-
-        } catch (Exception e){
-            Log.e(LOG_TAG, "Error initializing Bluetooth: " + e.getMessage());
-        }*/
-
-
+        bw = new BluetoothWrapper(this,(byte[] data) -> {
+            Log.i(LOG_TAG, "BLE Message " + new String(data));
+        });
+        bw.init();
 
 
     }
@@ -95,17 +89,6 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     protected void onPause() {
         super.onPause();
 
-    }
-
-    @Override
-    public void newMessage(final byte[] data) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                tv.setText(new String(data));
-                tv.invalidate();
-            }
-        });
     }
 
 
