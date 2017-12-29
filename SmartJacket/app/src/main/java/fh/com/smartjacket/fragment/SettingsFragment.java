@@ -88,9 +88,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
 			for (String pkg : pakageNames) {
 				AppNotification appNotification = new AppNotification(pkg);
-				appNotification.restoreData(getActivity());
 
-				this.apps.add(appNotification);
+				if (appNotification.restoreData(getActivity())) {
+					// Only add app to list if it exists -> users can delete apps, so we must check if it still exists
+					this.apps.add(appNotification);
+				}
 			}
 		}
 	}

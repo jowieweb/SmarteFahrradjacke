@@ -29,15 +29,15 @@ public class AppNotification {
 	 * Retrieves name and icon of the app.
 	 * @param context Context
 	 */
-	public void restoreData(Context context) {
+	public boolean restoreData(Context context) {
 		if (context == null) {
-			return;
+			return false;
 		}
 
 		PackageManager pkgMan = context.getPackageManager();
 		Intent intent = pkgMan.getLaunchIntentForPackage(this.appPackageName);
 		if (intent == null) {
-			return;
+			return false;
 		}
 
 		try {
@@ -51,6 +51,8 @@ public class AppNotification {
 		} catch (PackageManager.NameNotFoundException e) {
 			e.printStackTrace();
 		}
+
+		return true;
 	}
 
 	public String getAppName() {
