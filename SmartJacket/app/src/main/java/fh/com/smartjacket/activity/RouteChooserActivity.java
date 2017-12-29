@@ -100,8 +100,8 @@ public class RouteChooserActivity extends AppCompatActivity implements ActivityC
 				this.searchTextView.setText("Long: " + loc.getLongitude() + " Lat: " + loc.getLatitude());
 
 				Intent data = new Intent();
-				data.putExtra("location", loc);
-				data.putExtra("desinationName", searchInput);
+				data.putExtra(getString(R.string.intent_extra_location), loc);
+				data.putExtra(getString(R.string.intent_extra_destination_name), searchInput);
 
 				if (getParent() == null) {
 					setResult(Activity.RESULT_OK, data);
@@ -130,7 +130,7 @@ public class RouteChooserActivity extends AppCompatActivity implements ActivityC
 
 	@Override
 	public void suggest(String[] suggestions) {
-		searchTextView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, suggestions));
+		searchTextView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, suggestions));
 		searchTextView.showDropDown();
 	}
 

@@ -8,11 +8,11 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,6 +22,7 @@ import fh.com.smartjacket.activity.MainActivity;
 import fh.com.smartjacket.adapter.AppNotificationListAdapter;
 import fh.com.smartjacket.listener.OnAppChosenListener;
 import fh.com.smartjacket.pojo.AppNotification;
+import fh.com.smartjacket.pojo.AppNotificationComparator;
 
 /**
  *
@@ -33,7 +34,6 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
 	public SettingsFragment() {
 		// Required empty public constructor
-		//this.apps.add(new AppNotification("Peter"));
 	}
 
 	@Override
@@ -65,28 +65,34 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 		return true;
 	}
 
+	/**
+	 * Saves the notification app list. Only the package name of each app is saved.
+	 */
 	private void saveNotificationAppList() {
 		SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPreferences.edit();
 
-		HashSet<String> pakageNames = new HashSet<>();
+		HashSet<String> packageNames = new HashSet<>();
 		for (AppNotification app : this.apps) {
-			pakageNames.add(app.getAppPackageName());
+			packageNames.add(app.getAppPackageName());
 		}
 
-		editor.putStringSet("app_notifications", pakageNames);
+		editor.putStringSet(getString(R.string.shared_preferences_app_notification_list), packageNames);
 
-		editor.commit();
+		editor.apply();
 	}
 
+	/**
+	 * Loads and restores the notification app list. Read each package name and tries to retrieve icon and app name from the package name.
+	 */
 	private void loadNotificationAppList() {
 		SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
-		Set<String> pakageNames = sharedPreferences.getStringSet("app_notifications", null);
+		Set<String> packageNames = sharedPreferences.getStringSet(getString(R.string.shared_preferences_app_notification_list), null);
 
-		if (pakageNames != null) {
+		if (packageNames != null) {
 			this.apps.clear();
 
-			for (String pkg : pakageNames) {
+			for (String pkg : packageNames) {
 				AppNotification appNotification = new AppNotification(pkg);
 
 				if (appNotification.restoreData(getActivity())) {
@@ -111,6 +117,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 	@Override
 	public void OnAppChosen(AppNotification app) {
 		this.apps.add(app);
+
+		// Sort app notification list. After loading the list from SharedPreferences, the list is sorted. So we should sort the list after
+		// adding an element to have a more consistent user experience. :P
+		Collections.sort(this.apps, new AppNotificationComparator());
+
 		this.adapter.notifyDataSetChanged();
 
 		saveNotificationAppList();

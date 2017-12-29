@@ -51,7 +51,7 @@ public class AppChooserActivity extends AppCompatActivity {
 
 	private void returnSelectedApp(AppNotification app) {
 		Intent intent = new Intent();
-		intent.putExtra("selected_app", app.getAppPackageName());
+		intent.putExtra(getString(R.string.intent_extra_selected_app), app.getAppPackageName());
 		setResult(Activity.RESULT_OK, intent);
 		finish();
 	}

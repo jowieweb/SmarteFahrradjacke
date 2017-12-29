@@ -23,6 +23,7 @@ public class AppNotification {
 
 	public AppNotification(String appPackageName) {
 		this.appPackageName = appPackageName;
+		this.appName = "";
 	}
 
 	/**

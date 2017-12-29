@@ -9,10 +9,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.widget.TextView;
 
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
-import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
 import fh.com.smartjacket.Mapquest.LocationChangeListener;
 import fh.com.smartjacket.Mapquest.MyLocationListener;
 import fh.com.smartjacket.R;
@@ -63,8 +61,6 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
             Log.i(LOG_TAG, "BLE Message " + new String(data));
         });
         bw.init();
-
-
     }
 
     private void setupViewPager(ViewPager viewPager) {
@@ -91,8 +87,6 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
 
     }
 
-
-
     @Override
     public void onAddRouteButtonClicked() {
         Location location = this.mll.getLastLocation();
@@ -117,8 +111,8 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
                     return;
 
                 Log.i(LOG_TAG, "GOT DATA IN MAINACTIVITY");
-                Location loc = data.getParcelableExtra("location");
-                String desName = data.getSerializableExtra("desinationName").toString();
+                Location loc = data.getParcelableExtra(getString(R.string.intent_extra_location));
+                String desName = data.getSerializableExtra(getString(R.string.intent_extra_destination_name)).toString();
                 if(loc != null && desName != null) {
                     routeFragment.setNewDestination(loc, desName);
                 }
@@ -129,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
                     return;
                 }
 
-                AppNotification appNotification = new AppNotification(data.getStringExtra("selected_app"));
+                AppNotification appNotification = new AppNotification(data.getStringExtra(getString(R.string.intent_extra_selected_app)));
                 appNotification.restoreData(this);
                 if (this.onAppChosenListener != null) {
                     this.onAppChosenListener.OnAppChosen(appNotification);

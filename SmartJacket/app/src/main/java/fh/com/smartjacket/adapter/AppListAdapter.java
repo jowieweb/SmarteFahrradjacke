@@ -18,14 +18,12 @@ import fh.com.smartjacket.pojo.AppNotification;
  */
 
 public class AppListAdapter extends ArrayAdapter<AppNotification> {
-	private ArrayList<AppNotification> dataSet;
 	private Context context;
 
 	public AppListAdapter(Context context, ArrayList<AppNotification> data) {
 		super(context, R.layout.app_list_item, data);
 
 		this.context = context;
-		this.dataSet = data;
 	}
 
 	@Override
