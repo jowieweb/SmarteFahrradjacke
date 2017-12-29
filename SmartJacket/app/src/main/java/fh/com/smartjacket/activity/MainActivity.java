@@ -9,9 +9,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
 import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
@@ -24,6 +22,7 @@ import fh.com.smartjacket.fragment.RouteFragment;
 import fh.com.smartjacket.fragment.SettingsFragment;
 import fh.com.smartjacket.listener.OnAppChosenListener;
 import fh.com.smartjacket.pojo.AppNotification;
+import fh.com.smartjacket.pojo.LightCalculator;
 
 public class MainActivity extends AppCompatActivity implements LocationChangeListener, MessageReceivedCallback, OnFragmentInteractionListener {
     public static final int PICK_ROUTE_REQUEST = 1337;
@@ -32,10 +31,10 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
 
     private BluetoothWrapper bw;
     private TextView tv;
-    private ToggleButton virbation;
     private MyLocationListener mll;
     private LocationChangeListener onLocationChangeListener;
     private OnAppChosenListener onAppChosenListener;
+    private LightCalculator.LightLevel lightLevel = LightCalculator.LightLevel.Medim;
 
     private RouteFragment routeFragment = new RouteFragment();
 
@@ -60,38 +59,18 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         routeFragment.onLocationChange(this.mll.getLastLocation());
         Log.d(LOG_TAG,""+ mll.getLastLocation());
 
-
-
-        /*
-        tv = findViewById(R.id.textbox1);
-        virbation = findViewById(R.id.vibration);
-        addVibrationActionListener();
-
-        bw = new BluetoothWrapper(this, this);
+      /*  bw = new BluetoothWrapper(this, this);
 
         try{
             bw.init();
 
         } catch (Exception e){
             Log.e(LOG_TAG, "Error initializing Bluetooth: " + e.getMessage());
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
+        }*/
 
-        Mapquest mq = new Mapquest();
-        ArrayList<TurnPoint> list =  mq.debugTurnPoints();
-        tv.setText("");
 
-        for (TurnPoint tp:list) {
-            tv.append(tp.toString() + "\n");
-        }
 
-        Location location = new Location(52.296853, 8.904645);
-        SunriseSunsetCalculator calculator = new SunriseSunsetCalculator(location, TimeZone.getDefault());
-        String Sunrise =calculator.getOfficialSunriseForDate(Calendar.getInstance());
-        String sunset =calculator.getOfficialSunsetForDate(Calendar.getInstance());
-        Log.i("sunset", sunset);
-        Log.i("sunrise", Sunrise);
-    */
+
     }
 
     private void setupViewPager(ViewPager viewPager) {
@@ -129,17 +108,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         });
     }
 
-    private void addVibrationActionListener(){
-        virbation.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    bw.sendText("bv1");
-                } else {
-                    bw.sendText("bv0");
-                }
-            }
-        });
-    }
+
 
     @Override
     public void onAddRouteButtonClicked() {
@@ -196,6 +165,8 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
 
     @Override
     public void onLocationChange(Location location) {
+        lightLevel = new LightCalculator(location).getLightLevel();
+        Log.i(LOG_TAG, "LightLevel: " + lightLevel);
         if (this.onLocationChangeListener != null) {
             this.onLocationChangeListener.onLocationChange(location);
         }

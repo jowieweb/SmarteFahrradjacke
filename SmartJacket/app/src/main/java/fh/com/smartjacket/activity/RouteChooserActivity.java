@@ -45,7 +45,6 @@ public class RouteChooserActivity extends AppCompatActivity implements ActivityC
 			location = new Location("dummyprovider");
 
 		} else {
-
 			GetAddressFromLocationTask task = new GetAddressFromLocationTask();
 			task.execute(location);
 		}
@@ -122,10 +121,6 @@ public class RouteChooserActivity extends AppCompatActivity implements ActivityC
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case android.R.id.home:
-				/*
-				NavUtils.navigateUpFromSameTask(this);
-				return true;
-				*/
 				finish();
 				return  true;
 		}

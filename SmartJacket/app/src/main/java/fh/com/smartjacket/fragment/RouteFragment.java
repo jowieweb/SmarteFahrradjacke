@@ -203,6 +203,7 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 		checkNavigation(location);
 
 
+
 	}
 
 	private void checkNavigation(Location location) {
