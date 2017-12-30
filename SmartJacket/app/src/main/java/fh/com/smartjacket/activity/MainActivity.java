@@ -1,14 +1,21 @@
 package fh.com.smartjacket.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.location.Location;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+
+import java.util.ArrayList;
 
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
 import fh.com.smartjacket.Mapquest.LocationChangeListener;
@@ -19,10 +26,12 @@ import fh.com.smartjacket.listener.OnFragmentInteractionListener;
 import fh.com.smartjacket.fragment.RouteFragment;
 import fh.com.smartjacket.fragment.SettingsFragment;
 import fh.com.smartjacket.listener.OnAppChosenListener;
+import fh.com.smartjacket.listener.OnNotificationListener;
+import fh.com.smartjacket.notifiction.NotificationReceiver;
 import fh.com.smartjacket.pojo.AppNotification;
 import fh.com.smartjacket.pojo.LightCalculator;
 
-public class MainActivity extends AppCompatActivity implements LocationChangeListener, OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements LocationChangeListener, OnFragmentInteractionListener, OnNotificationListener {
     public static final int PICK_ROUTE_REQUEST = 1337;
     private static final int PICK_APP_REQUEST = 1338;
     private static final String LOG_TAG = "MainActivity";
@@ -32,8 +41,10 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     private LocationChangeListener onLocationChangeListener;
     private OnAppChosenListener onAppChosenListener;
     private LightCalculator.LightLevel lightLevel = LightCalculator.LightLevel.Medim;
+    private NotificationReceiver notificationReceiver;
 
     private RouteFragment routeFragment = new RouteFragment();
+    private SettingsFragment settingsFragment = new SettingsFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,15 +72,61 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
             Log.i(LOG_TAG, "BLE Message " + new String(data));
         });
         bw.init();
+
+        setupNotificationListenerService();
+    }
+
+    private void setupNotificationListenerService() {
+        if (!isNotificationServiceActive()) {
+            Log.i(LOG_TAG, "NotificationListenerService is not active. Showing permission screen.");
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Benachrichtigungen");
+            builder.setMessage("Der Zugriff auf Benachrichtigungen ist nicht aktiviert. Jetzt aktivieren?");
+            builder.setPositiveButton("Ja", (DialogInterface dialog, int id) -> startActivity(new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")));
+            builder.setNegativeButton("Nein", (DialogInterface dialog, int id) -> Log.i(LOG_TAG,"Notification permission not enabled!"));
+            builder.create().show();
+
+        } else {
+            this.notificationReceiver = new NotificationReceiver(this);
+
+            IntentFilter filter = new IntentFilter();
+            filter.addAction("fh.com.smartjacket");
+
+            registerReceiver(this.notificationReceiver, filter);
+        }
     }
 
     private void setupViewPager(ViewPager viewPager) {
         TabPagerAdapter adapter = new TabPagerAdapter(getSupportFragmentManager());
 
-        adapter.addFragment(routeFragment, "Navigation");
-        adapter.addFragment(new SettingsFragment(), "Einstellungen");
+        adapter.addFragment(this.routeFragment, "Navigation");
+        adapter.addFragment(this.settingsFragment, "Einstellungen");
 
         viewPager.setAdapter(adapter);
+    }
+
+    /**
+     * Check if this app is allowed to listen to and/or send notifications.
+     * @return True if this application is allowed to listen to notifications. False otherwise.
+     */
+    private boolean isNotificationServiceActive() {
+        String packageName = getPackageName();
+        String enabledNotificationListeners = Settings.Secure.getString(getContentResolver(), "enabled_notification_listeners");
+
+        if (enabledNotificationListeners != null && !enabledNotificationListeners.isEmpty()) {
+            Log.d(LOG_TAG, "Enabled notification listeners: " + enabledNotificationListeners);
+            String enabledListeners[] = enabledNotificationListeners.split(":");
+
+            for (String enabledComponentName : enabledListeners) {
+                ComponentName componentName = ComponentName.unflattenFromString(enabledComponentName);
+                if (componentName != null && componentName.getPackageName().equals(packageName)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private void setupTabs(TabLayout tabLayout) {
@@ -84,7 +141,12 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     @Override
     protected void onPause() {
         super.onPause();
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(this.notificationReceiver);
     }
 
     @Override
@@ -146,6 +208,32 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         Log.i(LOG_TAG, "LightLevel: " + lightLevel);
         if (this.onLocationChangeListener != null) {
             this.onLocationChangeListener.onLocationChange(location);
+        }
+    }
+
+    /**
+     * Is called when a notification is received.
+     * @param packageName Package name of the app that posted this notification.
+     */
+    @Override
+    public void onNotification(String packageName) {
+        if (packageName != null) {
+            Log.i(LOG_TAG, "Received notification from " + packageName);
+
+            ArrayList<AppNotification> appNotifications = this.settingsFragment.getAppNotificationList();
+            if (appNotifications != null) {
+
+                for (AppNotification app : appNotifications) {
+                    if (app.getAppPackageName().equals(packageName)) {
+
+                        Log.d(LOG_TAG, "App in list!");
+
+                        // TODO: Send vibration data for this app
+
+                        return;
+                    }
+                }
+            }
         }
     }
 }

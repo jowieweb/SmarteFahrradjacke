@@ -154,4 +154,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
 		return false;
 	}
+
+	public ArrayList<AppNotification> getAppNotificationList() {
+		return this.apps;
+	}
 }
