@@ -12,6 +12,10 @@ import android.util.Log;
 public class MyNotificationListenerService extends NotificationListenerService {
 	private static final String LOG_TAG = "MyNotificationListener";
 
+	public MyNotificationListenerService(){
+		Log.i(LOG_TAG, "STARTED!");
+	}
+
 	@Override
 	public void onNotificationPosted(StatusBarNotification sbn) {
 		Log.d(LOG_TAG, "id: " + sbn.getId() + ", Package Name: " + sbn.getPackageName() + ", Post time: " + sbn.getPostTime() + ", Tag: " + sbn.getTag());

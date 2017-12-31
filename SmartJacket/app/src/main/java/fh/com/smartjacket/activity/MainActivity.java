@@ -14,10 +14,12 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
+import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
 import fh.com.smartjacket.Mapquest.LocationChangeListener;
 import fh.com.smartjacket.Mapquest.MyLocationListener;
 import fh.com.smartjacket.R;
@@ -31,7 +33,7 @@ import fh.com.smartjacket.notifiction.NotificationReceiver;
 import fh.com.smartjacket.pojo.AppNotification;
 import fh.com.smartjacket.pojo.LightCalculator;
 
-public class MainActivity extends AppCompatActivity implements LocationChangeListener, OnFragmentInteractionListener, OnNotificationListener {
+public class MainActivity extends AppCompatActivity implements LocationChangeListener, OnFragmentInteractionListener, OnNotificationListener, MessageReceivedCallback {
     public static final int PICK_ROUTE_REQUEST = 1337;
     private static final int PICK_APP_REQUEST = 1338;
     private static final String LOG_TAG = "MainActivity";
@@ -68,9 +70,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         Log.d(LOG_TAG,""+ mll.getLastLocation());
 
 
-        bw = new BluetoothWrapper(this,(byte[] data) -> {
-            Log.i(LOG_TAG, "BLE Message " + new String(data));
-        });
+        bw = new BluetoothWrapper(this,this);
         bw.init();
 
         setupNotificationListenerService();
@@ -218,6 +218,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     @Override
     public void onNotification(String packageName) {
         if (packageName != null) {
+            Toast.makeText(this,packageName,Toast.LENGTH_LONG);
             Log.i(LOG_TAG, "Received notification from " + packageName);
 
             ArrayList<AppNotification> appNotifications = this.settingsFragment.getAppNotificationList();
@@ -234,6 +235,26 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
                     }
                 }
             }
+        }
+    }
+
+    @Override
+    public void BLEMessageReceived(byte[] data) {
+
+        String message = new String(data);
+        Log.i(LOG_TAG, "BLE Message " + message);
+
+        switch (message)
+        {
+            case "btn":
+                Log.i(LOG_TAG, "BUTTON DOWN!");
+                //TODO: check if phone call or go home
+                //TODO: find our where home is :)
+                Location loc = new Location("");
+                loc.setLatitude(52.296881);
+                loc.setLongitude(8.906242);
+                routeFragment.setNewDestination(loc, "Home");
+                break;
         }
     }
 }

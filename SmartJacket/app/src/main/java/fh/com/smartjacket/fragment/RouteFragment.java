@@ -25,6 +25,7 @@ import com.mapquest.mapping.MapQuestAccountManager;
 import com.mapquest.mapping.maps.MapView;
 import com.mapquest.mapping.maps.MapboxMap;
 
+import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
 import fh.com.smartjacket.Mapquest.LocationChangeListener;
 import fh.com.smartjacket.Mapquest.Mapquest;
 import fh.com.smartjacket.Mapquest.Route;
@@ -114,7 +115,7 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 			mapboxMap.removePolyline(routePolyline);
 
 		if(currentLocation.getLongitude() == 0 && currentLocation.getLatitude()==0){
-			Toast.makeText(this.getContext(), "NO POSITION FOUND!", Toast.LENGTH_SHORT).show();
+			//Toast.makeText(this.getContext(), "NO POSITION FOUND!", Toast.LENGTH_SHORT).show();
 			return;
 		}
 
@@ -228,7 +229,7 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 			if(location.distanceTo(tp.getLocation())< 20){
 				//found one
 				Log.d(LOG_TAG, "Navigation found point " + tp);
-				//TODO: do stuff with it
+				BluetoothWrapper.getInstance().sendText(tp);
 			}
 		}
 	}

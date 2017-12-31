@@ -31,11 +31,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import fh.com.smartjacket.Mapquest.TurnPoint;
+
 /**
  * Created by jowie on 04.12.2017.
  */
 @TargetApi(21)
 public class BluetoothWrapper {
+
+    private static  BluetoothWrapper instance;
 
     private BluetoothAdapter mBluetoothAdapter;
     private  static String LOG_TAG ="BLEWRAPPER";
@@ -60,6 +64,11 @@ public class BluetoothWrapper {
         this.callback = callback;
     }
 
+    public static BluetoothWrapper getInstance(){
+        return instance;
+    }
+
+
     public boolean init()  {
         if (activity.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
@@ -83,6 +92,7 @@ public class BluetoothWrapper {
         final android.bluetooth.BluetoothManager bluetoothManager = (android.bluetooth.BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
         startScan();
+        BluetoothWrapper.instance = this;
         return true;
     }
 
@@ -139,7 +149,7 @@ public class BluetoothWrapper {
 
     public void connectToDevice(BluetoothDevice device) {
         if (mGatt == null) {
-            mGatt = device.connectGatt(activity, false, gattCallback);
+            mGatt = device.connectGatt(activity, true, gattCallback);
             scanLeDevice(false);// will stop after first device detection
         }
     }
@@ -190,9 +200,40 @@ public class BluetoothWrapper {
         }
     };
 
+    /**
+     * send any text to the BLE device
+     * @param text
+     */
     public void sendText(String text) {
+        if(!isConnected)
+            return;
+        if(text == null)
+            return;
+        if(text.length() < 1)
+            return;
+        if(mGatt == null)
+            return;
+
         BluetoothGattCharacteristic writeChara = mGatt.getService(serviceUuid).getCharacteristic(characteristicUuidWrite);
         writeChara.setValue(text);
         mGatt.writeCharacteristic(writeChara);
+    }
+
+    /**
+     * send a turnpoint message to the BLE device
+     * @param tp
+     */
+    public void sendText(TurnPoint tp){
+        if(tp == null)
+            return;
+        if(!isConnected)
+            return;
+
+        BluetoothGattCharacteristic writeChara = mGatt.getService(serviceUuid).getCharacteristic(characteristicUuidWrite);
+        TurnPoint.TurnDirection td = tp.getTurnDirection();
+        if(td == TurnPoint.TurnDirection.left)
+           sendText("turn: left");
+        else if (td == TurnPoint.TurnDirection.right)
+            sendText("turn: right");
     }
 }

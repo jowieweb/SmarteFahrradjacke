@@ -37,6 +37,14 @@ public class TurnPoint {
         return narrativ;
     }
 
+    public TurnDirection getTurnDirection(){
+        if(getNarrativ().contains("left"))
+            return TurnDirection.left;
+        else if (getNarrativ().contains("right"))
+            return TurnDirection.right;
+        return TurnDirection.undefined;
+    }
+
     @Override
     public String toString() {
         return "TurnPoint{" +
@@ -47,4 +55,11 @@ public class TurnPoint {
     }
 
     public Location getLocation(){ return location;}
+
+    public  enum TurnDirection
+    {
+        left,
+        right,
+        undefined
+    }
 }

@@ -92,6 +92,15 @@ void bleCallback(String recv) {
     motor.spinMotor();
   } else if (recv == "bv0") {
     motor.stopMotor();
+  } else if(recv.indexOf("turn: ") >=0){
+    //turn message
+    if(recv.indexOf("turn: left") >= 0){
+      //turn left
+      
+    } else if (recv.indexOf("turn: right") >= 0){
+      //turn right
+      
+    }
   }
 }
 
