@@ -20,6 +20,7 @@ import java.util.ArrayList;
 
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
 import fh.com.smartjacket.Bluetooth.MessageReceivedCallback;
+import fh.com.smartjacket.Mapquest.GoogleMapsSearch;
 import fh.com.smartjacket.Mapquest.LocationChangeListener;
 import fh.com.smartjacket.Mapquest.MyLocationListener;
 import fh.com.smartjacket.R;
@@ -43,10 +44,13 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     private LocationChangeListener onLocationChangeListener;
     private OnAppChosenListener onAppChosenListener;
     private LightCalculator.LightLevel lightLevel = LightCalculator.LightLevel.Medim;
+    private Location currentLocation = new Location("");
     private NotificationReceiver notificationReceiver;
 
     private RouteFragment routeFragment = new RouteFragment();
     private SettingsFragment settingsFragment = new SettingsFragment();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -202,9 +206,11 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         this.onAppChosenListener = onAppChosenListener;
     }
 
+
     @Override
     public void onLocationChange(Location location) {
         lightLevel = new LightCalculator(location).getLightLevel();
+        currentLocation = location;
         Log.i(LOG_TAG, "LightLevel: " + lightLevel);
         if (this.onLocationChangeListener != null) {
             this.onLocationChangeListener.onLocationChange(location);
@@ -249,10 +255,8 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
             case "btn":
                 Log.i(LOG_TAG, "BUTTON DOWN!");
                 //TODO: check if phone call or go home
-                //TODO: find our where home is :)
-                Location loc = new Location("");
-                loc.setLatitude(52.296881);
-                loc.setLongitude(8.906242);
+
+                Location loc = new GoogleMapsSearch(null).getLocationOfAddress(settingsFragment.loadHomeAddress().toString(),currentLocation );
                 routeFragment.setNewDestination(loc, "Home");
                 break;
         }

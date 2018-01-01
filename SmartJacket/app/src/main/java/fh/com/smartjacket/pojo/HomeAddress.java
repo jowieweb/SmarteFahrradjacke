@@ -60,4 +60,10 @@ public class HomeAddress {
     }
 
 
+    @Override
+    public String toString(){
+        return address + " " + hausnumber + ", " + postcode;
+    }
+
+
 }
