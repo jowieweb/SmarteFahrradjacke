@@ -35,7 +35,7 @@ import fh.com.smartjacket.pojo.LightCalculator;
 
 public class MainActivity extends AppCompatActivity implements LocationChangeListener, OnFragmentInteractionListener, OnNotificationListener, MessageReceivedCallback {
     public static final int PICK_ROUTE_REQUEST = 1337;
-    private static final int PICK_APP_REQUEST = 1338;
+    public static final int PICK_APP_REQUEST = 1338;
     private static final String LOG_TAG = "MainActivity";
 
     private BluetoothWrapper bw;

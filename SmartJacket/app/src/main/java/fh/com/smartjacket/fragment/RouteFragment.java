@@ -115,7 +115,9 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 			mapboxMap.removePolyline(routePolyline);
 
 		if(currentLocation.getLongitude() == 0 && currentLocation.getLatitude()==0){
-			//Toast.makeText(this.getContext(), "NO POSITION FOUND!", Toast.LENGTH_SHORT).show();
+			Log.e(LOG_TAG, "NO POSITION FOUND - setnewposition failed");
+			if(this.getContext() != null)
+				Toast.makeText(this.getContext(), "NO POSITION FOUND!", Toast.LENGTH_SHORT).show();
 			return;
 		}
 

@@ -1,6 +1,7 @@
 <resources>
 	<string name="app_name">SmartJacket</string>
 	<string name="shared_preferences_app_notification_list">app_notifications</string>
+	<string name="shared_preferences_home_address">home_address</string>
 	<string name="intent_extra_destination_name">destination_name</string>
 	<string name="intent_extra_location">location</string>
 	<string name="intent_extra_selected_app">selected_app</string>

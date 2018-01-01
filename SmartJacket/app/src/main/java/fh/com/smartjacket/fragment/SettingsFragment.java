@@ -1,16 +1,24 @@
 package fh.com.smartjacket.fragment;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,14 +32,18 @@ import fh.com.smartjacket.adapter.AppNotificationListAdapter;
 import fh.com.smartjacket.listener.OnAppChosenListener;
 import fh.com.smartjacket.pojo.AppNotification;
 import fh.com.smartjacket.pojo.AppNotificationComparator;
+import fh.com.smartjacket.pojo.HomeAddress;
 
 /**
  *
  */
 public class SettingsFragment extends Fragment implements View.OnClickListener, OnAppChosenListener {
-	private static final int PICK_APP_REQUEST = 1338;
+	private static final int PICK_APP_REQUEST = MainActivity.PICK_APP_REQUEST;
 	private AppNotificationListAdapter adapter;
 	private ArrayList<AppNotification> apps = new ArrayList<>();
+	private EditText address;
+	private EditText hausnumber;
+	private EditText postcode;
 
 	public SettingsFragment() {
 		// Required empty public constructor
@@ -46,6 +58,17 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 		Button chooseAppButton = view.findViewById(R.id.fragmentSettingsChooseAppButton);
 		chooseAppButton.setOnClickListener(this);
 
+		address = view.findViewById(R.id.address);
+		hausnumber = view.findViewById(R.id.hausnumber);
+		postcode = view.findViewById(R.id.postcode);
+		postcode.setOnEditorActionListener((TextView v, int actionId, KeyEvent event) ->{
+			if (actionId == EditorInfo.IME_ACTION_DONE) {
+				saveHomeAddress();
+			}
+			return false;
+		});
+
+
 		ListView appListView = view.findViewById(R.id.fragmentSettingsAppNotificationListView);
 		loadNotificationAppList();
 		this.adapter = new AppNotificationListAdapter(getActivity(), this.apps);
@@ -54,6 +77,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
 		((MainActivity)getActivity()).setOnAppChosenListener(this);
 
+		loadHomeAddress();
 		return view;
 	}
 
@@ -105,6 +129,29 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 			Collections.sort(this.apps, new AppNotificationComparator());
 		}
 	}
+
+
+	private void saveHomeAddress(){
+		SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+		SharedPreferences.Editor editor = sharedPreferences.edit();
+		HomeAddress ha = new HomeAddress(address.getText().toString(), hausnumber.getText().toString(), postcode.getText().toString());
+		editor.putString(getString(R.string.shared_preferences_home_address), ha.toJsonString());
+		editor.apply();
+		Toast.makeText(getActivity(),"Home address saved", Toast.LENGTH_SHORT).show();
+	}
+
+	public HomeAddress loadHomeAddress() {
+		SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+		String  jString = sharedPreferences.getString(getString(R.string.shared_preferences_home_address), null);
+		HomeAddress ha = new HomeAddress(jString);
+		address.setText(ha.getAddress());
+		hausnumber.setText(ha.getHausnumber());
+		postcode.setText(ha.getPostcode());
+		return ha;
+
+
+	}
+
 
 	@Override
 	public void onClick(View view) {

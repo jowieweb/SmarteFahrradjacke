@@ -40,12 +40,12 @@
 				android:textSize="20sp"/>
 
 			<EditText
-				android:id="@+id/editText2"
+				android:id="@+id/address"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:ems="10"
 				android:inputType="textPersonName"
-				android:text="Artilleriestraße"/>
+				android:text="Artilleriestraße" />
 		</TableRow>
 
 		<TableRow
@@ -61,12 +61,12 @@
 				android:textSize="20sp"/>
 
 			<EditText
-				android:id="@+id/editText"
+				android:id="@+id/hausnumber"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:ems="10"
 				android:inputType="textPersonName"
-				android:text="9"/>
+				android:text="9" />
 		</TableRow>
 
 		<TableRow
@@ -82,12 +82,13 @@
 				android:textSize="20sp"/>
 
 			<EditText
-				android:id="@+id/editText3"
+				android:id="@+id/postcode"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:ems="10"
 				android:inputType="textPersonName"
-				android:text="32427"/>
+				android:imeOptions="actionDone"
+				android:text="32427" />
 		</TableRow>
 	</TableLayout>
 
