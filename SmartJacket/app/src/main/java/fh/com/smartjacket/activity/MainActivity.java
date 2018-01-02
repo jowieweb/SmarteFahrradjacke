@@ -29,6 +29,7 @@ import fh.com.smartjacket.listener.OnFragmentInteractionListener;
 import fh.com.smartjacket.fragment.RouteFragment;
 import fh.com.smartjacket.fragment.SettingsFragment;
 import fh.com.smartjacket.listener.OnAppChosenListener;
+import fh.com.smartjacket.listener.OnNotificationChangeListener;
 import fh.com.smartjacket.listener.OnNotificationListener;
 import fh.com.smartjacket.notifiction.NotificationReceiver;
 import fh.com.smartjacket.pojo.AppNotification;
@@ -37,12 +38,14 @@ import fh.com.smartjacket.pojo.LightCalculator;
 public class MainActivity extends AppCompatActivity implements LocationChangeListener, OnFragmentInteractionListener, OnNotificationListener, MessageReceivedCallback {
     public static final int PICK_ROUTE_REQUEST = 1337;
     public static final int PICK_APP_REQUEST = 1338;
+    public static final int CONFIG_NOTIFICAION_REQUEST = 1339;
     private static final String LOG_TAG = "MainActivity";
 
     private BluetoothWrapper bw;
     private MyLocationListener mll;
     private LocationChangeListener onLocationChangeListener;
     private OnAppChosenListener onAppChosenListener;
+    private OnNotificationChangeListener onNotificationChangeListener;
     private LightCalculator.LightLevel lightLevel = LightCalculator.LightLevel.Medim;
     private Location currentLocation = new Location("");
     private NotificationReceiver notificationReceiver;
@@ -195,6 +198,20 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
                     this.onAppChosenListener.OnAppChosen(appNotification);
                 }
                 break;
+
+            case CONFIG_NOTIFICAION_REQUEST:
+                if (resultCode != Activity.RESULT_OK || data == null) {
+                    return;
+                }
+
+                AppNotification app = new AppNotification(data.getStringExtra(getString(R.string.intent_extra_selected_app)));
+                Log.i(LOG_TAG, "Bundle->Index: " + data.getLongExtra(getString(R.string.intent_extra_vibration_pattern), AppNotification.DEFAULT_VIBRATION_PATTERN_INDEX));
+                app.setVibrationPatternIndex((int) data.getLongExtra(getString(R.string.intent_extra_vibration_pattern), AppNotification.DEFAULT_VIBRATION_PATTERN_INDEX));
+                app.restoreData(this);
+                if (this.onNotificationChangeListener != null) {
+                    this.onNotificationChangeListener.onNotificationChange(app);
+                }
+                break;
         }
     }
 
@@ -206,6 +223,9 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         this.onAppChosenListener = onAppChosenListener;
     }
 
+    public void setOnNotificationChangeListener(OnNotificationChangeListener onNotificationChangeListener) {
+        this.onNotificationChangeListener = onNotificationChangeListener;
+    }
 
     @Override
     public void onLocationChange(Location location) {
@@ -233,7 +253,12 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
                 for (AppNotification app : appNotifications) {
                     if (app.getAppPackageName().equals(packageName)) {
 
-                        Log.d(LOG_TAG, "App in list!");
+                        int vibrationPatternIndex = app.getVibrationPatternIndex();
+                        if (vibrationPatternIndex >= getResources().getStringArray(R.array.vibration_pattern).length) {
+                            vibrationPatternIndex = getResources().getStringArray(R.array.vibration_pattern).length - 1;
+                        }
+                        String vibrationPattern = getResources().getStringArray(R.array.vibration_pattern)[vibrationPatternIndex];
+                        Log.d(LOG_TAG, "Sending vibration pattern " + vibrationPatternIndex + ": " + vibrationPattern);
 
                         // TODO: Send vibration data for this app
 

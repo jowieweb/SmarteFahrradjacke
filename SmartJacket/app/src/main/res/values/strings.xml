@@ -5,4 +5,5 @@
 	<string name="intent_extra_destination_name">destination_name</string>
 	<string name="intent_extra_location">location</string>
 	<string name="intent_extra_selected_app">selected_app</string>
+	<string name="intent_extra_vibration_pattern">vibration_pattern</string>
 </resources>

@@ -43,6 +43,8 @@
 
 		<activity android:name=".activity.AppChooserActivity">
 		</activity>
+		<activity android:name=".activity.NotificationConfigActivity">
+		</activity>
 	</application>
 
 </manifest>

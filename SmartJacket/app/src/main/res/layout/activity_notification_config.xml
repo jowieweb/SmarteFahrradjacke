@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	tools:context="fh.com.smartjacket.activity.NotificationConfigActivity">
+
+	<android.support.v7.widget.Toolbar
+		android:id="@+id/notification_config_activity_toolbar"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignParentStart="true"
+		android:layout_alignParentTop="true"
+		android:background="?attr/colorPrimary"
+		android:minHeight="?attr/actionBarSize"
+		android:theme="@style/ThemeOverlay.AppCompat.Dark"/>
+
+	<ImageView
+		android:id="@+id/notification_config_activity_app_icon_image_view"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentStart="true"
+		android:layout_below="@+id/notification_config_activity_toolbar"
+		android:layout_marginLeft="16dp"
+		android:layout_marginTop="16dp"
+		app:srcCompat="@mipmap/ic_launcher_round"/>
+
+	<TextView
+		android:id="@+id/notification_config_activity_app_name_text_view"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignBottom="@+id/notification_config_activity_app_icon_image_view"
+		android:layout_alignParentEnd="true"
+		android:layout_below="@+id/notification_config_activity_toolbar"
+		android:layout_marginLeft="16dp"
+		android:layout_marginRight="16dp"
+		android:layout_marginTop="16dp"
+		android:layout_toEndOf="@+id/notification_config_activity_app_icon_image_view"
+		android:text="TextView"/>
+
+	<TextView
+		android:id="@+id/textView6"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentEnd="true"
+		android:layout_alignParentStart="true"
+		android:layout_below="@+id/notification_config_activity_app_icon_image_view"
+		android:layout_marginLeft="16dp"
+		android:layout_marginRight="16dp"
+		android:layout_marginTop="32dp"
+		android:text="Vibrationsmuster"
+		android:textAppearance="@style/TextAppearance.AppCompat.Large"/>
+
+	<Button
+		android:id="@+id/notification_config_activity_vibration_test_button"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_alignParentEnd="true"
+		android:layout_below="@+id/textView6"
+		android:layout_marginRight="16dp"
+		android:layout_marginTop="16dp"
+		android:text="Test"/>
+
+	<Spinner
+		android:id="@+id/notification_config_activity_vibration_pattern_spinner"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_alignBottom="@+id/notification_config_activity_vibration_test_button"
+		android:layout_alignParentStart="true"
+		android:layout_below="@+id/textView6"
+		android:layout_marginLeft="16dp"
+		android:layout_marginTop="16dp"
+		android:layout_toStartOf="@+id/notification_config_activity_vibration_test_button"/>
+
+</RelativeLayout>

@@ -1,6 +1,5 @@
 package fh.com.smartjacket.fragment;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,9 +16,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,8 +24,10 @@ import java.util.Set;
 import fh.com.smartjacket.R;
 import fh.com.smartjacket.activity.AppChooserActivity;
 import fh.com.smartjacket.activity.MainActivity;
+import fh.com.smartjacket.activity.NotificationConfigActivity;
 import fh.com.smartjacket.adapter.AppNotificationListAdapter;
 import fh.com.smartjacket.listener.OnAppChosenListener;
+import fh.com.smartjacket.listener.OnNotificationChangeListener;
 import fh.com.smartjacket.pojo.AppNotification;
 import fh.com.smartjacket.pojo.AppNotificationComparator;
 import fh.com.smartjacket.pojo.HomeAddress;
@@ -37,12 +35,12 @@ import fh.com.smartjacket.pojo.HomeAddress;
 /**
  *
  */
-public class SettingsFragment extends Fragment implements View.OnClickListener, OnAppChosenListener {
+public class SettingsFragment extends Fragment implements View.OnClickListener, OnAppChosenListener, OnNotificationChangeListener {
 	private static final int PICK_APP_REQUEST = MainActivity.PICK_APP_REQUEST;
 	private AppNotificationListAdapter adapter;
 	private ArrayList<AppNotification> apps = new ArrayList<>();
 	private EditText address;
-	private EditText hausnumber;
+	private EditText houseNumber;
 	private EditText postcode;
 
 	public SettingsFragment() {
@@ -59,7 +57,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 		chooseAppButton.setOnClickListener(this);
 
 		address = view.findViewById(R.id.address);
-		hausnumber = view.findViewById(R.id.hausnumber);
+		houseNumber = view.findViewById(R.id.hausnumber);
 		postcode = view.findViewById(R.id.postcode);
 		postcode.setOnEditorActionListener((TextView v, int actionId, KeyEvent event) ->{
 			if (actionId == EditorInfo.IME_ACTION_DONE) {
@@ -73,12 +71,26 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 		loadNotificationAppList();
 		this.adapter = new AppNotificationListAdapter(getActivity(), this.apps);
 		appListView.setAdapter(this.adapter);
+		appListView.setOnItemClickListener(((adapterView, view1, i, l) -> openNotificationConfigActivity((AppNotification) adapterView.getItemAtPosition(i))));
 		appListView.setOnItemLongClickListener((adapterView, view1, i, l) -> removeSelectedAppFromList((AppNotification) adapterView.getItemAtPosition(i)));
 
-		((MainActivity)getActivity()).setOnAppChosenListener(this);
+		MainActivity mainActivity = (MainActivity) getActivity();
+		mainActivity.setOnAppChosenListener(this);
+		mainActivity.setOnNotificationChangeListener(this);
 
 		loadHomeAddress();
 		return view;
+	}
+
+	private boolean openNotificationConfigActivity(AppNotification app) {
+		Intent intent = new Intent(getActivity(), NotificationConfigActivity.class);
+
+		intent.putExtra(getString(R.string.intent_extra_selected_app), app.getAppPackageName());
+		intent.putExtra(getString(R.string.intent_extra_vibration_pattern), app.getVibrationPatternIndex());
+
+		getActivity().startActivityForResult(intent, MainActivity.CONFIG_NOTIFICAION_REQUEST);
+
+		return true;
 	}
 
 	private boolean removeSelectedAppFromList(AppNotification app) {
@@ -99,7 +111,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
 		HashSet<String> packageNames = new HashSet<>();
 		for (AppNotification app : this.apps) {
-			packageNames.add(app.getAppPackageName());
+			String appString = app.getAppPackageName() + ";" + app.getVibrationPatternIndex();
+			packageNames.add(appString);
 		}
 
 		editor.putStringSet(getString(R.string.shared_preferences_app_notification_list), packageNames);
@@ -112,13 +125,18 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 	 */
 	private void loadNotificationAppList() {
 		SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
-		Set<String> packageNames = sharedPreferences.getStringSet(getString(R.string.shared_preferences_app_notification_list), null);
+		Set<String> appNotificationSettings = sharedPreferences.getStringSet(getString(R.string.shared_preferences_app_notification_list), null);
 
-		if (packageNames != null) {
+		if (appNotificationSettings != null) {
 			this.apps.clear();
 
-			for (String pkg : packageNames) {
-				AppNotification appNotification = new AppNotification(pkg);
+			for (String setting : appNotificationSettings) {
+				String settings[] = setting.split(";");
+
+				AppNotification appNotification = new AppNotification(settings[0]);
+				if (settings.length > 1) {
+					appNotification.setVibrationPatternIndex(Integer.parseInt(settings[1]));
+				}
 
 				if (appNotification.restoreData(getActivity())) {
 					// Only add app to list if it exists -> users can delete apps, so we must check if it still exists
@@ -130,11 +148,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 		}
 	}
 
-
 	private void saveHomeAddress(){
 		SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPreferences.edit();
-		HomeAddress ha = new HomeAddress(address.getText().toString(), hausnumber.getText().toString(), postcode.getText().toString());
+		HomeAddress ha = new HomeAddress(address.getText().toString(), houseNumber.getText().toString(), postcode.getText().toString());
 		editor.putString(getString(R.string.shared_preferences_home_address), ha.toJsonString());
 		editor.apply();
 		Toast.makeText(getActivity(),"Home address saved", Toast.LENGTH_SHORT).show();
@@ -145,13 +162,10 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 		String  jString = sharedPreferences.getString(getString(R.string.shared_preferences_home_address), null);
 		HomeAddress ha = new HomeAddress(jString);
 		address.setText(ha.getAddress());
-		hausnumber.setText(ha.getHausnumber());
+		houseNumber.setText(ha.getHausnumber());
 		postcode.setText(ha.getPostcode());
 		return ha;
-
-
 	}
-
 
 	@Override
 	public void onClick(View view) {
@@ -204,5 +218,19 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
 	public ArrayList<AppNotification> getAppNotificationList() {
 		return this.apps;
+	}
+
+	@Override
+	public void onNotificationChange(AppNotification app) {
+		for (int i = 0; i < this.apps.size(); i++) {
+			if (this.apps.get(i).getAppPackageName().equals(app.getAppPackageName())) {
+
+				this.apps.set(i, app);
+				this.adapter.notifyDataSetChanged();
+				saveNotificationAppList();
+
+				return;
+			}
+		}
 	}
 }

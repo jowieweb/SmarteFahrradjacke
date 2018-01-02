@@ -11,19 +11,23 @@ import android.graphics.drawable.Drawable;
  */
 
 public class AppNotification {
+	public static final int DEFAULT_VIBRATION_PATTERN_INDEX = 0;
 	private String appName;
 	private String appPackageName;
 	private Drawable appIcon;
+	private int vibrationPatternIndex;
 
 	public AppNotification(String appName, String appPackageName, Drawable appIcon) {
 		this.appName = appName;
 		this.appPackageName = appPackageName;
 		this.appIcon = appIcon;
+		this.vibrationPatternIndex = DEFAULT_VIBRATION_PATTERN_INDEX;
 	}
 
 	public AppNotification(String appPackageName) {
 		this.appPackageName = appPackageName;
 		this.appName = "";
+		this.vibrationPatternIndex = DEFAULT_VIBRATION_PATTERN_INDEX;
 	}
 
 	/**
@@ -78,5 +82,13 @@ public class AppNotification {
 
 	public void setAppIcon(Drawable appIcon) {
 		this.appIcon = appIcon;
+	}
+
+	public int getVibrationPatternIndex() {
+		return this.vibrationPatternIndex;
+	}
+
+	public void setVibrationPatternIndex(int vibrationPatternIndex) {
+		this.vibrationPatternIndex = vibrationPatternIndex < 0 ? 0 : vibrationPatternIndex;
 	}
 }

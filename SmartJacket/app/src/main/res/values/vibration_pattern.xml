@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string-array name="vibration_pattern">
+		<!-- Format: <fadeIn: [true|false]>,<dutyCycle 0-255>,<lengthInMs int32>; next triple... -->
+		<item>false,128,500;false,255,500;false,128,500</item>
+		<item>false,128,500;false,255,500;false,128,500</item>
+		<item>false,128,500;false,255,500;false,128,500</item>
+		<item>false,128,500;false,255,500;false,128,500</item>
+		<item>false,128,500;false,255,500;false,128,500</item>
+	</string-array>
+</resources>
