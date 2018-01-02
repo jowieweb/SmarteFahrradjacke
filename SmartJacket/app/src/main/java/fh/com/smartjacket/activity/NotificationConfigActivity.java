@@ -1,7 +1,9 @@
 package fh.com.smartjacket.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -65,6 +67,28 @@ public class NotificationConfigActivity extends AppCompatActivity {
 
 	private void onTestPatternButtonClicked() {
 		// TODO: Send pattern to device
+		Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+		int index = this.vibrationPatternSpinner.getSelectedItemPosition();
+		String vibrationPattern[] = getResources().getStringArray(R.array.vibration_pattern);
+		String pattern = vibrationPattern[index];
+		String[] triplet = pattern.split(";");
+		ArrayList<Long> parts  = new ArrayList<Long>();
+		parts.add((long)0);
+		for(String s:triplet){
+			String[] subparts = s.split(",");
+			long time = Long.parseLong(subparts[2]);
+			parts.add(time);
+
+			parts.add((long)50);
+		}
+		long[] longs = new long[parts.size()+1];
+
+		for(int i = 0;i< parts.size();i++) {
+			longs[i] = parts.get(i);
+		}
+
+
+		v.vibrate(longs, -1);
 	}
 
 	private void endActivity() {

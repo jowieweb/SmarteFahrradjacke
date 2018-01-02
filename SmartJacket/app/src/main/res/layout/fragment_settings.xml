@@ -25,6 +25,7 @@
 				android:layout_height="wrap_content"
 				android:text="Heimatort"
 				android:textSize="24sp"/>
+
 		</TableRow>
 
 		<TableRow

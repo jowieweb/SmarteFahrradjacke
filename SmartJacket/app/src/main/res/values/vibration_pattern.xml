@@ -3,9 +3,9 @@
 	<string-array name="vibration_pattern">
 		<!-- Format: <fadeIn: [true|false]>,<dutyCycle 0-255>,<lengthInMs int32>; next triple... -->
 		<item>false,128,500;false,255,500;false,128,500</item>
-		<item>false,128,500;false,255,500;false,128,500</item>
-		<item>false,128,500;false,255,500;false,128,500</item>
-		<item>false,128,500;false,255,500;false,128,500</item>
-		<item>false,128,500;false,255,500;false,128,500</item>
+		<item>false,128,125;false,255,500;false,128,125</item>
+		<item>false,128,500;false,255,100;false,128,100</item>
+		<item>false,128,100;false,255,1000;false,128,100</item>
+		<item>false,128,250;false,255,500;false,128,500</item>
 	</string-array>
 </resources>
