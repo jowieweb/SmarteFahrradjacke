@@ -15,6 +15,9 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import fh.com.smartjacket.R;
@@ -23,6 +26,7 @@ import fh.com.smartjacket.pojo.AppNotification;
 public class NotificationConfigActivity extends AppCompatActivity {
 	private AppNotification app;
 	private Spinner vibrationPatternSpinner;
+	private ArrayList<JSONObject> jsonPattern = new ArrayList<>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -46,9 +50,16 @@ public class NotificationConfigActivity extends AppCompatActivity {
 		}
 
 		String vibrationPattern[] = getResources().getStringArray(R.array.vibration_pattern);
+
 		ArrayList<String> vibrationPatternLabels = new ArrayList<>();
 		for (int i = 0; i <  vibrationPattern.length; i++) {
-			vibrationPatternLabels.add("Muster " + (i + 1));
+			try {
+				JSONObject jpattern = new JSONObject(vibrationPattern[i]);
+				vibrationPatternLabels.add("Muster " +  jpattern.getString("name"));
+				jsonPattern.add(jpattern);
+			}catch (Exception e){
+
+			}
 		}
 
 		this.vibrationPatternSpinner = findViewById(R.id.notification_config_activity_vibration_pattern_spinner);
@@ -68,23 +79,21 @@ public class NotificationConfigActivity extends AppCompatActivity {
 	private void onTestPatternButtonClicked() {
 		// TODO: Send pattern to device
 		Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-		int index = this.vibrationPatternSpinner.getSelectedItemPosition();
-		String vibrationPattern[] = getResources().getStringArray(R.array.vibration_pattern);
-		String pattern = vibrationPattern[index];
-		String[] triplet = pattern.split(";");
-		ArrayList<Long> parts  = new ArrayList<Long>();
-		parts.add((long)0);
-		for(String s:triplet){
-			String[] subparts = s.split(",");
-			long time = Long.parseLong(subparts[2]);
-			parts.add(time);
+		ArrayList<Long> vibrationlongs  = new ArrayList<Long>();
+		JSONObject json = jsonPattern.get(this.vibrationPatternSpinner.getSelectedItemPosition());
+		try{
+			JSONArray parts = json.getJSONArray("parts");
+			for (int i=0; i < parts.length(); i++) {
+				JSONObject inner = parts.getJSONObject(i);
+				vibrationlongs.add(inner.getLong("off"));
+				vibrationlongs.add(inner.getLong("on"));
+			}
+		}catch (Exception e){}
 
-			parts.add((long)50);
-		}
-		long[] longs = new long[parts.size()+1];
-
-		for(int i = 0;i< parts.size();i++) {
-			longs[i] = parts.get(i);
+		/*convert Long to long  -.- */
+		long[] longs = new long[vibrationlongs.size()+1];
+		for(int i = 0;i< vibrationlongs.size();i++) {
+			longs[i] = vibrationlongs.get(i);
 		}
 
 
