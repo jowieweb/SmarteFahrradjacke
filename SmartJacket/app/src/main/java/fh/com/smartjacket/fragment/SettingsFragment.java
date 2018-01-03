@@ -288,6 +288,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 				postcode.setText(plz);
 				address.setText(localAddress);
 				houseNumber.setText(hausnumber);
+
+				saveHomeAddress();
 			}
 		}
 	}
