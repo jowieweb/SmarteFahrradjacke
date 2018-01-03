@@ -6,6 +6,6 @@
 		<item> {"name": "Lang-Kurz","parts": [{"on": 500,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 100,"dutycycle": 200,"off": 100,"fadeid": false}]} </item>
 		<item> {"name": "Lang-Lang","parts": [{"on": 500,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 500,"dutycycle": 200,"off": 100,"fadeid": false}]} </item>
 		<item> {"name": "Kurz-Kurz","parts": [{"on": 100,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 100,"dutycycle": 200,"off": 100,"fadeid": false}]} </item>
-		<item> {"name": "Kurz-Lang-Kurz","parts": [{"on": 100,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 500,"dutycycle": 200,"off": 100,"fadeid": false}, {"on": 100,"dutycycle": 255,"off": 0,"fadeid": false}]} </item>
+		<item> {"name": "Kurz-Lang-Kurz","parts": [{"on": 100,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 500,"dutycycle": 200,"off": 100,"fadeid": false}, {"on": 100,"dutycycle": 255,"off": 100,"fadeid": false}]} </item>
 	</string-array>
 </resources>

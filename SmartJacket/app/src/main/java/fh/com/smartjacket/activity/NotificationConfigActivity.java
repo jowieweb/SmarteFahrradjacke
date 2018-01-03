@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -27,6 +28,7 @@ public class NotificationConfigActivity extends AppCompatActivity {
 	private AppNotification app;
 	private Spinner vibrationPatternSpinner;
 	private ArrayList<JSONObject> jsonPattern = new ArrayList<>();
+	private TextView description;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +65,8 @@ public class NotificationConfigActivity extends AppCompatActivity {
 		}
 
 		this.vibrationPatternSpinner = findViewById(R.id.notification_config_activity_vibration_pattern_spinner);
+		this.description = findViewById(R.id.notification_config_activity_vibration_pattern_description);
+
 		ArrayAdapter<String> patternSpinnerAdapter = new ArrayAdapter<>(getApplicationContext(), R.layout.support_simple_spinner_dropdown_item, vibrationPatternLabels);
 		this.vibrationPatternSpinner.setAdapter(patternSpinnerAdapter);
 
@@ -71,6 +75,17 @@ public class NotificationConfigActivity extends AppCompatActivity {
 			vibrationPatternIndex = vibrationPattern.length - 1;
 		}
 		this.vibrationPatternSpinner.setSelection(vibrationPatternIndex);
+		this.vibrationPatternSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+		   @Override
+		   public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+			   setDescription();
+		   }
+
+			@Override
+			public void onNothingSelected(AdapterView<?> adapterView) {
+
+			}
+		});
 
 		Button patternTestButton = findViewById(R.id.notification_config_activity_vibration_test_button);
 		patternTestButton.setOnClickListener((View view) -> onTestPatternButtonClicked());
@@ -98,6 +113,30 @@ public class NotificationConfigActivity extends AppCompatActivity {
 
 
 		v.vibrate(longs, -1);
+	}
+
+	private void setDescription(){
+		JSONObject json = jsonPattern.get(this.vibrationPatternSpinner.getSelectedItemPosition());
+		this.description.setText("");
+		String toSet = "";
+		try {
+			JSONArray parts = json.getJSONArray("parts");
+			for (int i = 0; i < parts.length(); i++) {
+				int off = parts.getJSONObject(i).getInt("off");
+				int on = parts.getJSONObject(i).getInt("on");
+				if( off != 0){
+					toSet += ", dann " + off + "ms aus";
+				}
+				if(toSet.length() == 0){
+					toSet += "Zuerst " + on + "ms an";
+				} else {
+					toSet += ", dann " + on + "ms an";
+				}
+			}
+		}catch (Exception e){
+
+		}
+		this.description.setText(toSet);
 	}
 
 	private void endActivity() {
