@@ -91,6 +91,15 @@
 				android:imeOptions="actionDone"
 				android:text="32427" />
 		</TableRow>
+
+
+		<Button
+			android:id="@+id/fragmentSettingsChooseCurrentLocation"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_alignParentEnd="true"
+			android:text="Setze Heimat aus jetziger Position"/>
+
 	</TableLayout>
 
 	<TextView

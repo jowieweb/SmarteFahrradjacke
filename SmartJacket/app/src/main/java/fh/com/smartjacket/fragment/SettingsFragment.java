@@ -3,8 +3,11 @@ package fh.com.smartjacket.fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,10 +24,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import fh.com.smartjacket.Mapquest.Mapquest;
 import fh.com.smartjacket.R;
 import fh.com.smartjacket.activity.AppChooserActivity;
 import fh.com.smartjacket.activity.MainActivity;
 import fh.com.smartjacket.activity.NotificationConfigActivity;
+import fh.com.smartjacket.activity.RouteChooserActivity;
 import fh.com.smartjacket.adapter.AppNotificationListAdapter;
 import fh.com.smartjacket.listener.OnAppChosenListener;
 import fh.com.smartjacket.listener.OnNotificationChangeListener;
@@ -42,6 +47,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 	private EditText address;
 	private EditText houseNumber;
 	private EditText postcode;
+	private Location currentLocation = new Location("");
 
 	public SettingsFragment() {
 		// Required empty public constructor
@@ -66,6 +72,17 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 			return false;
 		});
 
+		Button useCurrentLocationAsHome = view.findViewById(R.id.fragmentSettingsChooseCurrentLocation);
+		useCurrentLocationAsHome.setOnClickListener((View view1) -> {
+			if(currentLocation.getLatitude() == 0 && currentLocation.getLongitude() == 0){
+				return;
+			}
+			GetAddressFromLocationTask task = new GetAddressFromLocationTask();
+			task.execute(currentLocation);
+
+
+
+		});
 
 		ListView appListView = view.findViewById(R.id.fragmentSettingsAppNotificationListView);
 		loadNotificationAppList();
@@ -80,6 +97,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
 		loadHomeAddress();
 		return view;
+	}
+	public void setCurrentLocation(Location currentLocation){
+		this.currentLocation = currentLocation;
 	}
 
 	private boolean openNotificationConfigActivity(AppNotification app) {
@@ -230,6 +250,44 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 				saveNotificationAppList();
 
 				return;
+			}
+		}
+	}
+
+
+	private class GetAddressFromLocationTask extends AsyncTask<Location, Void, String> {
+
+		@Override
+		protected String doInBackground(Location... locations) {
+			return Mapquest.getAddressFromLocation(locations[0]);
+		}
+
+		@Override
+		protected void onPostExecute(String pAddress) {
+			if (pAddress != null && !pAddress.isEmpty()) {
+				Log.e("SETTINGSFRAGMENT", pAddress);
+
+				String[] addressAndPlz = pAddress.split(",");
+				String[] addressAndHN = addressAndPlz[0].split(" ");
+
+				String hausnumber = "";
+				String localAddress ="";
+				String plz = addressAndPlz[addressAndPlz.length -1];
+				for(int i =0;i< addressAndHN.length;i++){
+					try {
+						int temp = Integer.parseInt(addressAndHN[i]);
+						hausnumber = ""+ temp;
+					}catch (Exception e){
+						if(localAddress.length()> 0){
+							localAddress += " ";
+						}
+						localAddress += addressAndHN[i];
+					}
+				}
+
+				postcode.setText(plz);
+				address.setText(localAddress);
+				houseNumber.setText(hausnumber);
 			}
 		}
 	}

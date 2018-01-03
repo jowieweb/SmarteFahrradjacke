@@ -231,6 +231,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     public void onLocationChange(Location location) {
         lightLevel = new LightCalculator(location).getLightLevel();
         currentLocation = location;
+        settingsFragment.setCurrentLocation(location);
         Log.i(LOG_TAG, "LightLevel: " + lightLevel);
         if (this.onLocationChangeListener != null) {
             this.onLocationChangeListener.onLocationChange(location);
