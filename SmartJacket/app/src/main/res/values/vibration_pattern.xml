@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string-array name="vibration_pattern">
-		<!-- Format: <fadeIn: [true|false]>,<dutyCycle 0-255>,<lengthInMs int32>; next triple... -->
-		<item> {"name": "Kurz-Lang","parts": [{"on": 100,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 500,"dutycycle": 200,"off": 100,"fadeid": false}]}</item>
-		<item> {"name": "Lang-Kurz","parts": [{"on": 500,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 100,"dutycycle": 200,"off": 100,"fadeid": false}]} </item>
-		<item> {"name": "Lang-Lang","parts": [{"on": 500,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 500,"dutycycle": 200,"off": 100,"fadeid": false}]} </item>
-		<item> {"name": "Kurz-Kurz","parts": [{"on": 100,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 100,"dutycycle": 200,"off": 100,"fadeid": false}]} </item>
-		<item> {"name": "Kurz-Lang-Kurz","parts": [{"on": 100,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 500,"dutycycle": 200,"off": 100,"fadeid": false}, {"on": 100,"dutycycle": 255,"off": 100,"fadeid": false}]} </item>
+		<item> {"type": "vibration", "name": "Kurz-Lang","parts": [{"on": 100,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 500,"dutycycle": 200,"off": 100,"fadeid": false}]}</item>
+		<item> {"type": "vibration", "name": "Lang-Kurz","parts": [{"on": 500,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 100,"dutycycle": 200,"off": 100,"fadeid": false}]} </item>
+		<item> {"type": "vibration", "name": "Lang-Lang","parts": [{"on": 500,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 500,"dutycycle": 200,"off": 100,"fadeid": false}]} </item>
+		<item> {"type": "vibration", "name": "Kurz-Kurz","parts": [{"on": 100,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 100,"dutycycle": 200,"off": 100,"fadeid": false}]} </item>
+		<item> {"type": "vibration", "name": "Kurz-Lang-Kurz","parts": [{"on": 100,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 500,"dutycycle": 200,"off": 100,"fadeid": false}, {"on": 100,"dutycycle": 255,"off": 100,"fadeid": false}]} </item>
 	</string-array>
 </resources>
