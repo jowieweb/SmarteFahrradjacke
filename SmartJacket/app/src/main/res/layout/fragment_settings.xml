@@ -1,5 +1,6 @@
 <RelativeLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
 	android:id="@+id/relativeLayout"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
@@ -16,16 +17,28 @@
 		android:orientation="horizontal">
 
 		<TableRow
-			android:layout_width="match_parent"
+			android:layout_width="122dp"
 			android:layout_height="match_parent">
 
-			<TextView
-				android:id="@+id/textView"
+			<RelativeLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+
+				<TextView
+					android:id="@+id/textView"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="Heimatort"
+					android:textSize="24sp"/>
+
+			</RelativeLayout>
+
+			<ImageButton
+				android:id="@+id/fragmentSettingsChooseCurrentLocation"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="Heimatort"
-				android:textSize="24sp"/>
-
+				android:layout_gravity="left"
+				app:srcCompat="@drawable/ic_my_location"/>
 		</TableRow>
 
 		<TableRow
@@ -92,13 +105,6 @@
 				android:text="32427" />
 		</TableRow>
 
-
-		<Button
-			android:id="@+id/fragmentSettingsChooseCurrentLocation"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_alignParentEnd="true"
-			android:text="Setze Heimat aus jetziger Position"/>
 
 	</TableLayout>
 
