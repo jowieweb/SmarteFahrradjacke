@@ -11,7 +11,7 @@
   class BLEWrapper:  public BLEServerCallbacks ,  public BLECharacteristicCallbacks
   {
     public:
-      void start(void (*callback)(String), SemaphoreHandle_t*);
+      void start(void (*callback)(String));
       void onConnect(BLEServer* pServer);
       void onDisconnect(BLEServer* pServer);
       void onWrite(BLECharacteristic *pCharacteristic);
@@ -20,7 +20,6 @@
     
       BLECharacteristic *pCharacteristic;
 
-      SemaphoreHandle_t bleMutex;
       bool deviceConnected = false;
       uint8_t txValue = 0;
       const TickType_t xDelay = 1000 / portTICK_PERIOD_MS;

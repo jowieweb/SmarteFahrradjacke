@@ -18,10 +18,9 @@ void BLEWrapper::onDisconnect(BLEServer* pServer) {
 
 
 
-void BLEWrapper::start(void (*callback)(String), SemaphoreHandle_t* bleMutex) {
-   delay(10);
-     
-  this->bleMutex = *bleMutex;
+void BLEWrapper::start(void (*callback)(String)) {
+  
+  delay(10);
   BLEDevice::init("UART Service");
   this->callback = callback;
   

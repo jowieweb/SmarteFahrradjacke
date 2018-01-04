@@ -1,9 +1,9 @@
-//#define MULTITHREADING
+
 //#define SENDMPUTOBLE
 
 #include "MPUWrapper.h"
 #include "BLEWrapper.h"
-#include "LedController.h"
+#include "LEDController.h"
 #include "MotorController.h"
 #include <ArduinoJson.h>
 
@@ -20,70 +20,22 @@ BLEWrapper *ble;
 LEDController leds(dataPin, clockPin, LEDLEN);
 MotorController motor(2);
 
-SemaphoreHandle_t i2cMutex;
-SemaphoreHandle_t bleMutex;
 
 boolean BLEEnabled = false;
 long lastButtonDown = 0;
-
-#ifdef MULTITHREADING
-void stupid(void * para) {
-  MPUWrapper test = *((MPUWrapper*)para);
-  while (true) {
-    test.taskMPU();
-  }
-}
-#endif
-
-
 long timer;
 bool led = false;
 
 
 void mpuCallback(MPUValues value) {
-  long tempTimer = millis();
-  if (tempTimer > timer + 200) {
-
-    led = !led;
-    digitalWrite(LED_BUILTIN, led);
-    timer = tempTimer;
-    //Serial.print(value.i2cAddress);
-    //Serial.println(value.text);
-    
-#ifdef SENDMPUTOBLE
-    if (BLEEnabled) {
-      ble->sendText(value.text);
-    }
-#endif
-
-    if (value.yaw > 60 || value.yaw < -60) {
-      if (value.i2cAddress == 0x68) {
-        leds.blink(true, true);
-      }
-      else {
-        leds.blink(false, true);
-      }
-      motor.enqueue(true, 255, 250,0);
-      Serial.println("ON");
-
-    } else {
-      if (value.i2cAddress == 0x68) {
-        //is mpu
-        if (!mpu2.isTriggerd()) {
-          leds.blink(true, false);
-        }
-      } else {
-        //is mpu2
-        if (!mpu.isTriggerd()) {
-          leds.blink(true, false);
-        }
-      }
-
-
-    }
-
-
-  }
+  bool triggered = value.triggered;
+  bool turnRight = value.i2cAddress == 0x68;
+  Serial.print("MPU Callback ");
+  Serial.print(triggered);
+  Serial.println(turnRight);
+  
+  leds.blink(turnRight, triggered);
+  motor.enqueue(true, 255, 250,0);
 
 }
 
@@ -132,24 +84,16 @@ void bleCallback(String recv) {
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
-  i2cMutex = xSemaphoreCreateMutex();
-  bleMutex = xSemaphoreCreateMutex();
   Serial.begin(115200);
 
-
-
-  mpu.init(false, &mpuCallback, &i2cMutex);
+  mpu.init(false, &mpuCallback);
   mpu.enabledOutputToCallback(true);
 
 
-  mpu2.init(false, &mpuCallback, &i2cMutex);
+  mpu2.init(false, &mpuCallback);
   mpu2.enabledOutputToCallback(true);
 
-#ifdef MULTITHREADING
-  Serial.println("!!!!!MULTITHREADING!!!!");
-  mpu.createTask(stupid);
-  mpu2.createTask(stupid);
-#endif
+
 
   pinMode(ENABLEDBLE, INPUT_PULLUP);
   pinMode(CTXBUTTON, INPUT_PULLUP);
@@ -166,19 +110,22 @@ void loop()
       BLEEnabled = true;
       Serial.println("\n\n\nENABLEDBLE\n\n\n");
       ble = new BLEWrapper();
-      ble->start(&bleCallback, &bleMutex);
+      ble->start(&bleCallback);
     }
   }
   
-
-
-#ifndef MULTITHREADING
   mpu.loop();
   mpu2.loop();
-#endif
 
   leds.loop();
   motor.loop();
+  
+  long tempTimer = millis();
+  if (tempTimer > timer + 200) {
+    led = !led;
+    digitalWrite(LED_BUILTIN, led);
+    timer = tempTimer;
+  }
 
 }
 

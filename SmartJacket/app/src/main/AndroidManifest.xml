@@ -34,7 +34,7 @@
 		</activity>
 
 		<service
-			android:name=".notifiction.MyNotificationListenerService"
+			android:name=".notifiction.MySuperNotificationListenerService"
 			android:label="NotificationListener"
 			android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
 			<intent-filter>

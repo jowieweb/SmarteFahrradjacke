@@ -60,8 +60,6 @@ void MotorController::getFromQueue(){
 }
 
 void MotorController::loop() {
-  if(myqueue.size() > 0)
-    Serial.println(myqueue.size());
   if (!running){
     if(!myqueue.empty()){
       getFromQueue();
