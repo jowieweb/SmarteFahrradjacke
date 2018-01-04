@@ -346,6 +346,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
      */
     @Override
     public void onNotification(String packageName) {
+        Log.d(LOG_TAG, "NOTIFICATION!");
         if (packageName != null) {
             Toast.makeText(this,packageName,Toast.LENGTH_LONG);
             Log.i(LOG_TAG, "Received notification from " + packageName);
@@ -362,8 +363,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
                         }
                         String vibrationPattern = getResources().getStringArray(R.array.vibration_pattern)[vibrationPatternIndex];
                         Log.d(LOG_TAG, "Sending vibration pattern " + vibrationPatternIndex + ": " + vibrationPattern);
-
-                        // TODO: Send vibration data for this app
+                        bw.sendText(vibrationPattern);
 
                         return;
                     }
@@ -381,16 +381,12 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         switch (message)
         {
             case "btn":
-              /*  Log.i(LOG_TAG, "BUTTON DOWN!");
+                Log.i(LOG_TAG, "BUTTON DOWN!");
                 //TODO: check if phone call or go home
 
                 Location loc = new GoogleMapsSearch(null).getLocationOfAddress(settingsFragment.loadHomeAddress().toString(),currentLocation );
                 routeFragment.setNewDestination(loc, "Home");
-                break; */
-                Log.i(LOG_TAG,"Debug");
-                String vibrationPattern = getResources().getStringArray(R.array.vibration_pattern)[0];
-                bw.sendText(vibrationPattern);
-            case "debug":
+                break;
 
         }
     }

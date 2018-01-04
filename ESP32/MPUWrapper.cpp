@@ -5,8 +5,7 @@ MPUWrapper::MPUWrapper(int i2cAddress) {
 
 
 }
-void MPUWrapper::init(bool printToSerial, void (*callback)(MPUValues), SemaphoreHandle_t* mutex) {
-  this->mutex = *mutex;
+void MPUWrapper::init(bool printToSerial, void (*callback)(MPUValues)) {
 
   while (!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G, i2cAddress))
   {
@@ -22,13 +21,6 @@ void MPUWrapper::init(bool printToSerial, void (*callback)(MPUValues), Semaphore
 
 }
 
-
-void MPUWrapper::createTask(void (*func)(void*)) {
-  #ifdef MULTITHREADING
-  xTaskCreate(    func,    "taskMPU",    20000,    this,    i2cAddress - 0x66,    NULL);
-  #endif
-
-}
 int MPUWrapper::getI2CAddress() {
   return i2cAddress;
 }
@@ -37,30 +29,11 @@ void MPUWrapper::enabledOutputToCallback(boolean enabled) {
   outputToCallback = enabled;
 }
 
-void MPUWrapper::taskMPU() {
-  timer = millis();
-  if (timer < 2500) {
-    vTaskDelay(100);
-    return;
-  }
-  getData();  
-  vTaskDelay((timeStep * 1000) - (millis() - timer));
-
-}
 
 void MPUWrapper::getData() {
 
-#ifdef MULTITHREADING
-  if(xSemaphoreTake(mutex, 250)  =! pdTRUE ){
-    return;
-  }
-#endif
   Vector norm = mpu.readNormalizeGyro();
-
-#ifdef MULTITHREADING
-  xSemaphoreGive(mutex);
-#endif
-  
+ 
   // Calculate Pitch, Roll and Yaw
   pitch = pitch + norm.YAxis * timeStep;
   roll = roll + norm.XAxis * timeStep;
@@ -71,25 +44,24 @@ void MPUWrapper::getData() {
   output += roll;
   output += " y=";
   output += yaw;
+  bool isTriggered = yaw > 60 || yaw < -60;
 
-  if(yaw > 60 || yaw < -60){
-    runi = true;
-  } else {
-    runi = false;
-  }
 
   // Output raw
   if (outputToSerial) {
     Serial.println(output);
     Serial.flush();
   }
-  if (outputToCallback) {
+  
+  if(runi != isTriggered){
+    runi = isTriggered;
     MPUValues value;
     value.pitch = pitch;
     value.roll = roll;
     value.yaw = yaw;
     value.text = output;
     value.i2cAddress = i2cAddress;
+    value.triggered = runi;
     callback(value);
   }
 }

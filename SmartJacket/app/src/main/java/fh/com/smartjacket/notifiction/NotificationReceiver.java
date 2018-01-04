@@ -3,6 +3,7 @@ package fh.com.smartjacket.notifiction;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import fh.com.smartjacket.listener.OnNotificationListener;
 
@@ -19,6 +20,7 @@ public class NotificationReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
+		Log.i("Receiver", "GOT STH!");
 		if (this.onNotificationListener != null) {
 			String packageName = intent.getStringExtra("notification_package_name");
 

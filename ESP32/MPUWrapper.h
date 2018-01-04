@@ -11,6 +11,7 @@ typedef struct MPUValues {
     float yaw;
     String text; 
     int i2cAddress;
+    bool triggered;
 } MPUValues;
 
 class MPUWrapper
@@ -18,7 +19,7 @@ class MPUWrapper
   public:
      
     MPUWrapper(int i2cAddress);
-    void init(bool printToSerial, void (*)(MPUValues),SemaphoreHandle_t*);
+    void init(bool printToSerial, void (*)(MPUValues));
     void createTask(void (*func)(void*));
     void taskMPU();
     int getI2CAddress();
@@ -29,7 +30,6 @@ class MPUWrapper
    
   private:
     MPU6050 mpu;
-    SemaphoreHandle_t mutex;
     int i2cAddress = 0x68;
     boolean runi = false;
     float pitch = 0;
@@ -43,11 +43,6 @@ class MPUWrapper
     void (*callback)(MPUValues);
     void getData();
    
-    
-
-    
-   
-
 };
 
 #endif
