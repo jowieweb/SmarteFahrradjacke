@@ -279,12 +279,17 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         switch (message)
         {
             case "btn":
-                Log.i(LOG_TAG, "BUTTON DOWN!");
+              /*  Log.i(LOG_TAG, "BUTTON DOWN!");
                 //TODO: check if phone call or go home
 
                 Location loc = new GoogleMapsSearch(null).getLocationOfAddress(settingsFragment.loadHomeAddress().toString(),currentLocation );
                 routeFragment.setNewDestination(loc, "Home");
-                break;
+                break; */
+                Log.i(LOG_TAG,"Debug");
+                String vibrationPattern = getResources().getStringArray(R.array.vibration_pattern)[0];
+                bw.sendText(vibrationPattern);
+            case "debug":
+
         }
     }
 }

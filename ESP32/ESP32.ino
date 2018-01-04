@@ -5,6 +5,7 @@
 #include "BLEWrapper.h"
 #include "LEDController.h"
 #include "MotorController.h"
+#include <ArduinoJson.h>
 
 #define dataPin 23
 #define clockPin 18
@@ -46,8 +47,8 @@ void mpuCallback(MPUValues value) {
     led = !led;
     digitalWrite(LED_BUILTIN, led);
     timer = tempTimer;
-    Serial.print(value.i2cAddress);
-    Serial.println(value.text);
+    //Serial.print(value.i2cAddress);
+    //Serial.println(value.text);
     
 #ifdef SENDMPUTOBLE
     if (BLEEnabled) {
@@ -87,7 +88,28 @@ void mpuCallback(MPUValues value) {
 }
 
 void bleCallback(String recv) {
-  //Serial.println(recv);
+  Serial.println(recv);
+  DynamicJsonBuffer jsonBuffer;
+  JsonObject& root = jsonBuffer.parseObject(recv);
+  if (!root.success()) {
+    Serial.println("\n\n\nJSON PARSE FAILED\n\n\n");
+  } else {
+    Serial.println("\n\n\nJSON PARSE OK\n\n\n");
+  }
+  String type = root["type"];
+  if(type == "vibration"){
+      
+    String name = root["name"];
+    Serial.println(name);
+    JsonArray& requests = root["parts"];
+    for (auto& request : requests) {
+      int on = request["on"];
+      int off = request["off"];
+      boolean fadein = request["fadeid"];
+      Serial.println(on);
+    }
+  }
+  
   if (recv == "bv1") {
     motor.spinMotor();
   } else if (recv == "bv0") {
@@ -165,6 +187,7 @@ void ctxButtonDown(){
   if(lastButtonDown +500 > millis()){
     return;
   }
+  Serial.println("\n\nbutton down\n\n");
   lastButtonDown = millis();
   ble->sendText("btn");
   
