@@ -1,4 +1,4 @@
-#include "LEDController.h"
+#include "LedController.h"
 
 LEDController::LEDController(byte dataPin, byte clockPin, int ledCount) {
   this->dataPin = dataPin;
