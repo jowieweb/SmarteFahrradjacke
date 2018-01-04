@@ -1,21 +1,28 @@
 package fh.com.smartjacket.activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.telecom.TelecomManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
@@ -29,13 +36,16 @@ import fh.com.smartjacket.listener.OnFragmentInteractionListener;
 import fh.com.smartjacket.fragment.RouteFragment;
 import fh.com.smartjacket.fragment.SettingsFragment;
 import fh.com.smartjacket.listener.OnAppChosenListener;
+import fh.com.smartjacket.listener.OnIncomingCallListener;
 import fh.com.smartjacket.listener.OnNotificationChangeListener;
 import fh.com.smartjacket.listener.OnNotificationListener;
 import fh.com.smartjacket.notifiction.NotificationReceiver;
 import fh.com.smartjacket.pojo.AppNotification;
 import fh.com.smartjacket.pojo.LightCalculator;
+import fh.com.smartjacket.receiver.TelephoneStateReceiver;
 
-public class MainActivity extends AppCompatActivity implements LocationChangeListener, OnFragmentInteractionListener, OnNotificationListener, MessageReceivedCallback {
+public class MainActivity extends AppCompatActivity implements LocationChangeListener, OnFragmentInteractionListener, OnNotificationListener,
+        MessageReceivedCallback, ActivityCompat.OnRequestPermissionsResultCallback, OnIncomingCallListener {
     public static final int PICK_ROUTE_REQUEST = 1337;
     public static final int PICK_APP_REQUEST = 1338;
     public static final int CONFIG_NOTIFICAION_REQUEST = 1339;
@@ -49,11 +59,10 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     private LightCalculator.LightLevel lightLevel = LightCalculator.LightLevel.Medim;
     private Location currentLocation = new Location("");
     private NotificationReceiver notificationReceiver;
+    private TelephoneStateReceiver telephoneStateReceiver;
 
     private RouteFragment routeFragment = new RouteFragment();
     private SettingsFragment settingsFragment = new SettingsFragment();
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +79,11 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         tabLayout.setupWithViewPager(viewPager);
         setupTabs(tabLayout);
 
+        if(requestIncomingCallPermission()) {
+            setupTelephoneStateReceiver();
+        }
+        requestAnswerCallPermission();
+
         mll = new MyLocationListener(this);
         mll.setOnLocationChangeListener(this);
 
@@ -81,6 +95,93 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         bw.init();
 
         setupNotificationListenerService();
+    }
+
+    private void setupTelephoneStateReceiver() {
+        this.telephoneStateReceiver = new TelephoneStateReceiver(this);
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("android.intent.action.PHONE_STATE");
+        registerReceiver(this.telephoneStateReceiver, filter);
+    }
+
+    private void acceptIncomingCall() {
+        new Thread(() -> {
+			try {
+				//Runtime.getRuntime().exec("input keyevent " + Integer.toString(KeyEvent.KEYCODE_HEADSETHOOK));
+                Thread.sleep(1500);
+                String enforcedPerm = "android.permission.CALL_PRIVILEGED";
+                Intent btnDown = new Intent(Intent.ACTION_MEDIA_BUTTON).putExtra(
+                        Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN,
+                                KeyEvent.KEYCODE_HEADSETHOOK));
+                Intent btnUp = new Intent(Intent.ACTION_MEDIA_BUTTON).putExtra(
+                        Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_UP,
+                                KeyEvent.KEYCODE_HEADSETHOOK));
+                sendOrderedBroadcast(btnDown, enforcedPerm);
+                sendOrderedBroadcast(btnUp, enforcedPerm);
+			} catch (Exception e) {
+			    e.printStackTrace();
+				// Runtime.exec(String) had an I/O problem, try to fall back
+				String enforcedPerm = "android.permission.CALL_PRIVILEGED";
+				Intent btnDown = new Intent(Intent.ACTION_MEDIA_BUTTON).putExtra(
+						Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN,
+								KeyEvent.KEYCODE_HEADSETHOOK));
+				Intent btnUp = new Intent(Intent.ACTION_MEDIA_BUTTON).putExtra(
+						Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_UP,
+								KeyEvent.KEYCODE_HEADSETHOOK));
+				sendOrderedBroadcast(btnDown, enforcedPerm);
+				sendOrderedBroadcast(btnUp, enforcedPerm);
+			}
+		}).start();
+    }
+
+    private boolean requestIncomingCallPermission() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            } else {
+                ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.READ_PHONE_STATE}, 2);
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    private boolean requestAnswerCallPermission() {
+        if (Build.VERSION.SDK_INT >= 26) {
+            if (checkSelfPermission(Manifest.permission.ANSWER_PHONE_CALLS) == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            } else {
+                ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ANSWER_PHONE_CALLS}, 3);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 2:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.i(LOG_TAG, "Permission for reading phone state was granted!");
+                    setupTelephoneStateReceiver();
+
+                } else {
+                    Log.i(LOG_TAG, "Permission for reading phone state was denied!");
+                }
+                break;
+
+            case 3:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.i(LOG_TAG, "Permission for answering phone calls was granted!");
+
+                } else {
+                    Log.i(LOG_TAG, "Permission for answering phone calls was denied!");
+                }
+                break;
+        }
     }
 
     private void setupNotificationListenerService() {
@@ -154,6 +255,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(this.notificationReceiver);
+        //unregisterReceiver(this.telephoneStateReceiver);
     }
 
     @Override
@@ -290,6 +392,24 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
                 bw.sendText(vibrationPattern);
             case "debug":
 
+        }
+    }
+
+    @Override
+    public void onIncomingCall() {
+        Log.d(LOG_TAG, "Got incoming call. Accepting...");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            TelecomManager tm = (TelecomManager) getSystemService(TELECOM_SERVICE);
+
+            if (tm == null) {
+                // whether you want to handle this is up to you really
+                throw new NullPointerException("tm == null");
+            }
+
+            tm.acceptRingingCall();
+
+        } else {
+            acceptIncomingCall();
         }
     }
 }
