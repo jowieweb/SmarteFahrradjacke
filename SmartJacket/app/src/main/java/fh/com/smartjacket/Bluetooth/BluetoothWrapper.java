@@ -45,7 +45,7 @@ public class BluetoothWrapper {
     private  static String LOG_TAG ="BLEWRAPPER";
     private int REQUEST_ENABLE_BT = 1;
     private Handler mHandler;
-    private static final long SCAN_PERIOD = 10000;
+    private static final long SCAN_PERIOD = 100000;
     private BluetoothLeScanner mLEScanner;
     private ScanSettings settings;
     private List<ScanFilter> filters;
@@ -128,7 +128,8 @@ public class BluetoothWrapper {
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
             BluetoothDevice btDevice = result.getDevice();
-            connectToDevice(btDevice);
+            if(btDevice.getAddress().equals("30:AE:A4:38:7F:76"))
+                connectToDevice(btDevice);
         }
 
     };
@@ -141,6 +142,7 @@ public class BluetoothWrapper {
                         @Override
                         public void run() {
                             Log.i(LOG_TAG,  "leScan: " +  device.toString());
+
                             connectToDevice(device);
                         }
                     });
