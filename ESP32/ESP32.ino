@@ -63,7 +63,7 @@ void mpuCallback(MPUValues value) {
       else {
         leds.blink(false, true);
       }
-      motor.spinMotor(true, 255, 255);
+      motor.enqueue(true, 255, 250,0);
       Serial.println("ON");
 
     } else {
@@ -106,6 +106,8 @@ void bleCallback(String recv) {
       int on = request["on"];
       int off = request["off"];
       boolean fadein = request["fadeid"];
+      int duty =  request["dutycycle"];
+      motor.enqueue(fadein,duty,on,off);
       Serial.println(on);
     }
   }

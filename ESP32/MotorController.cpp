@@ -13,15 +13,24 @@ MotorController::MotorController(int motorpin) {
 }
 
 
-void MotorController::spinMotor(bool fadein, byte dutyCycle, int lengthInMs) {
-  this->timeToStop = millis() + lengthInMs;
-  if (fadein) {
-    this->dutyCycle = 10;
-  } else {
-    this->dutyCycle = dutyCycle;
+void MotorController::enqueue(bool fadein, byte dutyCycle, int lengthOnInMs, int lengthOffInMs) {
+
+
+
+  if(lengthOffInMs > 0){
+    spin_t off;
+    off.fadein= false;
+    off.dutyCycle = 0;
+    off.lengthOn = lengthOffInMs;
+    myqueue.push(off);
   }
-  this->dutyCycleToReach = dutyCycle;
-  this->running = true;
+  
+  spin_t obj;
+  obj.fadein= fadein;
+  obj.dutyCycle = dutyCycle;
+  obj.lengthOn = lengthOnInMs;
+  myqueue.push(obj);
+
 
 }
 
@@ -35,16 +44,35 @@ void MotorController::stopMotor() {
   this->dutyCycle = 0;
 }
 
-void MotorController::loop() {
-  if (!running)
-    return;
+void MotorController::getFromQueue(){
+  spin_t obj = myqueue.front();
+  myqueue.pop();
+  
 
+  this->timeToStop = millis() + obj.lengthOn;
+  if (obj.fadein) {
+    this->dutyCycle = 10;
+  } else {
+    this->dutyCycle = obj.dutyCycle;
+  }
+  this->dutyCycleToReach = obj.dutyCycle;
+  this->running = true;
+}
+
+void MotorController::loop() {
+  if(myqueue.size() > 0)
+    Serial.println(myqueue.size());
+  if (!running){
+    if(!myqueue.empty()){
+      getFromQueue();
+    }
+    return;  
+  }
   //has to stop now
   if (timeToStop < millis()) {
     running = false;
     dutyCycle = 0;
     ledcWrite(usedChannel, dutyCycle);
-    return;
   }
 
   //this might be to fast to notice
