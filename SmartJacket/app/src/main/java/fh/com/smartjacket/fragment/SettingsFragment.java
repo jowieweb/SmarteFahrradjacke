@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -72,7 +73,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 			return false;
 		});
 
-		Button useCurrentLocationAsHome = view.findViewById(R.id.fragmentSettingsChooseCurrentLocation);
+		ImageButton useCurrentLocationAsHome = view.findViewById(R.id.fragmentSettingsChooseCurrentLocation);
 		useCurrentLocationAsHome.setOnClickListener((View view1) -> {
 			if(currentLocation.getLatitude() == 0 && currentLocation.getLongitude() == 0){
 				return;
