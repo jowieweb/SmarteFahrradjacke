@@ -23,6 +23,15 @@ public class HomeAddress {
             postcode = "32427 Minden";
             hausnumber = "15";
         }
+        if(address.length() == 0){
+            address = " ";
+        }
+        if(postcode.length() == 0){
+            postcode = " ";
+        }
+        if(hausnumber.length() == 0){
+            hausnumber = " ";
+        }
     }
 
     public HomeAddress(String address, String postcode, String hausnumber){

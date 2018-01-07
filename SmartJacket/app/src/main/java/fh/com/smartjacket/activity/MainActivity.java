@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     private NotificationReceiver notificationReceiver;
     private TelephoneStateReceiver telephoneStateReceiver;
 
+    private boolean isRinging = false;
     private RouteFragment routeFragment = new RouteFragment();
     private SettingsFragment settingsFragment = new SettingsFragment();
 
@@ -105,33 +106,45 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     }
 
     private void acceptIncomingCall() {
-        new Thread(() -> {
-			try {
-				//Runtime.getRuntime().exec("input keyevent " + Integer.toString(KeyEvent.KEYCODE_HEADSETHOOK));
-                Thread.sleep(1500);
-                String enforcedPerm = "android.permission.CALL_PRIVILEGED";
-                Intent btnDown = new Intent(Intent.ACTION_MEDIA_BUTTON).putExtra(
-                        Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN,
-                                KeyEvent.KEYCODE_HEADSETHOOK));
-                Intent btnUp = new Intent(Intent.ACTION_MEDIA_BUTTON).putExtra(
-                        Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_UP,
-                                KeyEvent.KEYCODE_HEADSETHOOK));
-                sendOrderedBroadcast(btnDown, enforcedPerm);
-                sendOrderedBroadcast(btnUp, enforcedPerm);
-			} catch (Exception e) {
-			    e.printStackTrace();
-				// Runtime.exec(String) had an I/O problem, try to fall back
-				String enforcedPerm = "android.permission.CALL_PRIVILEGED";
-				Intent btnDown = new Intent(Intent.ACTION_MEDIA_BUTTON).putExtra(
-						Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN,
-								KeyEvent.KEYCODE_HEADSETHOOK));
-				Intent btnUp = new Intent(Intent.ACTION_MEDIA_BUTTON).putExtra(
-						Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_UP,
-								KeyEvent.KEYCODE_HEADSETHOOK));
-				sendOrderedBroadcast(btnDown, enforcedPerm);
-				sendOrderedBroadcast(btnUp, enforcedPerm);
-			}
-		}).start();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            TelecomManager tm = (TelecomManager) getSystemService(TELECOM_SERVICE);
+
+            if (tm == null) {
+                // whether you want to handle this is up to you really
+                throw new NullPointerException("tm == null");
+            }
+
+            tm.acceptRingingCall();
+
+        } else {
+            new Thread(() -> {
+                try {
+                    //Runtime.getRuntime().exec("input keyevent " + Integer.toString(KeyEvent.KEYCODE_HEADSETHOOK));
+                    Thread.sleep(1500);
+                    String enforcedPerm = "android.permission.CALL_PRIVILEGED";
+                    Intent btnDown = new Intent(Intent.ACTION_MEDIA_BUTTON).putExtra(
+                            Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN,
+                                    KeyEvent.KEYCODE_HEADSETHOOK));
+                    Intent btnUp = new Intent(Intent.ACTION_MEDIA_BUTTON).putExtra(
+                            Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_UP,
+                                    KeyEvent.KEYCODE_HEADSETHOOK));
+                    sendOrderedBroadcast(btnDown, enforcedPerm);
+                    sendOrderedBroadcast(btnUp, enforcedPerm);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // Runtime.exec(String) had an I/O problem, try to fall back
+                    String enforcedPerm = "android.permission.CALL_PRIVILEGED";
+                    Intent btnDown = new Intent(Intent.ACTION_MEDIA_BUTTON).putExtra(
+                            Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_DOWN,
+                                    KeyEvent.KEYCODE_HEADSETHOOK));
+                    Intent btnUp = new Intent(Intent.ACTION_MEDIA_BUTTON).putExtra(
+                            Intent.EXTRA_KEY_EVENT, new KeyEvent(KeyEvent.ACTION_UP,
+                                    KeyEvent.KEYCODE_HEADSETHOOK));
+                    sendOrderedBroadcast(btnDown, enforcedPerm);
+                    sendOrderedBroadcast(btnUp, enforcedPerm);
+                }
+            }).start();
+        }
     }
 
     private boolean requestIncomingCallPermission() {
@@ -382,10 +395,15 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         {
             case "btn":
                 Log.i(LOG_TAG, "BUTTON DOWN!");
-                //TODO: check if phone call or go home
-
-                Location loc = new GoogleMapsSearch(null).getLocationOfAddress(settingsFragment.loadHomeAddress().toString(),currentLocation );
-                routeFragment.setNewDestination(loc, "Home");
+                if(isRinging){
+                    bw.sendText("bv0");
+                    acceptIncomingCall();
+                } else
+                {
+                    Location loc = new GoogleMapsSearch(null).getLocationOfAddress(settingsFragment.loadHomeAddress().toString(),currentLocation );
+                    routeFragment.setNewDestination(loc, "Home");
+                    break;
+                }
                 break;
 
         }
@@ -393,19 +411,15 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
 
     @Override
     public void onIncomingCall() {
-        Log.d(LOG_TAG, "Got incoming call. Accepting...");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            TelecomManager tm = (TelecomManager) getSystemService(TELECOM_SERVICE);
+        Log.d(LOG_TAG, "Got incoming call.");
+        bw.sendText("bv1");
+        isRinging = true;
 
-            if (tm == null) {
-                // whether you want to handle this is up to you really
-                throw new NullPointerException("tm == null");
-            }
+    }
 
-            tm.acceptRingingCall();
-
-        } else {
-            acceptIncomingCall();
-        }
+    public void onCallCanceled(){
+        Log.d(LOG_TAG, "incoming call canceled");
+        bw.sendText("bv0");
+        isRinging = false;
     }
 }

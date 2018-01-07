@@ -6,4 +6,5 @@ package fh.com.smartjacket.listener;
 
 public interface OnIncomingCallListener {
 	void onIncomingCall();
+	void onCallCanceled();
 }
