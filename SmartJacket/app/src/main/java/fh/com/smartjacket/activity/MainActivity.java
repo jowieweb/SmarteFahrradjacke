@@ -412,7 +412,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     @Override
     public void onIncomingCall() {
         Log.d(LOG_TAG, "Got incoming call.");
-        bw.sendText("bv1");
+        bw.sendText(getString(R.string.intent_extra_vibration_pattern_incomming_call));
         isRinging = true;
 
     }

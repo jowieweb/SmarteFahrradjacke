@@ -4,6 +4,8 @@ import android.location.Location;
 
 import org.json.JSONObject;
 
+import fh.com.smartjacket.R;
+
 /**
  * Created by jowie on 05.12.2017.
  */
@@ -53,6 +55,7 @@ public class TurnPoint {
                 ", narrativ='" + narrativ + '\'' +
                 '}';
     }
+
 
     public Location getLocation(){ return location;}
 
