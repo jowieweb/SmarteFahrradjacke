@@ -83,7 +83,7 @@ void setup() {
 
   Serial.begin(115200);
 
-  mpu.init(false, &mpuCallback);
+  mpu.init(true, &mpuCallback);
   mpu.enabledOutputToCallback(true);
 
 

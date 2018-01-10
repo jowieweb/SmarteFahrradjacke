@@ -35,6 +35,12 @@ class MPUWrapper
     float pitch = 0;
     float roll = 0;
     float yaw = 0;
+
+    float pitch_last = 0;
+    float roll_last = 0;
+    float yaw_last = 0;
+    unsigned long timeLastUpdate = 0;
+    
     unsigned long timer = 0;
     float timeStep = 0.01;
     const TickType_t xDelay = 100 / portTICK_PERIOD_MS;
@@ -42,6 +48,8 @@ class MPUWrapper
     boolean outputToCallback = false;
     void (*callback)(MPUValues);
     void getData();
+    void checkReCal();
+    void setto();
    
 };
 

@@ -33,7 +33,7 @@ void MPUWrapper::enabledOutputToCallback(boolean enabled) {
 void MPUWrapper::getData() {
 
   Vector norm = mpu.readNormalizeGyro();
- 
+
   // Calculate Pitch, Roll and Yaw
   pitch = pitch + norm.YAxis * timeStep;
   roll = roll + norm.XAxis * timeStep;
@@ -52,8 +52,8 @@ void MPUWrapper::getData() {
     Serial.println(output);
     Serial.flush();
   }
-  
-  if(runi != isTriggered){
+
+  if (runi != isTriggered) {
     runi = isTriggered;
     MPUValues value;
     value.pitch = pitch;
@@ -69,27 +69,65 @@ void MPUWrapper::getData() {
 void MPUWrapper::loop() {
   long tempTimer =  millis();
 
-  if(tempTimer < timer){
+  if (tempTimer < timer) {
     return;
   }
 
   getData();
+  checkReCal();
   long timeNow = millis();
-  timer = (timeStep * 1000) + timeNow - (timeNow - tempTimer); //(timeStep * 1000) - (millis() - tempTimer);
+  timer = timeNow + 10; //(timeStep * 1000) + timeNow - (timeNow - tempTimer); //(timeStep * 1000) - (millis() - tempTimer);
 }
 
-boolean MPUWrapper::isTriggerd(){
+
+void MPUWrapper::checkReCal() {
+  if (!(pitch + 5 > pitch_last && pitch - 5 < pitch_last)) {
+   setto();
+    return;
+  }
+  if (!(roll + 5 > roll_last && roll - 5 < roll_last)) {
+    setto();
+    return;
+  }
+  if (!(yaw + 5 > yaw_last && yaw - 5 < yaw_last)) {
+    setto();
+    return;
+  }
+
+  if (millis() > timeLastUpdate + 5000) {
+    Serial.println("\nRESET\n");
+    pitch = 0.0;
+    roll = 0.0;
+    yaw = 0.0;
+    pitch_last = 0.0;
+    roll_last = 0.0;
+    yaw_last = 0.0;
+    timeLastUpdate = millis();
+  }
+
+}
+
+void MPUWrapper::setto() {
+  timeLastUpdate = millis();
+  pitch_last = pitch;
+  roll_last = roll;
+  yaw_last = yaw;
+
+}
+
+
+boolean MPUWrapper::isTriggerd() {
   return runi;
 }
 
-Vector MPUWrapper::getAccel(){
+Vector MPUWrapper::getAccel() {
   Vector ret = mpu.readNormalizeAccel();
-  
+
   Serial.print("\n\n\n");
   Serial.print(ret.XAxis);
   Serial.print("\t");
   Serial.print(ret.YAxis);
-  Serial.print("\t");  
+  Serial.print("\t");
   Serial.print(ret.ZAxis);
   Serial.print("\t");
 }
