@@ -231,7 +231,10 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 			if(location.distanceTo(tp.getLocation())< 20){
 				//found one
 				Log.d(LOG_TAG, "Navigation found point " + tp);
-				BluetoothWrapper.getInstance().sendText(tp);
+				if(tp.getTurnDirection() == TurnPoint.TurnDirection.left)
+					BluetoothWrapper.getInstance().sendText((getString(R.string.intent_extra_turn_left)));
+				else if(tp.getTurnDirection() == TurnPoint.TurnDirection.right)
+					BluetoothWrapper.getInstance().sendText((getString(R.string.intent_extra_turn_right)));
 			}
 		}
 	}

@@ -60,24 +60,21 @@ void bleCallback(String recv) {
       boolean fadein = request["fadeid"];
       int duty =  request["dutycycle"];
       motor.enqueue(fadein,duty,on,off);
+      //todo: do same stuff with 2 motor controller
       Serial.println(on);
     }
+  } else if ( type == "turnleft"){
+    //dostuff
+  } else if ( type == "turnright"){
+    //dostuff
   }
   
   if (recv == "bv1") {
     motor.spinMotor();
   } else if (recv == "bv0") {
     motor.stopMotor();
-  } else if(recv.indexOf("turn: ") >=0){
-    //turn message
-    if(recv.indexOf("turn: left") >= 0){
-      //turn left
-      
-    } else if (recv.indexOf("turn: right") >= 0){
-      //turn right
-      
-    }
-  }
+  } 
+  
 }
 
 
@@ -86,7 +83,7 @@ void setup() {
 
   Serial.begin(115200);
 
-  mpu.init(false, &mpuCallback);
+  mpu.init(true, &mpuCallback);
   mpu.enabledOutputToCallback(true);
 
 
