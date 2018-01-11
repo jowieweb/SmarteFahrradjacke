@@ -9,7 +9,7 @@ void MPUWrapper::init(bool printToSerial, void (*callback)(MPUValues)) {
 
   while (!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G, i2cAddress))
   {
-    Serial.print("Could not find a valid MPU6050 sensor at address");
+    Serial.print("Could not find a valid MPU6050 sensor at address ");
     Serial.print(i2cAddress, HEX);
     Serial.println(", check wiring!");
     delay(500);

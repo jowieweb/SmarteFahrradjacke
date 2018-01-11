@@ -19,7 +19,6 @@
     private:
     
       BLECharacteristic *pCharacteristic;
-
       bool deviceConnected = false;
       uint8_t txValue = 0;
       const TickType_t xDelay = 1000 / portTICK_PERIOD_MS;

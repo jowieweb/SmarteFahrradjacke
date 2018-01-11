@@ -1,88 +1,73 @@
 #include "LedController.h"
 
-LEDController::LEDController(byte dataPin, byte clockPin, int ledCount) {
-  this->dataPin = dataPin;
-  this->clockPin = clockPin;
-  this->ledCount = ledCount;
-  strip = Adafruit_WS2801(ledCount, dataPin, clockPin);
-  strip.begin();
-  this->blinkColor = getColor(200, 0, 100,1);
-  this->blinkHighColor = getColor(255, 0, 190,1);
+LEDController::LEDController(Pololu::APA102Base* strip) {
+  this->strip = strip;
+  color_normal.red = 254;
+  color_normal.green = 150;
+  color_normal.blue = 8;
+  color_normal.brightness = 10;
+
+  off.red = 0;
+  off.green = 0;
+  off.blue = 0;
+  off.brightness = 0;
+  for (int i = 0; i < 72; i++) {
+    colorOrange[i] = off;
+    colorOff[i] = off;
+  }
+  colorOrange[10].brightness = 31;
 }
 
 
-void LEDController::loop(){
-  if(isBlinking()){
-    if(blinkTimer+125 < millis()){
-      strip.setPixelColor(blinkHighLed, blinkColor);
-      if(blinkRight){
-        
-      } else {
-        
-      }
-      blinkHighLed= (blinkHighLed + blinkDirection) % ledCount;
-      //check for negative -> flips to 255 so bigger
-      if(blinkHighLed > ledCount)
-      {
-        blinkHighLed = ledCount-1;
-      }
-      strip.setPixelColor(blinkHighLed, blinkHighColor);
-      strip.show();
-      Serial.print("highLED: ");      
-      Serial.println(blinkHighLed);
-      blinkTimer = millis();
-      
+void LEDController::loop() {
+
+  if (blinkActive) {
+   // Serial.println("COLOR!");
+
+    if ( blinkStartTime + 7000 <  millis()) {
+      blinkActive = false;
     }
-  }
-}
 
-void LEDController::blink(boolean blinkRight, boolean enable){
-  if(enable == blinkActive){
-    return;
-  }
-  this->blinkRight = blinkRight;
-  if(blinkRight){
-    blinkDirection = 1;
+    if (blinkTimer + 3 < millis()) {
+      blinkTimer = millis();
+      colorOrange[ledIndex] = color_normal;
+      ledIndex++;
+      strip->write(colorOrange, 72, 10);
+      if (ledIndex == 72) {
+        ledIndex = 0;
+        for (int i = 0; i < 72; i++) {
+          colorOrange[i] = off;
+        }
+      }
+
+    }
   } else {
-    blinkDirection = -1;
-  }
-  
-  if(enable){
-    blinkActive= true;
-    this->blinkRight = blinkRight;
-    setColor(blinkColor);
-  } else{
-    blinkActive= false;
+    //Serial.println("NO COLOR!");
+    strip->write(colorOff, 72, 10);
   }
 }
 
-boolean LEDController::isBlinking(){
+boolean LEDController::isBlinking() {
   return this->blinkActive;
 }
 
 
-void LEDController::setBrightness(byte brightness){
+void LEDController::setBrightness(byte brightness) {
   this->brightness = brightness;
 }
 
-uint32_t LEDController::getColor(byte r, byte g, byte b, int brightness){
-  //brightness = 1 + (brightness/10);
-  r = r / brightness;
-  g = g / brightness;
-  b = b / brightness;
-  uint32_t c;
-  c = r;
-  c <<= 8;
-  c |= g;
-  c <<= 8;
-  c |= b;
-  return c;
+void LEDController::startBreak() {
+
 }
 
-void LEDController::setColor(uint32_t c) {
-  for (int i = 0; i < ledCount; i++) {
-    strip.setPixelColor(i, c);
-  }
-  strip.show();
+void LEDController::stopBreak() {
+
+}
+
+void LEDController::startBlink() {
+  Serial.println("START BLINK");
+  blinkActive = true;
+  blinkStartTime = millis();
+  blinkTimer = millis();
 }
 
