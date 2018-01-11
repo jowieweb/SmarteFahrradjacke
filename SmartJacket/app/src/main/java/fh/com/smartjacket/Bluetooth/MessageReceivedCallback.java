@@ -6,4 +6,6 @@ package fh.com.smartjacket.Bluetooth;
 
 public interface MessageReceivedCallback {
     public void BLEMessageReceived(byte[] data);
+    void BLEDeviceConnected();
+    void BLEDeviceDisconnected();
 }

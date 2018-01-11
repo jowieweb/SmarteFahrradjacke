@@ -20,9 +20,9 @@ import android.support.v7.widget.Toolbar;
 import android.telecom.TelecomManager;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import fh.com.smartjacket.Bluetooth.BluetoothWrapper;
@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     public static final int CONFIG_NOTIFICAION_REQUEST = 1339;
     private static final String LOG_TAG = "MainActivity";
 
+    private ImageView bluetoothImageView;
     private BluetoothWrapper bw;
     private MyLocationListener mll;
     private LocationChangeListener onLocationChangeListener;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle(getString(R.string.app_name));
 
         ViewPager viewPager = findViewById(R.id.viewPager);
         setupViewPager(viewPager);
@@ -78,6 +80,8 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
         setupTabs(tabLayout);
+
+        this.bluetoothImageView = findViewById(R.id.activity_main_bluetooth_icon);
 
         if(requestIncomingCallPermission()) {
             setupTelephoneStateReceiver();
@@ -389,6 +393,16 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
                 break;
 
         }
+    }
+
+    @Override
+    public void BLEDeviceConnected() {
+        this.bluetoothImageView.setImageDrawable(getDrawable(R.drawable.ic_action_ble_device_connected));
+    }
+
+    @Override
+    public void BLEDeviceDisconnected() {
+        this.bluetoothImageView.setImageDrawable(getDrawable(R.drawable.ic_action_bluetooth));
     }
 
     @Override

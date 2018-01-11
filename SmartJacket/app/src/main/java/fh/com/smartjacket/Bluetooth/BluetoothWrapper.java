@@ -163,11 +163,17 @@ public class BluetoothWrapper {
             switch (newState) {
                 case BluetoothProfile.STATE_CONNECTED:
                     Log.i(LOG_TAG, "!!STATE_CONNECTED!!");
+                    if (callback != null) {
+                        callback.BLEDeviceConnected();
+                    }
                     gatt.discoverServices();
                     isConnected = true;
                     break;
                 case BluetoothProfile.STATE_DISCONNECTED:
                     Log.i(LOG_TAG, "!!STATE_DISCONNECTED!!");
+                    if (callback != null) {
+                        callback.BLEDeviceDisconnected();
+                    }
                     isConnected = false;
                     startScan();
                     break;
