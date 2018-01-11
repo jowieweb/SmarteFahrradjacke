@@ -1,24 +1,29 @@
 
 //#define SENDMPUTOBLE
 
+#include <APA102.h>
 #include "MPUWrapper.h"
 #include "BLEWrapper.h"
 #include "LEDController.h"
 #include "MotorController.h"
+
+
 #include <ArduinoJson.h>
 
-#define dataPin 23
-#define clockPin 18
+#define dataPin 13
+#define clockPin 14
 #define LEDLEN 4
 #define ENABLEDBLE 32
 #define CTXBUTTON 25
 
+APA102<13, 14> ledStrip;
+APA102<23, 18> ledStrip2;
 
 MPUWrapper mpu(0x68);
 MPUWrapper mpu2(0x69);
 BLEWrapper *ble;
-LEDController leds(dataPin, clockPin, LEDLEN);
-MotorController motor(2);
+LEDController *leds;
+MotorController motor(19);
 
 
 boolean BLEEnabled = false;
@@ -33,9 +38,12 @@ void mpuCallback(MPUValues value) {
   Serial.print("MPU Callback ");
   Serial.print(triggered);
   Serial.println(turnRight);
-  
-  leds.blink(turnRight, triggered);
-  motor.enqueue(true, 255, 250,0);
+
+  if (triggered) {
+    leds->startBlink();
+  }
+
+  motor.enqueue(true, 255, 250, 0);
 
 }
 
@@ -49,8 +57,8 @@ void bleCallback(String recv) {
     Serial.println("\n\n\nJSON PARSE OK\n\n\n");
   }
   String type = root["type"];
-  if(type == "vibration"){
-      
+  if (type == "vibration") {
+
     String name = root["name"];
     Serial.println(name);
     JsonArray& requests = root["parts"];
@@ -59,31 +67,34 @@ void bleCallback(String recv) {
       int off = request["off"];
       boolean fadein = request["fadeid"];
       int duty =  request["dutycycle"];
-      motor.enqueue(fadein,duty,on,off);
+      motor.enqueue(fadein, duty, on, off);
       //todo: do same stuff with 2 motor controller
       Serial.println(on);
     }
-  } else if ( type == "turnleft"){
+  } else if ( type == "turnleft") {
     //dostuff
-  } else if ( type == "turnright"){
+  } else if ( type == "turnright") {
     //dostuff
   }
-  
+
   if (recv == "bv1") {
     motor.spinMotor();
   } else if (recv == "bv0") {
     motor.stopMotor();
-  } 
-  
+  }
+
 }
 
 
 void setup() {
+  delay(100);
   pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.begin(115200);
 
-  mpu.init(true, &mpuCallback);
+  leds = new LEDController((Pololu::APA102Base*)&ledStrip);
+
+  mpu.init(false, &mpuCallback);
   mpu.enabledOutputToCallback(true);
 
 
@@ -93,50 +104,53 @@ void setup() {
 
 
   pinMode(ENABLEDBLE, INPUT_PULLUP);
-  pinMode(CTXBUTTON, INPUT_PULLUP);
-
-  attachInterrupt(digitalPinToInterrupt(CTXBUTTON), ctxButtonDown, FALLING);
+  // pinMode(CTXBUTTON, INPUT_PULLUP);
+  touchAttachInterrupt(4, ctxButtonDown, 10);
+  //attachInterrupt(digitalPinToInterrupt(CTXBUTTON), ctxButtonDown, FALLING);
 }
 
-
+long bletimer = 2500;
 
 void loop()
 {
-  if (!BLEEnabled) {
-    if (!digitalRead(ENABLEDBLE)) {
-      BLEEnabled = true;
-      Serial.println("\n\n\nENABLEDBLE\n\n\n");
-      ble = new BLEWrapper();
-      ble->start(&bleCallback);
-    }
-  }
-  
+   if (!BLEEnabled) {
+    if(millis() > bletimer){
+       BLEEnabled = true;
+       Serial.println("\n\n\nENABLEDBLE\n\n\n");
+       ble = new BLEWrapper();
+       ble->start(&bleCallback);
+     }
+    } 
+
   mpu.loop();
   mpu2.loop();
 
-  leds.loop();
+  leds->loop();
   motor.loop();
-  
+
   long tempTimer = millis();
   if (tempTimer > timer + 200) {
     led = !led;
     digitalWrite(LED_BUILTIN, led);
     timer = tempTimer;
   }
+  //Serial.println(touchRead(4));   // get value using GPIO 4
+
 
 }
 
-void ctxButtonDown(){
-  if(!BLEEnabled || !ble){
-    return;
-  } 
-  if(lastButtonDown +500 > millis()){
+void ctxButtonDown() {
+  Serial.println("\n\nbutton down\n\n");
+  if (!BLEEnabled || !ble) {
     return;
   }
-  Serial.println("\n\nbutton down\n\n");
+  if (lastButtonDown + 500 > millis()) {
+    return;
+  }
+
   lastButtonDown = millis();
   ble->sendText("btn");
-  
+
 }
 
 
