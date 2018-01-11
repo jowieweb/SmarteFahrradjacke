@@ -85,13 +85,14 @@ public class MyLocationListener implements android.location.LocationListener {
     }
 
     private boolean checkLastPosition(Location lastKnownLocation){
-        if (lastKnownLocation != null && lastKnownLocation.getTime() < Calendar.getInstance().getTimeInMillis() - 15 * 60 * 1000) {
+       /* if (lastKnownLocation != null && lastKnownLocation.getTime() < Calendar.getInstance().getTimeInMillis() - 15 * 60 * 1000) {
 
             // Last known location is not older than 15 minutes -> use it
             setLastLocation(lastKnownLocation);
             return  true;
         }
-        return  false;
+        return  false;*/
+       return true;
 
     }
 
