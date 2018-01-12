@@ -2,7 +2,10 @@
   #define LEDCONTROLLER_H
   #include "Adafruit_WS2801.h"
   #include <APA102.h>
-
+  #define LEDCOUNT 72
+  #define BLINKMSTIME 7000
+  #define BLINKSPEED 3
+  
   class LEDController
   {
     public:

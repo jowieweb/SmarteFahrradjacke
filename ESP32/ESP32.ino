@@ -10,20 +10,32 @@
 
 #include <ArduinoJson.h>
 
-#define dataPin 13
-#define clockPin 14
-#define LEDLEN 4
-#define ENABLEDBLE 32
-#define CTXBUTTON 25
+#define RIGHTLEDDATA 13
+#define RIGHTLEDCLOCK 14
+#define LEFTLEDDATA 23
+#define LEFTLEDCLOCK 18
+#define RIGHTMPUADDRESS 0x68
+#define LEFTMPUADDRESS 0x69
+#define RIGHTMOTORPIN 2
+#define LEFTMOTORPIN 19
+#define TOUCHBUTTONPIN 4
+#define TOUCHBUTTONTHRESHOLD 10
 
-APA102<13, 14> ledStrip;
-APA102<23, 18> ledStrip2;
+#define BLEENABLETIME 2500
 
-MPUWrapper mpu(0x68);
-MPUWrapper mpu2(0x69);
 BLEWrapper *ble;
-LEDController *leds;
-MotorController motor(19);
+
+APA102<RIGHTLEDDATA, RIGHTLEDCLOCK> ledStrip;
+APA102<LEFTLEDDATA, LEFTLEDCLOCK> ledStrip2;
+
+MPUWrapper mpu(RIGHTMPUADDRESS);
+MPUWrapper mpu2(LEFTMPUADDRESS);
+
+LEDController *ledRight;
+LEDController *ledLeft;
+
+MotorController motorRight(RIGHTMOTORPIN);
+MotorController motorLeft(LEFTMOTORPIN);
 
 
 boolean BLEEnabled = false;
@@ -32,6 +44,10 @@ long timer;
 bool led = false;
 
 
+/**
+ * callback for the mpus 
+ * both, the left and the right mpu call this function, if yaw is greater than 60°
+ */
 void mpuCallback(MPUValues value) {
   bool triggered = value.triggered;
   bool turnRight = value.i2cAddress == 0x68;
@@ -40,13 +56,22 @@ void mpuCallback(MPUValues value) {
   Serial.println(turnRight);
 
   if (triggered) {
-    leds->startBlink();
+    if (turnRight){
+      ledRight->startBlink();
+       motorRight.enqueue(true, 255, 250, 0);
+    }
+    else{
+      ledLeft->startBlink();
+      motorLeft.enqueue(true, 255, 250, 0);
+    }
+      
   }
-
-  motor.enqueue(true, 255, 250, 0);
-
 }
 
+/**
+ * callback function for the BLE
+ * called, whem BLE received a message
+ */
 void bleCallback(String recv) {
   Serial.println(recv);
   DynamicJsonBuffer jsonBuffer;
@@ -67,32 +92,42 @@ void bleCallback(String recv) {
       int off = request["off"];
       boolean fadein = request["fadeid"];
       int duty =  request["dutycycle"];
-      motor.enqueue(fadein, duty, on, off);
+      motorRight.enqueue(fadein, duty, on, off);
+      motorLeft.enqueue(fadein, duty, on, off);
       //todo: do same stuff with 2 motor controller
       Serial.println(on);
     }
   } else if ( type == "turnleft") {
+    motorLeft.enqueue(true, 255, 500, 0);
     //dostuff
   } else if ( type == "turnright") {
     //dostuff
+    motorRight.enqueue(true, 255, 500, 0);
   }
 
   if (recv == "bv1") {
-    motor.spinMotor();
+    motorLeft.spinMotor();
+    motorRight.spinMotor();
   } else if (recv == "bv0") {
-    motor.stopMotor();
+    motorLeft.stopMotor();
+    motorRight.stopMotor();
   }
 
 }
 
-
+/**
+ * main entrypoint for the application code
+ * called once at startup
+ */
 void setup() {
   delay(100);
   pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.begin(115200);
+  Serial.println("booted!");
 
-  leds = new LEDController((Pololu::APA102Base*)&ledStrip);
+  ledRight = new LEDController((Pololu::APA102Base*)&ledStrip);
+  ledLeft = new LEDController((Pololu::APA102Base*)&ledStrip2);
 
   mpu.init(false, &mpuCallback);
   mpu.enabledOutputToCallback(true);
@@ -102,43 +137,51 @@ void setup() {
   mpu2.enabledOutputToCallback(true);
 
 
-
-  pinMode(ENABLEDBLE, INPUT_PULLUP);
-  // pinMode(CTXBUTTON, INPUT_PULLUP);
-  touchAttachInterrupt(4, ctxButtonDown, 10);
-  //attachInterrupt(digitalPinToInterrupt(CTXBUTTON), ctxButtonDown, FALLING);
+  touchAttachInterrupt(TOUCHBUTTONPIN, ctxButtonDown, TOUCHBUTTONTHRESHOLD);
 }
 
-long bletimer = 2500;
 
+/**
+ * main loop
+ * called constantly
+ */
 void loop()
 {
-   if (!BLEEnabled) {
-    if(millis() > bletimer){
-       BLEEnabled = true;
-       Serial.println("\n\n\nENABLEDBLE\n\n\n");
-       ble = new BLEWrapper();
-       ble->start(&bleCallback);
-     }
-    } 
+  if (!BLEEnabled) {
+    if (millis() > BLEENABLETIME) {
+      BLEEnabled = true;
+      Serial.println("\n\n\nENABLEDBLE\n\n\n");
+      ble = new BLEWrapper();
+      ble->start(&bleCallback);
+    }
+  }
 
   mpu.loop();
   mpu2.loop();
 
-  leds->loop();
-  motor.loop();
+  ledRight->loop();
+  ledLeft->loop();
+  motorRight.loop();
+  motorLeft.loop();
+  heartbeat();
 
-  long tempTimer = millis();
+}
+
+/**
+ * create 5hz a heartbeat on the build in LED
+ */
+void heartbeat(){
+    long tempTimer = millis();
   if (tempTimer > timer + 200) {
     led = !led;
     digitalWrite(LED_BUILTIN, led);
     timer = tempTimer;
   }
-  //Serial.println(touchRead(4));   // get value using GPIO 4
-
-
 }
 
+/**
+ * callback for the TouchButton
+ */
 void ctxButtonDown() {
   Serial.println("\n\nbutton down\n\n");
   if (!BLEEnabled || !ble) {

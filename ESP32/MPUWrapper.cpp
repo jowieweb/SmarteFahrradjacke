@@ -1,10 +1,15 @@
 #include "MPUWrapper.h"
 
+/**
+ * constructor for the class
+ */
 MPUWrapper::MPUWrapper(int i2cAddress) {
   this->i2cAddress = i2cAddress;
-
-
 }
+
+/** 
+ *  initiate the mpu
+ */
 void MPUWrapper::init(bool printToSerial, void (*callback)(MPUValues)) {
 
   while (!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G, i2cAddress))
@@ -25,11 +30,18 @@ int MPUWrapper::getI2CAddress() {
   return i2cAddress;
 }
 
+/**
+ * enable the output to the callback, if yaw is greater than 60°
+ */
 void MPUWrapper::enabledOutputToCallback(boolean enabled) {
   outputToCallback = enabled;
 }
 
 
+/**
+ * get the data from the mpu
+ * and set it to the attributes
+ */
 void MPUWrapper::getData() {
 
   Vector norm = mpu.readNormalizeGyro();
@@ -66,6 +78,10 @@ void MPUWrapper::getData() {
   }
 }
 
+/**
+ * main loop of the class
+ * has to be called instantly
+ */
 void MPUWrapper::loop() {
   long tempTimer =  millis();
 
@@ -80,6 +96,10 @@ void MPUWrapper::loop() {
 }
 
 
+/**
+ * recalibrate the pitch, yaw and roll values
+ * only happens, if not much movement is deteceted over a periode of 10 sec.
+ */
 void MPUWrapper::checkReCal() {
   if (!(pitch + 5 > pitch_last && pitch - 5 < pitch_last)) {
    setto();
@@ -94,7 +114,7 @@ void MPUWrapper::checkReCal() {
     return;
   }
 
-  if (millis() > timeLastUpdate + 5000) {
+  if (millis() > timeLastUpdate + RESETTIME) {
     Serial.println("\nRESET\n");
     pitch = 0.0;
     roll = 0.0;
@@ -107,19 +127,10 @@ void MPUWrapper::checkReCal() {
 
 }
 
-void MPUWrapper::setto() {
-  timeLastUpdate = millis();
-  pitch_last = pitch;
-  roll_last = roll;
-  yaw_last = yaw;
 
-}
-
-
-boolean MPUWrapper::isTriggerd() {
-  return runi;
-}
-
+/**
+ * get the acceleration data from the MPU
+ */
 Vector MPUWrapper::getAccel() {
   Vector ret = mpu.readNormalizeAccel();
 
@@ -130,5 +141,19 @@ Vector MPUWrapper::getAccel() {
   Serial.print("\t");
   Serial.print(ret.ZAxis);
   Serial.print("\t");
+}
+
+
+
+void MPUWrapper::setto() {
+  timeLastUpdate = millis();
+  pitch_last = pitch;
+  roll_last = roll;
+  yaw_last = yaw;
+}
+
+
+boolean MPUWrapper::isTriggerd() {
+  return runi;
 }
 
