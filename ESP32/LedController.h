@@ -1,7 +1,7 @@
 #ifndef LEDCONTROLLER_H
   #define LEDCONTROLLER_H
   #include "Adafruit_WS2801.h"
-  #include <APA102.h>
+  #include "Apa102c.hpp"
   #define LEDCOUNT 72
   #define BLINKMSTIME 7000
   #define BLINKSPEED 3
@@ -9,7 +9,7 @@
   class LEDController
   {
     public:
-      LEDController(Pololu::APA102Base * strip);
+      LEDController(Apa102c &ledStrip) : ledStrip(ledStrip) {}
       void loop();
       void setBrightness(byte brightness);
       boolean isBlinking();
@@ -23,13 +23,7 @@
       int ledIndex = 0;
       byte blinkHighLed;
       long blinkTimer;
-      long blinkStartTime;          
-      Pololu::APA102Base* strip;
-      Pololu::rgb_color colorOrange[72];
-      Pololu::rgb_color colorOff[72];
-
-      Pololu::rgb_color off;
-      Pololu::rgb_color color_normal;
-      Pololu::rgb_color color_high;
+      long blinkStartTime;
+      Apa102c &ledStrip;
   };
 #endif

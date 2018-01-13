@@ -1,30 +1,6 @@
 #include "LedController.h"
 
 /**
- * constructor for the class
- */
-LEDController::LEDController(Pololu::APA102Base* strip) {
-  this->strip = strip;
-
-  /* create the predefined colors and led arrays */
-  color_normal.red = 254;
-  color_normal.green = 150;
-  color_normal.blue = 8;
-  color_normal.brightness = 10;
-
-  off.red = 0;
-  off.green = 0;
-  off.blue = 0;
-  off.brightness = 0;
-
-  /* add both to the arrays */
-  for (int i = 0; i < LEDCOUNT; i++) {
-    colorOrange[i] = off;
-    colorOff[i] = off;
-  }
-}
-
-/**
  * loop function for the class 
  * has to be called constantly
  * may take some time to address all leds
@@ -38,19 +14,19 @@ void LEDController::loop() {
 
     if (blinkTimer + BLINKSPEED < millis()) {
       blinkTimer = millis();
-      colorOrange[ledIndex] = color_normal;
+      ledStrip.setPixel(ledIndex, 254, 150, 8, brightness);
+      ledStrip.updateLeds();
+      
       ledIndex++;
-      strip->write(colorOrange, LEDCOUNT, 10);
       if (ledIndex == LEDCOUNT) {
         ledIndex = 0;
-        for (int i = 0; i < LEDCOUNT; i++) {
-          colorOrange[i] = off;
-        }
+        ledStrip.clear();
       }
 
     }
   } else {
-    strip->write(colorOff, LEDCOUNT, 10);
+    ledStrip.clear();
+    ledStrip.updateLeds();
   }
 }
 
@@ -61,7 +37,6 @@ boolean LEDController::isBlinking() {
 
 void LEDController::setBrightness(byte brightness) {
   this->brightness = brightness;
-  color_normal.brightness = brightness;
 }
 
 void LEDController::startBreak() {
