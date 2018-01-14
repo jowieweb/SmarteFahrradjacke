@@ -1,15 +1,12 @@
 
 //#define SENDMPUTOBLE
-#include "Apa102c.hpp"
+
+#include <APA102.h>
 #include "MPUWrapper.h"
 #include "BLEWrapper.h"
-#include "LedController.h"
+#include "LEDController.h"
 #include "MotorController.h"
 
-// Workaround for dev boards without led.
-#ifndef LED_BUILTIN
-  #define LED_BUILTIN 2
-#endif
 
 #include <ArduinoJson.h>
 
@@ -23,25 +20,19 @@
 #define LEFTMOTORPIN 19
 #define TOUCHBUTTONPIN 4
 #define TOUCHBUTTONTHRESHOLD 10
-#define LEDCOUNT  72
 
 #define BLEENABLETIME 2500
 
 BLEWrapper *ble;
 
-// We need to instantiate another SPIClass because there is only one default instance (called SPI).
-SPIClass SPI2;
-
-Apa102c strip1(LEDCOUNT, SPI);
-Apa102c strip2(LEDCOUNT, SPI2);
-//APA102<RIGHTLEDDATA, RIGHTLEDCLOCK> ledStrip;
-//APA102<LEFTLEDDATA, LEFTLEDCLOCK> ledStrip2;
+APA102<RIGHTLEDDATA, RIGHTLEDCLOCK> ledStrip;
+APA102<LEFTLEDDATA, LEFTLEDCLOCK> ledStrip2;
 
 MPUWrapper mpu(RIGHTMPUADDRESS);
 MPUWrapper mpu2(LEFTMPUADDRESS);
 
-LEDController ledRight(strip1);
-LEDController ledLeft(strip2);
+LEDController *ledRight;
+LEDController *ledLeft;
 
 MotorController motorRight(RIGHTMOTORPIN);
 MotorController motorLeft(LEFTMOTORPIN);
@@ -66,11 +57,11 @@ void mpuCallback(MPUValues value) {
 
   if (triggered) {
     if (turnRight){
-      ledRight.startBlink();
+      ledRight->startBlink();
        motorRight.enqueue(true, 255, 250, 0);
     }
     else{
-      ledLeft.startBlink();
+      ledLeft->startBlink();
       motorLeft.enqueue(true, 255, 250, 0);
     }
       
@@ -132,15 +123,11 @@ void setup() {
   delay(100);
   pinMode(LED_BUILTIN, OUTPUT);
 
-  SPI.begin();
-  SPI2.begin(14, -1, 13);
-
-  // Clear led strip
-  strip1.updateLeds();
-  strip2.updateLeds();
-
   Serial.begin(115200);
   Serial.println("booted!");
+
+  ledRight = new LEDController((Pololu::APA102Base*)&ledStrip);
+  ledLeft = new LEDController((Pololu::APA102Base*)&ledStrip2);
 
   mpu.init(false, &mpuCallback);
   mpu.enabledOutputToCallback(true);
@@ -172,8 +159,8 @@ void loop()
   mpu.loop();
   mpu2.loop();
 
-  ledRight.loop();
-  ledLeft.loop();
+  ledRight->loop();
+  ledLeft->loop();
   motorRight.loop();
   motorLeft.loop();
   heartbeat();
