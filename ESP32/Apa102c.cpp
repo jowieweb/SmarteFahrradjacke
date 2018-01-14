@@ -32,3 +32,4 @@ void Apa102c::clear() {
 		setPixel(i, 0, 0, 0, 0);
 	}
 }
+ 
