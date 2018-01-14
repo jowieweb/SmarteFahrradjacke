@@ -31,6 +31,10 @@ LEDController::LEDController(Pololu::APA102Base* strip) {
  */
 void LEDController::loop() {
 
+  if(!update){
+    return;
+  }
+  update = false;
   if (blinkActive) {
     if ( blinkStartTime + BLINKMSTIME <  millis()) {
       blinkActive = false;
@@ -47,7 +51,6 @@ void LEDController::loop() {
           colorOrange[i] = off;
         }
       }
-
     }
   } else {
     strip->write(colorOff, LEDCOUNT, 10);
@@ -66,10 +69,12 @@ void LEDController::setBrightness(byte brightness) {
 
 void LEDController::startBreak() {
   // TODO!
+  update = true;
 }
 
 void LEDController::stopBreak() {
    // TODO!
+   update = true;
 }
 
 /** 
@@ -80,5 +85,6 @@ void LEDController::startBlink() {
   blinkActive = true;
   blinkStartTime = millis();
   blinkTimer = millis();
+  update = true;
 }
 

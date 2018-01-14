@@ -20,6 +20,7 @@
       byte brightness;
       int ledCount=72;
       boolean blinkActive = false;
+      boolean update = false;
       int ledIndex = 0;
       byte blinkHighLed;
       long blinkTimer;

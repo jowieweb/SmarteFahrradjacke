@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -11,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
@@ -21,7 +23,11 @@ import android.telecom.TelecomManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
+import com.mapbox.mapboxsdk.geometry.LatLng;
 
 import java.util.ArrayList;
 
@@ -57,10 +63,11 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     private LocationChangeListener onLocationChangeListener;
     private OnAppChosenListener onAppChosenListener;
     private OnNotificationChangeListener onNotificationChangeListener;
-    private LightCalculator.LightLevel lightLevel = LightCalculator.LightLevel.Medim;
+    private LightCalculator.LightLevel lightLevel;
     private Location currentLocation = new Location("");
     private NotificationReceiver notificationReceiver;
     private TelephoneStateReceiver telephoneStateReceiver;
+    private final Handler handler = new Handler();
 
     private boolean isRinging = false;
     private RouteFragment routeFragment = new RouteFragment();
@@ -70,6 +77,10 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        currentLocation= new Location("");
+        currentLocation.setLatitude(52.2967);
+        currentLocation.setLongitude(8.906);
+        lightLevel = new LightCalculator(currentLocation).getLightLevel();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -83,6 +94,14 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
         setupTabs(tabLayout);
 
         this.bluetoothImageView = findViewById(R.id.activity_main_bluetooth_icon);
+        this.bluetoothImageView.setOnClickListener((view -> {
+            bw.startScan();
+        }));
+
+        TextView titel = findViewById(R.id.activity_main_smart_jacket);
+        titel.setOnClickListener((view -> {
+            bw.sendText(getString(R.string.intent_extra_vibration_pattern_incomming_call));
+        }));
 
         if(requestIncomingCallPermission()) {
             setupTelephoneStateReceiver();
@@ -348,7 +367,12 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
 
     @Override
     public void onLocationChange(Location location) {
-        lightLevel = new LightCalculator(location).getLightLevel();
+        LightCalculator.LightLevel tmp =  new LightCalculator(location).getLightLevel();
+        if(tmp != lightLevel){
+            Log.d(LOG_TAG, "lightlvl " + LightCalculator.getJsonFromEnum(this,tmp));
+            bw.sendText(LightCalculator.getJsonFromEnum(this,tmp));
+            lightLevel = tmp;
+        }
         currentLocation = location;
         settingsFragment.setCurrentLocation(location);
         Log.i(LOG_TAG, "LightLevel: " + lightLevel);
@@ -416,6 +440,15 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
     @Override
     public void BLEDeviceConnected() {
         this.bluetoothImageView.setImageDrawable(getDrawable(R.drawable.ic_action_ble_device_connected));
+        Context ctx = this;
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Log.d(LOG_TAG, "lightlvl " + LightCalculator.getJsonFromEnum(ctx,lightLevel));
+                bw.sendText(LightCalculator.getJsonFromEnum(ctx,lightLevel));
+            }
+        }, 500);
+
     }
 
     @Override

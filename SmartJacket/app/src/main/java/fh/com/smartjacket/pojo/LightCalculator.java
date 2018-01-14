@@ -1,5 +1,6 @@
 package fh.com.smartjacket.pojo;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
@@ -12,6 +13,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import fh.com.smartjacket.R;
 
 /**
  * Created by jowie on 29.12.2017.
@@ -56,6 +59,19 @@ public class LightCalculator {
         }
 
         //TODO: any idea for high LightLevel?
+    }
+
+    public static String getJsonFromEnum(Context cntx, LightLevel ll){
+        switch (ll){
+            case Low:
+                return cntx.getResources().getString(R.string.intent_extra_low_light);
+            case Medim:
+                return cntx.getResources().getString(R.string.intent_extra_medium_light);
+            case High:
+                return cntx.getResources().getString(R.string.intent_extra_high_light);
+        }
+        return cntx.getResources().getString(R.string.intent_extra_low_light);
+
     }
 
     public enum  LightLevel{

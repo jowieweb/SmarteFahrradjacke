@@ -74,6 +74,10 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 		// Inflate the layout for this fragment
 		View view = inflater.inflate(R.layout.fragment_route, container, false);
 
+		currentLocation= new Location("");
+		currentLocation.setLatitude(52.2967);
+		currentLocation.setLongitude(8.906);
+
 		this.mapView = view.findViewById(R.id.mapquestMapView);
 		this.mapView.onCreate(savedInstanceState);
 		this.mapView.getMapAsync((MapboxMap mapboxMap) -> {
@@ -245,7 +249,9 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 					BluetoothWrapper.getInstance().sendText((getString(R.string.intent_extra_turn_left)));
 				else if(tp.getTurnDirection() == TurnPoint.TurnDirection.right)
 					BluetoothWrapper.getInstance().sendText((getString(R.string.intent_extra_turn_right)));
+
 			}
+
 		}
 	}
 

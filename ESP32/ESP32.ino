@@ -45,9 +45,9 @@ bool led = false;
 
 
 /**
- * callback for the mpus 
- * both, the left and the right mpu call this function, if yaw is greater than 60°
- */
+   callback for the mpus
+   both, the left and the right mpu call this function, if yaw is greater than 60°
+*/
 void mpuCallback(MPUValues value) {
   bool triggered = value.triggered;
   bool turnRight = value.i2cAddress == 0x68;
@@ -56,69 +56,81 @@ void mpuCallback(MPUValues value) {
   Serial.println(turnRight);
 
   if (triggered) {
-    if (turnRight){
+    if (turnRight) {
       ledRight->startBlink();
-       motorRight.enqueue(true, 255, 250, 0);
+      motorRight.enqueue(true, 255, 250, 0);
     }
-    else{
+    else {
       ledLeft->startBlink();
       motorLeft.enqueue(true, 255, 250, 0);
     }
-      
+
   }
 }
 
 /**
- * callback function for the BLE
- * called, whem BLE received a message
- */
+   callback function for the BLE
+   called, whem BLE received a message
+*/
 void bleCallback(String recv) {
   Serial.println(recv);
   DynamicJsonBuffer jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(recv);
-  if (!root.success()) {
-    Serial.println("\n\n\nJSON PARSE FAILED\n\n\n");
-  } else {
-    Serial.println("\n\n\nJSON PARSE OK\n\n\n");
-  }
-  String type = root["type"];
-  if (type == "vibration") {
+  if (root.success()) {
 
-    String name = root["name"];
-    Serial.println(name);
-    JsonArray& requests = root["parts"];
-    for (auto& request : requests) {
-      int on = request["on"];
-      int off = request["off"];
-      boolean fadein = request["fadeid"];
-      int duty =  request["dutycycle"];
-      motorRight.enqueue(fadein, duty, on, off);
-      motorLeft.enqueue(fadein, duty, on, off);
-      //todo: do same stuff with 2 motor controller
-      Serial.println(on);
+    String type = root["type"];
+    if (type == "vibration") {
+
+      String name = root["name"];
+      Serial.println(name);
+      JsonArray& requests = root["parts"];
+      for (auto& request : requests) {
+        int on = request["on"];
+        int off = request["off"];
+        boolean fadein = request["fadeid"];
+        int duty =  request["dutycycle"];
+        motorRight.enqueue(fadein, duty, on, off);
+        motorLeft.enqueue(fadein, duty, on, off);
+        //todo: do same stuff with 2 motor controller
+        Serial.println(on);
+      }
+    } else if ( type == "turnleft") {
+      motorLeft.enqueue(true, 255, 500, 0);
+      //dostuff
+    } else if ( type == "turnright") {
+      //dostuff
+      motorRight.enqueue(true, 255, 500, 0);
+    } else if (type == "light") {
+      String lvl = root["light"];
+      if (lvl == "low") {
+        Serial.println("low brightness");
+        ledRight->setBrightness(4);
+        ledLeft->setBrightness(4);
+      } else  if (lvl == "medium") {
+        Serial.println("medium brightness");
+        ledRight->setBrightness(8);
+        ledLeft->setBrightness(8);
+      } else if (lvl = "high") {
+        Serial.println("high brightness");
+        ledRight->setBrightness(12);
+        ledLeft->setBrightness(12);
+      }
     }
-  } else if ( type == "turnleft") {
-    motorLeft.enqueue(true, 255, 500, 0);
-    //dostuff
-  } else if ( type == "turnright") {
-    //dostuff
-    motorRight.enqueue(true, 255, 500, 0);
+  } else {
+    if (recv == "bv1") {
+      motorLeft.spinMotor();
+      motorRight.spinMotor();
+    } else if (recv == "bv0") {
+      motorLeft.stopMotor();
+      motorRight.stopMotor();
+    }
   }
-
-  if (recv == "bv1") {
-    motorLeft.spinMotor();
-    motorRight.spinMotor();
-  } else if (recv == "bv0") {
-    motorLeft.stopMotor();
-    motorRight.stopMotor();
-  }
-
 }
 
 /**
- * main entrypoint for the application code
- * called once at startup
- */
+   main entrypoint for the application code
+   called once at startup
+*/
 void setup() {
   delay(100);
   pinMode(LED_BUILTIN, OUTPUT);
@@ -128,13 +140,14 @@ void setup() {
 
   ledRight = new LEDController((Pololu::APA102Base*)&ledStrip);
   ledLeft = new LEDController((Pololu::APA102Base*)&ledStrip2);
-
+    Serial.println("leds!");
   mpu.init(false, &mpuCallback);
   mpu.enabledOutputToCallback(true);
-
+    Serial.println("mpu1!");
 
   mpu2.init(false, &mpuCallback);
   mpu2.enabledOutputToCallback(true);
+    Serial.println("mpu2!");
 
 
   touchAttachInterrupt(TOUCHBUTTONPIN, ctxButtonDown, TOUCHBUTTONTHRESHOLD);
@@ -142,11 +155,12 @@ void setup() {
 
 
 /**
- * main loop
- * called constantly
- */
+   main loop
+   called constantly
+*/
 void loop()
 {
+  
   if (!BLEEnabled) {
     if (millis() > BLEENABLETIME) {
       BLEEnabled = true;
@@ -168,10 +182,10 @@ void loop()
 }
 
 /**
- * create 5hz a heartbeat on the build in LED
- */
-void heartbeat(){
-    long tempTimer = millis();
+   create 5hz a heartbeat on the build in LED
+*/
+void heartbeat() {
+  long tempTimer = millis();
   if (tempTimer > timer + 200) {
     led = !led;
     digitalWrite(LED_BUILTIN, led);
@@ -180,8 +194,8 @@ void heartbeat(){
 }
 
 /**
- * callback for the TouchButton
- */
+   callback for the TouchButton
+*/
 void ctxButtonDown() {
   Serial.println("\n\nbutton down\n\n");
   if (!BLEEnabled || !ble) {
