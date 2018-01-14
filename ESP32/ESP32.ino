@@ -104,12 +104,12 @@ void bleCallback(String recv) {
       String lvl = root["light"];
       if (lvl == "low") {
         Serial.println("low brightness");
-        ledRight->setBrightness(4);
-        ledLeft->setBrightness(4);
+        ledRight->setBrightness(2);
+        ledLeft->setBrightness(2);
       } else  if (lvl == "medium") {
         Serial.println("medium brightness");
-        ledRight->setBrightness(8);
-        ledLeft->setBrightness(8);
+        ledRight->setBrightness(6);
+        ledLeft->setBrightness(6);
       } else if (lvl = "high") {
         Serial.println("high brightness");
         ledRight->setBrightness(12);

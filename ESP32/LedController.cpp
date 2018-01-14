@@ -1,8 +1,8 @@
 #include "LedController.h"
 
 /**
- * constructor for the class
- */
+   constructor for the class
+*/
 LEDController::LEDController(Pololu::APA102Base* strip) {
   this->strip = strip;
 
@@ -25,16 +25,16 @@ LEDController::LEDController(Pololu::APA102Base* strip) {
 }
 
 /**
- * loop function for the class 
- * has to be called constantly
- * may take some time to address all leds
- */
+   loop function for the class
+   has to be called constantly
+   may take some time to address all leds
+*/
 void LEDController::loop() {
 
-  if(!update){
+  if (!update) {
     return;
   }
-  update = false;
+  
   if (blinkActive) {
     if ( blinkStartTime + BLINKMSTIME <  millis()) {
       blinkActive = false;
@@ -50,10 +50,12 @@ void LEDController::loop() {
         for (int i = 0; i < LEDCOUNT; i++) {
           colorOrange[i] = off;
         }
+         blinkTimer +=500;
       }
     }
   } else {
     strip->write(colorOff, LEDCOUNT, 10);
+    update = false;
   }
 }
 
@@ -65,6 +67,7 @@ boolean LEDController::isBlinking() {
 void LEDController::setBrightness(byte brightness) {
   this->brightness = brightness;
   color_normal.brightness = brightness;
+  update = true;
 }
 
 void LEDController::startBreak() {
@@ -73,13 +76,13 @@ void LEDController::startBreak() {
 }
 
 void LEDController::stopBreak() {
-   // TODO!
-   update = true;
+  // TODO!
+  update = true;
 }
 
-/** 
- *  enable the blinking 
- */
+/**
+    enable the blinking
+*/
 void LEDController::startBlink() {
   Serial.println("START BLINK");
   blinkActive = true;
