@@ -55,7 +55,7 @@ void mpuCallback(MPUValues value) {
   Serial.print(triggered);
   Serial.println(turnRight);
 
-  if (triggered) {
+  //if (triggered) {
     if (turnRight) {
       ledRight->startBlink();
       motorRight.enqueue(true, 255, 250, 0);
@@ -65,7 +65,7 @@ void mpuCallback(MPUValues value) {
       motorLeft.enqueue(true, 255, 250, 0);
     }
 
-  }
+  //}
 }
 
 /**
@@ -132,7 +132,7 @@ void bleCallback(String recv) {
    called once at startup
 */
 void setup() {
-  delay(100);
+  delay(1000);
   pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.begin(115200);
@@ -140,17 +140,20 @@ void setup() {
 
   ledRight = new LEDController((Pololu::APA102Base*)&ledStrip);
   ledLeft = new LEDController((Pololu::APA102Base*)&ledStrip2);
-    Serial.println("leds!");
+  Serial.println("leds!");
+
   mpu.init(false, &mpuCallback);
   mpu.enabledOutputToCallback(true);
-    Serial.println("mpu1!");
+  Serial.println("mpu1!");
 
   mpu2.init(false, &mpuCallback);
   mpu2.enabledOutputToCallback(true);
-    Serial.println("mpu2!");
-
+  Serial.println("mpu2!");
+  Serial.flush();
+  mpu.loop();
 
   touchAttachInterrupt(TOUCHBUTTONPIN, ctxButtonDown, TOUCHBUTTONTHRESHOLD);
+  delay(25);
 }
 
 
@@ -160,7 +163,7 @@ void setup() {
 */
 void loop()
 {
-  
+
   if (!BLEEnabled) {
     if (millis() > BLEENABLETIME) {
       BLEEnabled = true;
@@ -170,8 +173,21 @@ void loop()
     }
   }
 
-  mpu.loop();
-  mpu2.loop();
+  boolean m1 = mpu.loop();
+  boolean m2 = mpu2.loop();
+  if (m1 && m2)
+  {
+    Serial.println("BREAK!");
+    ledRight->startBreak();
+    ledLeft->startBreak();
+  }
+  else {
+    ledRight->stopBreak();
+    ledLeft->stopBreak();
+  }
+
+
+
 
   ledRight->loop();
   ledLeft->loop();

@@ -3,7 +3,8 @@
 #include <Wire.h>
 #include "MPU6050.h"
 #define RESETTIME 10000
-
+#define MAXTIME 999999999
+#define BREAKTIGGERTIME 100
 
 typedef struct MPUValues {
   float pitch;
@@ -24,9 +25,9 @@ class MPUWrapper
     void taskMPU();
     int getI2CAddress();
     void enabledOutputToCallback(boolean);
-    void loop();
+    boolean loop();
     boolean isTriggerd();
-    Vector getAccel();
+    boolean getBreaking();
 
   private:
     MPU6050 mpu;
@@ -40,6 +41,10 @@ class MPUWrapper
     float roll_last = 0;
     float yaw_last = 0;
     unsigned long timeLastUpdate = 0;
+
+    boolean isBreaking = false;
+    boolean breakingStarted = false;
+    long breakStartTime = 0;
 
     unsigned long timer = 0;
     float timeStep = 0.01;

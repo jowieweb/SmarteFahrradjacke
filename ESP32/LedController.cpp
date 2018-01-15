@@ -31,17 +31,31 @@ LEDController::LEDController(Pololu::APA102Base* strip) {
 */
 void LEDController::loop() {
 
+  long msTime = millis();
+  if (breakStopTime < msTime) {
+    update = true;
+    breakStopTime = MAXTIME;
+    off.red = 0;
+    off.brightness = 0;
+    for (int i = 0; i < LEDCOUNT; i++) {
+      colorOff[i] = off;
+    }
+  }
+
   if (!update) {
     return;
   }
-  
+
+
+
+
   if (blinkActive) {
-    if ( blinkStartTime + BLINKMSTIME <  millis()) {
+    if ( blinkStartTime + BLINKMSTIME < msTime) {
       blinkActive = false;
     }
 
-    if (blinkTimer + BLINKSPEED < millis()) {
-      blinkTimer = millis();
+    if (blinkTimer + BLINKSPEED < msTime) {
+      blinkTimer = msTime;
       colorOrange[ledIndex] = color_normal;
       ledIndex++;
       strip->write(colorOrange, LEDCOUNT, 10);
@@ -50,7 +64,7 @@ void LEDController::loop() {
         for (int i = 0; i < LEDCOUNT; i++) {
           colorOrange[i] = off;
         }
-         blinkTimer +=500;
+        blinkTimer += 500;
       }
     }
   } else {
@@ -71,13 +85,34 @@ void LEDController::setBrightness(byte brightness) {
 }
 
 void LEDController::startBreak() {
-  // TODO!
+  if (isBreaking) {
+    return;
+  }
   update = true;
+  isBreaking = true;
+
+
+  off.red = 255;
+  off.brightness = 10;
+  for (int i = 0; i < LEDCOUNT; i++) {
+    colorOff[i] = off;
+  }
+
 }
 
 void LEDController::stopBreak() {
-  // TODO!
+  if (!isBreaking)
+    return;
+
   update = true;
+  isBreaking = false;
+  breakStopTime = millis() + 1000;
+  /*
+    off.red = 0;
+    off.brightness = 0;
+    for (int i = 0; i < LEDCOUNT; i++) {
+      colorOff[i] = off;
+    } */
 }
 
 /**

@@ -48,20 +48,26 @@ bool MPU6050::begin(mpu6050_dps_t scale, mpu6050_range_t range, int mpua)
   tg.ZAxis = 0;
   actualThreshold = 0;
   int test = fastRegister8(MPU6050_REG_WHO_AM_I);
-  
+  Serial.println(test);
+  Serial.flush();
   // Check MPU6050 Who Am I Register
- /* if (fastRegister8(MPU6050_REG_WHO_AM_I) != 0x68)
-  {
-    Serial.println(test);
-    return false;
-  }*/
+  /* if (fastRegister8(MPU6050_REG_WHO_AM_I) != 0x68)
+    {
+     Serial.println(test);
+     return false;
+    }*/
 
   // Set Clock Source
   setClockSource(MPU6050_CLOCK_PLL_XGYRO);
-
+  Serial.println("clock");
+  Serial.flush();
   // Set Scale & Range
   setScale(scale);
+  Serial.println("scale");
+  Serial.flush();
   setRange(range);
+  Serial.println("range");
+  Serial.flush();
 
   // Disable Sleep Mode
   setSleepEnabled(false);
@@ -446,6 +452,7 @@ Vector MPU6050::readRawGyro(void)
 Vector MPU6050::readNormalizeGyro(void)
 {
   readRawGyro();
+  readRawAccel();
 
   if (useCalibrate)
   {
@@ -465,6 +472,7 @@ Vector MPU6050::readNormalizeGyro(void)
     if (abs(ng.YAxis) < tg.YAxis) ng.YAxis = 0;
     if (abs(ng.ZAxis) < tg.ZAxis) ng.ZAxis = 0;
   }
+  
 
   return ng;
 }

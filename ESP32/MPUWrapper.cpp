@@ -1,15 +1,15 @@
 #include "MPUWrapper.h"
 
 /**
- * constructor for the class
- */
+   constructor for the class
+*/
 MPUWrapper::MPUWrapper(int i2cAddress) {
   this->i2cAddress = i2cAddress;
 }
 
-/** 
- *  initiate the mpu
- */
+/**
+    initiate the mpu
+*/
 void MPUWrapper::init(bool printToSerial, void (*callback)(MPUValues)) {
 
   while (!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G, i2cAddress))
@@ -19,6 +19,7 @@ void MPUWrapper::init(bool printToSerial, void (*callback)(MPUValues)) {
     Serial.println(", check wiring!");
     delay(500);
   }
+  Serial.println("init done");
   outputToSerial = printToSerial;
   mpu.calibrateGyro();
   mpu.setThreshold(1);
@@ -31,17 +32,17 @@ int MPUWrapper::getI2CAddress() {
 }
 
 /**
- * enable the output to the callback, if yaw is greater than 60°
- */
+   enable the output to the callback, if yaw is greater than 60°
+*/
 void MPUWrapper::enabledOutputToCallback(boolean enabled) {
   outputToCallback = enabled;
 }
 
 
 /**
- * get the data from the mpu
- * and set it to the attributes
- */
+   get the data from the mpu
+   and set it to the attributes
+*/
 void MPUWrapper::getData() {
 
   Vector norm = mpu.readNormalizeGyro();
@@ -76,33 +77,39 @@ void MPUWrapper::getData() {
     value.triggered = runi;
     callback(value);
   }
+
+  //Vector accel =  mpu.readNormalizeAccel();
+
 }
 
 /**
- * main loop of the class
- * has to be called instantly
- */
-void MPUWrapper::loop() {
+   main loop of the class
+   has to be called instantly
+*/
+boolean MPUWrapper::loop() {
   long tempTimer =  millis();
 
   if (tempTimer < timer) {
-    return;
+    return isBreaking;
   }
 
   getData();
   checkReCal();
+
   long timeNow = millis();
   timer = timeNow + 10; //(timeStep * 1000) + timeNow - (timeNow - tempTimer); //(timeStep * 1000) - (millis() - tempTimer);
+  return getBreaking();
+  //return false;
 }
 
 
 /**
- * recalibrate the pitch, yaw and roll values
- * only happens, if not much movement is deteceted over a periode of 10 sec.
- */
+   recalibrate the pitch, yaw and roll values
+   only happens, if not much movement is deteceted over a periode of 10 sec.
+*/
 void MPUWrapper::checkReCal() {
   if (!(pitch + 5 > pitch_last && pitch - 5 < pitch_last)) {
-   setto();
+    setto();
     return;
   }
   if (!(roll + 5 > roll_last && roll - 5 < roll_last)) {
@@ -129,18 +136,40 @@ void MPUWrapper::checkReCal() {
 
 
 /**
- * get the acceleration data from the MPU
- */
-Vector MPUWrapper::getAccel() {
+   get the acceleration data from the MPU
+*/
+boolean MPUWrapper::getBreaking() {
   Vector ret = mpu.readNormalizeAccel();
 
-  Serial.print("\n\n\n");
-  Serial.print(ret.XAxis);
-  Serial.print("\t");
-  Serial.print(ret.YAxis);
-  Serial.print("\t");
-  Serial.print(ret.ZAxis);
-  Serial.print("\t");
+  
+//  Vector ret = mpu.readRawAccel();
+  int16_t value = ret.XAxis + ret.YAxis + ret.ZAxis;
+  if (value > 20) {
+
+    long t_now = millis();
+
+    if (breakingStarted) {
+
+      if (t_now > breakStartTime + BREAKTIGGERTIME) {
+        isBreaking = true;
+        return true;
+
+      }
+    } else {
+      breakingStarted = true;
+      breakStartTime = t_now;
+      isBreaking = false;
+    }
+  } else {
+    if (value < 15) {
+      breakingStarted = false;
+      breakStartTime = MAXTIME;
+      isBreaking = false;
+    }
+
+  }
+
+  return false; 
 }
 
 
