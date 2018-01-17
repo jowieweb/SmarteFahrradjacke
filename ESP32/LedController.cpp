@@ -1,7 +1,12 @@
 #include "LedController.h"
 
+/**
+   constructor for the class
+*/
 LEDController::LEDController(Pololu::APA102Base* strip) {
   this->strip = strip;
+
+  /* create the predefined colors and led arrays */
   color_normal.red = 254;
   color_normal.green = 150;
   color_normal.blue = 8;
@@ -11,39 +16,60 @@ LEDController::LEDController(Pololu::APA102Base* strip) {
   off.green = 0;
   off.blue = 0;
   off.brightness = 0;
-  for (int i = 0; i < 72; i++) {
+
+  /* add both to the arrays */
+  for (int i = 0; i < LEDCOUNT; i++) {
     colorOrange[i] = off;
     colorOff[i] = off;
   }
-  colorOrange[10].brightness = 31;
 }
 
-
+/**
+   loop function for the class
+   has to be called constantly
+   may take some time to address all leds
+*/
 void LEDController::loop() {
 
-  if (blinkActive) {
-   // Serial.println("COLOR!");
+  long msTime = millis();
+  if (breakStopTime < msTime) {
+    update = true;
+    breakStopTime = MAXTIME;
+    off.red = 0;
+    off.brightness = 0;
+    for (int i = 0; i < LEDCOUNT; i++) {
+      colorOff[i] = off;
+    }
+  }
 
-    if ( blinkStartTime + 7000 <  millis()) {
+  if (!update) {
+    return;
+  }
+
+
+
+
+  if (blinkActive) {
+    if ( blinkStartTime + BLINKMSTIME < msTime) {
       blinkActive = false;
     }
 
-    if (blinkTimer + 3 < millis()) {
-      blinkTimer = millis();
+    if (blinkTimer + BLINKSPEED < msTime) {
+      blinkTimer = msTime;
       colorOrange[ledIndex] = color_normal;
       ledIndex++;
-      strip->write(colorOrange, 72, 10);
-      if (ledIndex == 72) {
+      strip->write(colorOrange, LEDCOUNT, 10);
+      if (ledIndex == LEDCOUNT) {
         ledIndex = 0;
-        for (int i = 0; i < 72; i++) {
+        for (int i = 0; i < LEDCOUNT; i++) {
           colorOrange[i] = off;
         }
+        blinkTimer += 500;
       }
-
     }
   } else {
-    //Serial.println("NO COLOR!");
-    strip->write(colorOff, 72, 10);
+    strip->write(colorOff, LEDCOUNT, 10);
+    update = false;
   }
 }
 
@@ -54,20 +80,49 @@ boolean LEDController::isBlinking() {
 
 void LEDController::setBrightness(byte brightness) {
   this->brightness = brightness;
+  color_normal.brightness = brightness;
+  update = true;
 }
 
 void LEDController::startBreak() {
+  if (isBreaking) {
+    return;
+  }
+  update = true;
+  isBreaking = true;
+
+
+  off.red = 255;
+  off.brightness = 10;
+  for (int i = 0; i < LEDCOUNT; i++) {
+    colorOff[i] = off;
+  }
 
 }
 
 void LEDController::stopBreak() {
+  if (!isBreaking)
+    return;
 
+  update = true;
+  isBreaking = false;
+  breakStopTime = millis() + 1000;
+  /*
+    off.red = 0;
+    off.brightness = 0;
+    for (int i = 0; i < LEDCOUNT; i++) {
+      colorOff[i] = off;
+    } */
 }
 
+/**
+    enable the blinking
+*/
 void LEDController::startBlink() {
   Serial.println("START BLINK");
   blinkActive = true;
   blinkStartTime = millis();
   blinkTimer = millis();
+  update = true;
 }
 

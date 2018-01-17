@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -19,6 +20,7 @@ import com.mapbox.mapboxsdk.annotations.Marker;
 import com.mapbox.mapboxsdk.annotations.MarkerOptions;
 import com.mapbox.mapboxsdk.annotations.Polyline;
 import com.mapbox.mapboxsdk.annotations.PolylineOptions;
+import com.mapbox.mapboxsdk.camera.CameraUpdate;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapquest.mapping.MapQuestAccountManager;
@@ -50,6 +52,7 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 	private Marker destinationMarker = null;
 	private Marker currentLocationMarker = null;
 	private Route routeToDestination = null;
+	private final Handler handler = new Handler();
 
 	public RouteFragment() {
 		// Required empty public constructor
@@ -70,6 +73,10 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 							 Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
 		View view = inflater.inflate(R.layout.fragment_route, container, false);
+
+		currentLocation= new Location("");
+		currentLocation.setLatitude(52.2967);
+		currentLocation.setLongitude(8.906);
 
 		this.mapView = view.findViewById(R.id.mapquestMapView);
 		this.mapView.onCreate(savedInstanceState);
@@ -148,6 +155,13 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 		LatLng middel = r.midPoint();
 		Log.i(LOG_TAG, "Distance: " + r.getDistance() + " ZOOM Level" + r.getZoomlevel());
 		mapboxMap.moveCamera(CameraUpdateFactory.newLatLngZoom(middel,r.getZoomlevel()));
+
+		handler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				mapboxMap.animateCameraLinearly(CameraUpdateFactory.newLatLngZoom(new LatLng(currentLocation.getLatitude(),currentLocation.getLongitude()),16),500);
+			}
+		}, 3000);
 
 
 	}
@@ -235,7 +249,9 @@ public class RouteFragment extends Fragment implements LocationChangeListener {
 					BluetoothWrapper.getInstance().sendText((getString(R.string.intent_extra_turn_left)));
 				else if(tp.getTurnDirection() == TurnPoint.TurnDirection.right)
 					BluetoothWrapper.getInstance().sendText((getString(R.string.intent_extra_turn_right)));
+
 			}
+
 		}
 	}
 

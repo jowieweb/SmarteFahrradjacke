@@ -1,6 +1,7 @@
 package fh.com.smartjacket.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -13,6 +14,8 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -66,6 +69,8 @@ public class RouteChooserActivity extends AppCompatActivity implements ActivityC
 		final Location lambdaLoc = location;
 		searchAddressImageButton.setOnClickListener((View view) -> {
 			new SearchForLocationFromAddressTask(this).execute(this.searchTextView.getText().toString());
+			InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+			mgr.hideSoftInputFromWindow(searchAddressImageButton.getWindowToken(), 0);
 
 		});
 
@@ -86,6 +91,12 @@ public class RouteChooserActivity extends AppCompatActivity implements ActivityC
 			@Override
 			public void afterTextChanged(Editable editable) {
 
+			}
+		});
+		this.searchTextView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+				searchTextView.setSelection(searchTextView.getText().toString().indexOf(","));
 			}
 		});
 

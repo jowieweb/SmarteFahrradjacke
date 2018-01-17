@@ -26,7 +26,7 @@
                 app:titleEnabled="false">
 
                 <TextView
-                    android:id="@+id/textView5"
+                    android:id="@+id/activity_main_smart_jacket"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="SmartJacket"

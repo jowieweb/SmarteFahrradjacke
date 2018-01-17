@@ -1,7 +1,9 @@
 #include "MotorController.h"
 
 
-
+/**
+ * constructor for the class
+ */
 MotorController::MotorController(int motorpin) {
   this->motorpin = motorpin;
   usedChannel = this->pwmChannel;
@@ -12,10 +14,10 @@ MotorController::MotorController(int motorpin) {
 
 }
 
-
+/**
+ * enqueue a vibration event
+ */
 void MotorController::enqueue(bool fadein, byte dutyCycle, int lengthOnInMs, int lengthOffInMs) {
-
-
 
   if(lengthOffInMs > 0){
     spin_t off;
@@ -30,20 +32,28 @@ void MotorController::enqueue(bool fadein, byte dutyCycle, int lengthOnInMs, int
   obj.dutyCycle = dutyCycle;
   obj.lengthOn = lengthOnInMs;
   myqueue.push(obj);
-
-
 }
 
+/**
+ * spin the motor for 10 sec
+ */
 void MotorController::spinMotor() {
   this->timeToStop = millis() + 100000;
   this->dutyCycle = 255;
   this->running = true;
 }
+
+/**
+ * disable all movement
+ */
 void MotorController::stopMotor() {
   this->timeToStop = 0;
   this->dutyCycle = 0;
 }
 
+/**
+ * the the next event from the queue and set its values to the attributes
+ */
 void MotorController::getFromQueue(){
   spin_t obj = myqueue.front();
   myqueue.pop();
@@ -59,6 +69,10 @@ void MotorController::getFromQueue(){
   this->running = true;
 }
 
+/**
+ * main loop function
+ * has to be called constantly
+ */
 void MotorController::loop() {
   if (!running){
     if(!myqueue.empty()){

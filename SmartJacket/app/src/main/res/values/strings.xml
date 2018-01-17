@@ -9,4 +9,7 @@
 	<string name="intent_extra_vibration_pattern_incomming_call">{"type": "vibration", "name": "Lang-Lang-Lang","parts": [{"on": 500,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 500,"dutycycle": 200,"off": 250,"fadeid": false}, {"on": 500,"dutycycle": 255,"off": 250,"fadeid": false}]}</string>
 	<string name="intent_extra_turn_left">{"type": "turnleft", "name": "turnleft", "parts": [{"on": 100,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 100,"dutycycle": 200,"off": 100,"fadeid": false}]}</string>
 	<string name="intent_extra_turn_right">{"type": "turnright", "name": "turnright", "parts": [{"on": 100,"dutycycle": 255,"off": 0,"fadeid": false}, {"on": 100,"dutycycle": 200,"off": 100,"fadeid": false}]}</string>
+	<string name="intent_extra_low_light">{"type": "light", "light": "low"}</string>
+	<string name="intent_extra_medium_light">{"type": "light", "light": "medium"}</string>
+	<string name="intent_extra_high_light">{"type": "light", "light": "high"}</string>
 </resources>

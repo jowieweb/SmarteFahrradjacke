@@ -3,6 +3,9 @@
 
 
 
+/**
+ * called when BLE connection is established
+ */
 void BLEWrapper::onConnect(BLEServer* pServer) {
   deviceConnected = true;
   Serial.println("DEV CONNECTED");
@@ -10,14 +13,19 @@ void BLEWrapper::onConnect(BLEServer* pServer) {
   allowedToSend = millis() + 1000;
 };
 
+/**
+ * called when BLE connection is closed
+ */
 void BLEWrapper::onDisconnect(BLEServer* pServer) {
   deviceConnected = false;
-  //Serial.println("DEV DISCONNECTED");
+  Serial.println("DEV DISCONNECTED");
 }
 
 
 
-
+/**
+ * start the BLE service
+ */
 void BLEWrapper::start(void (*callback)(String)) {
   
   delay(10);
@@ -46,7 +54,9 @@ void BLEWrapper::start(void (*callback)(String)) {
 
 
 
-
+/**
+ * called when a messaged is received
+ */
 void BLEWrapper::onWrite(BLECharacteristic *pCharacteristic) {
   std::string rxValue = pCharacteristic->getValue();
   String recv = "";
@@ -58,6 +68,9 @@ void BLEWrapper::onWrite(BLECharacteristic *pCharacteristic) {
   callback(recv);
 }
 
+/**
+ * send a string to the BLE Host
+ */
 void BLEWrapper::sendText(String text) {
   if (deviceConnected && allowedToSend < millis()) {
     const char *cstr = text.c_str();
