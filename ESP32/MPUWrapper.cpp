@@ -57,7 +57,7 @@ void MPUWrapper::getData() {
   output += roll;
   output += " y=";
   output += yaw;
-  bool isTriggered = yaw > 60 || yaw < -60;
+  bool isTriggered = yaw > TRIGGERVALUE || yaw < -TRIGGERVALUE;
 
 
   // Output raw
@@ -78,13 +78,12 @@ void MPUWrapper::getData() {
     callback(value);
   }
 
-  //Vector accel =  mpu.readNormalizeAccel();
 
 }
 
 /**
    main loop of the class
-   has to be called instantly
+   has to be called repeatedly
 */
 boolean MPUWrapper::loop() {
   long tempTimer =  millis();
@@ -97,7 +96,7 @@ boolean MPUWrapper::loop() {
   checkReCal();
 
   long timeNow = millis();
-  timer = timeNow + 10; //(timeStep * 1000) + timeNow - (timeNow - tempTimer); //(timeStep * 1000) - (millis() - tempTimer);
+  timer = timeNow + INTERVALTIME; //(timeStep * 1000) + timeNow - (timeNow - tempTimer); //(timeStep * 1000) - (millis() - tempTimer);
   return getBreaking();
   //return false;
 }
@@ -108,15 +107,15 @@ boolean MPUWrapper::loop() {
    only happens, if not much movement is deteceted over a periode of 10 sec.
 */
 void MPUWrapper::checkReCal() {
-  if (!(pitch + 5 > pitch_last && pitch - 5 < pitch_last)) {
+  if (!(pitch + NOTMOVEDVALUE > pitch_last && pitch - NOTMOVEDVALUE < pitch_last)) {
     setto();
     return;
   }
-  if (!(roll + 5 > roll_last && roll - 5 < roll_last)) {
+  if (!(roll + NOTMOVEDVALUE > roll_last && roll - NOTMOVEDVALUE < roll_last)) {
     setto();
     return;
   }
-  if (!(yaw + 5 > yaw_last && yaw - 5 < yaw_last)) {
+  if (!(yaw + NOTMOVEDVALUE > yaw_last && yaw - NOTMOVEDVALUE < yaw_last)) {
     setto();
     return;
   }
@@ -144,7 +143,7 @@ boolean MPUWrapper::getBreaking() {
   
 //  Vector ret = mpu.readRawAccel();
   int16_t value = ret.XAxis + ret.YAxis + ret.ZAxis;
-  if (value > 20) {
+  if (value > BREAKINGINTENSITY) {
 
     long t_now = millis();
 
@@ -161,7 +160,7 @@ boolean MPUWrapper::getBreaking() {
       isBreaking = false;
     }
   } else {
-    if (value < 15) {
+    if (value < BREAKINGSTOPINTENSITY) {
       breakingStarted = false;
       breakStartTime = MAXTIME;
       isBreaking = false;
@@ -181,6 +180,9 @@ void MPUWrapper::setto() {
   yaw_last = yaw;
 }
 
+boolean MPUWrapper::isNearTrigger(){
+  return yaw > NEARTRIGGERVALUE || yaw < -NEARTRIGGERVALUE;
+}
 
 boolean MPUWrapper::isTriggerd() {
   return runi;

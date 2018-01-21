@@ -6,7 +6,13 @@
   #define BLINKMSTIME 7000
   #define BLINKSPEED 3
   #define MAXTIME 999999999
-  
+  #define NORMALCOLORR 254
+  #define NORMALCOLORG 150
+  #define NORMALCOLORB 8
+  #define NORMALBRIGHTNESS 10
+  #define BLINKENDONTIME 500
+  #define BACKCOLORR 127
+  #define BACKCOLORBRIGHTNESS 1
   class LEDController
   {
     public:
@@ -17,6 +23,7 @@
       void startBlink();
       void startBreak();
       void stopBreak();
+      void setToBack();
     private:
       byte brightness;
       int ledCount=72;

@@ -5,6 +5,12 @@
 #define RESETTIME 10000
 #define MAXTIME 999999999
 #define BREAKTIGGERTIME 100
+#define BREAKINGINTENSITY 20
+#define BREAKINGSTOPINTENSITY 15
+#define NEARTRIGGERVALUE 45
+#define TRIGGERVALUE 60
+#define INTERVALTIME 10
+#define NOTMOVEDVALUE 5
 
 typedef struct MPUValues {
   float pitch;
@@ -28,6 +34,7 @@ class MPUWrapper
     boolean loop();
     boolean isTriggerd();
     boolean getBreaking();
+    boolean isNearTrigger();
 
   private:
     MPU6050 mpu;

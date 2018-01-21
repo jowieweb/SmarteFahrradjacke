@@ -6,6 +6,7 @@
 #include "BLEWrapper.h"
 #include "LEDController.h"
 #include "MotorController.h"
+#include <Wire.h>
 
 
 #include <ArduinoJson.h>
@@ -14,6 +15,8 @@
 #define RIGHTLEDCLOCK 14
 #define LEFTLEDDATA 23
 #define LEFTLEDCLOCK 18
+#define BACKLEDDATA 26
+#define BACKLEDCLOCK 25
 #define RIGHTMPUADDRESS 0x68
 #define LEFTMPUADDRESS 0x69
 #define RIGHTMOTORPIN 2
@@ -25,14 +28,16 @@
 
 BLEWrapper *ble;
 
-APA102<RIGHTLEDDATA, RIGHTLEDCLOCK> ledStrip;
-APA102<LEFTLEDDATA, LEFTLEDCLOCK> ledStrip2;
+APA102<RIGHTLEDDATA, RIGHTLEDCLOCK> ledStripRIGHT;
+APA102<LEFTLEDDATA, LEFTLEDCLOCK> ledStripLEFT;
+APA102<BACKLEDDATA, BACKLEDCLOCK> ledStripBACK;
 
-MPUWrapper mpu(RIGHTMPUADDRESS);
-MPUWrapper mpu2(LEFTMPUADDRESS);
+MPUWrapper mpuRight(RIGHTMPUADDRESS);
+MPUWrapper mpuLeft(LEFTMPUADDRESS);
 
 LEDController *ledRight;
 LEDController *ledLeft;
+LEDController *ledBack;
 
 MotorController motorRight(RIGHTMOTORPIN);
 MotorController motorLeft(LEFTMOTORPIN);
@@ -42,6 +47,7 @@ boolean BLEEnabled = false;
 long lastButtonDown = 0;
 long timer;
 bool led = false;
+int resetCount = 0;
 
 
 /**
@@ -50,22 +56,29 @@ bool led = false;
 */
 void mpuCallback(MPUValues value) {
   bool triggered = value.triggered;
-  bool turnRight = value.i2cAddress == 0x68;
+  bool turnRight = value.i2cAddress == RIGHTMPUADDRESS;
   Serial.print("MPU Callback ");
   Serial.print(triggered);
   Serial.println(turnRight);
+ 
 
-  //if (triggered) {
+  if (triggered) {
     if (turnRight) {
+      if(mpuLeft.isNearTrigger()){
+        return;
+      }
       ledRight->startBlink();
       motorRight.enqueue(true, 255, 250, 0);
     }
     else {
+       if(mpuRight.isNearTrigger()){
+        return;
+      }
       ledLeft->startBlink();
       motorLeft.enqueue(true, 255, 250, 0);
     }
 
-  //}
+  }
 }
 
 /**
@@ -76,14 +89,16 @@ void bleCallback(String recv) {
   Serial.println(recv);
   DynamicJsonBuffer jsonBuffer;
   JsonObject& root = jsonBuffer.parseObject(recv);
+  /* check if valid json */
   if (root.success()) {
 
     String type = root["type"];
     if (type == "vibration") {
-
+      /* vibration message found */
       String name = root["name"];
       Serial.println(name);
       JsonArray& requests = root["parts"];
+      /* loop over all given vibration commands */
       for (auto& request : requests) {
         int on = request["on"];
         int off = request["off"];
@@ -91,17 +106,18 @@ void bleCallback(String recv) {
         int duty =  request["dutycycle"];
         motorRight.enqueue(fadein, duty, on, off);
         motorLeft.enqueue(fadein, duty, on, off);
-        //todo: do same stuff with 2 motor controller
         Serial.println(on);
       }
     } else if ( type == "turnleft") {
+      /* turn left message found */
       motorLeft.enqueue(true, 255, 500, 0);
-      //dostuff
     } else if ( type == "turnright") {
-      //dostuff
+      /* turn right message found */
       motorRight.enqueue(true, 255, 500, 0);
     } else if (type == "light") {
+      /* adjust light message found */
       String lvl = root["light"];
+      /* map the given command to a livelevel */
       if (lvl == "low") {
         Serial.println("low brightness");
         ledRight->setBrightness(2);
@@ -117,6 +133,7 @@ void bleCallback(String recv) {
       }
     }
   } else {
+    /*debug commands */
     if (recv == "bv1") {
       motorLeft.spinMotor();
       motorRight.spinMotor();
@@ -138,22 +155,26 @@ void setup() {
   Serial.begin(115200);
   Serial.println("booted!");
 
-  ledRight = new LEDController((Pololu::APA102Base*)&ledStrip);
-  ledLeft = new LEDController((Pololu::APA102Base*)&ledStrip2);
+  ledRight = new LEDController((Pololu::APA102Base*)&ledStripRIGHT);
+  ledLeft = new LEDController((Pololu::APA102Base*)&ledStripLEFT);
+  ledBack = new LEDController((Pololu::APA102Base*)&ledStripBACK);
+  
   Serial.println("leds!");
 
-  mpu.init(false, &mpuCallback);
-  mpu.enabledOutputToCallback(true);
+  mpuRight.init(false, &mpuCallback);
+  mpuRight.enabledOutputToCallback(true);
   Serial.println("mpu1!");
 
-  mpu2.init(false, &mpuCallback);
-  mpu2.enabledOutputToCallback(true);
+  mpuLeft.init(false, &mpuCallback);
+  mpuLeft.enabledOutputToCallback(true);
   Serial.println("mpu2!");
   Serial.flush();
-  mpu.loop();
+  /* offset both MPU timers slightly */
+  mpuRight.loop();
 
   touchAttachInterrupt(TOUCHBUTTONPIN, ctxButtonDown, TOUCHBUTTONTHRESHOLD);
   delay(25);
+  ledBack->setToBack();
 }
 
 
@@ -163,7 +184,7 @@ void setup() {
 */
 void loop()
 {
-
+  /* wait some time befor enabling BLE for improved system stability */
   if (!BLEEnabled) {
     if (millis() > BLEENABLETIME) {
       BLEEnabled = true;
@@ -173,8 +194,10 @@ void loop()
     }
   }
 
-  boolean m1 = mpu.loop();
-  boolean m2 = mpu2.loop();
+  /* get the data from both MPUs */ 
+  boolean m1 = mpuRight.loop();
+  boolean m2 = mpuLeft.loop();
+  /* Only break, if both sensed a break */
   if (m1 && m2)
   {
     Serial.println("BREAK!");
@@ -186,9 +209,7 @@ void loop()
     ledLeft->stopBreak();
   }
 
-
-
-
+ /* loop over all instances */
   ledRight->loop();
   ledLeft->loop();
   motorRight.loop();
@@ -196,6 +217,7 @@ void loop()
   heartbeat();
 
 }
+
 
 /**
    create 5hz a heartbeat on the build in LED
@@ -206,6 +228,12 @@ void heartbeat() {
     led = !led;
     digitalWrite(LED_BUILTIN, led);
     timer = tempTimer;
+    resetCount ++;
+    if(resetCount >= 10){
+      Wire.reset();
+      resetCount = 0;
+      Serial.println("wirereset");
+    }
   }
 }
 
@@ -217,10 +245,10 @@ void ctxButtonDown() {
   if (!BLEEnabled || !ble) {
     return;
   }
+  /*debounce the button quite heavily by 500 ms */
   if (lastButtonDown + 500 > millis()) {
     return;
   }
-
   lastButtonDown = millis();
   ble->sendText("btn");
 

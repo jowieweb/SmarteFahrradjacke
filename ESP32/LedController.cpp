@@ -7,10 +7,10 @@ LEDController::LEDController(Pololu::APA102Base* strip) {
   this->strip = strip;
 
   /* create the predefined colors and led arrays */
-  color_normal.red = 254;
-  color_normal.green = 150;
-  color_normal.blue = 8;
-  color_normal.brightness = 10;
+  color_normal.red = NORMALCOLORR;
+  color_normal.green = NORMALCOLORG;
+  color_normal.blue = NORMALCOLORB;
+  color_normal.brightness = NORMALBRIGHTNESS;
 
   off.red = 0;
   off.green = 0;
@@ -64,7 +64,7 @@ void LEDController::loop() {
         for (int i = 0; i < LEDCOUNT; i++) {
           colorOrange[i] = off;
         }
-        blinkTimer += 500;
+        blinkTimer += BLINKENDONTIME;
       }
     }
   } else {
@@ -93,7 +93,7 @@ void LEDController::startBreak() {
 
 
   off.red = 255;
-  off.brightness = 10;
+  off.brightness = NORMALBRIGHTNESS;
   for (int i = 0; i < LEDCOUNT; i++) {
     colorOff[i] = off;
   }
@@ -124,5 +124,15 @@ void LEDController::startBlink() {
   blinkStartTime = millis();
   blinkTimer = millis();
   update = true;
+}
+
+void LEDController::setToBack(){
+  off.red= BACKCOLORR;
+  off.brightness = BACKCOLORBRIGHTNESS;
+  for (int i = 0; i < LEDCOUNT; i++) {
+      colorOff[i] = off;
+  }
+  strip->write(colorOff, LEDCOUNT, 1);
+  
 }
 
