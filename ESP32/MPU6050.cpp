@@ -51,11 +51,11 @@ bool MPU6050::begin(mpu6050_dps_t scale, mpu6050_range_t range, int mpua)
   Serial.println(test);
   Serial.flush();
   // Check MPU6050 Who Am I Register
-   if (fastRegister8(MPU6050_REG_WHO_AM_I) != 0x68)
+   /*if (fastRegister8(MPU6050_REG_WHO_AM_I) != 0x68)
     {
      Serial.println(test);
      return false;
-    }
+    } */
 
   // Set Clock Source
   setClockSource(MPU6050_CLOCK_PLL_XGYRO);

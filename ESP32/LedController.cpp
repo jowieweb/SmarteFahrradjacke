@@ -30,8 +30,17 @@ LEDController::LEDController(Pololu::APA102Base* strip) {
    may take some time to address all leds
 */
 void LEDController::loop() {
-
   long msTime = millis();
+  if(refreshTimer +5000< msTime){
+    if(isBack){
+     strip->write(colorOff, LEDCOUNT, 1);
+     refreshTimer= msTime;    
+    }
+  }
+  if(isBack){
+    return;
+  }
+  
   if (breakStopTime < msTime) {
     update = true;
     breakStopTime = MAXTIME;
@@ -127,12 +136,15 @@ void LEDController::startBlink() {
 }
 
 void LEDController::setToBack(){
+  isBack= true;
   off.red= BACKCOLORR;
   off.brightness = BACKCOLORBRIGHTNESS;
   for (int i = 0; i < LEDCOUNT; i++) {
       colorOff[i] = off;
   }
   strip->write(colorOff, LEDCOUNT, 1);
+  refreshTimer=millis();
+  
   
 }
 

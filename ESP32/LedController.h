@@ -29,8 +29,10 @@
       int ledCount=72;
       boolean blinkActive = false;
       boolean update = false;
+      boolean isBack = false;
       int ledIndex = 0;
       byte blinkHighLed;
+      long refreshTimer = 0;
       long blinkTimer;
       long blinkStartTime;     
       long breakStopTime;

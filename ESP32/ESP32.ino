@@ -17,10 +17,10 @@
 #define LEFTLEDCLOCK 18
 #define BACKLEDDATA 26
 #define BACKLEDCLOCK 25
-#define RIGHTMPUADDRESS 0x68
-#define LEFTMPUADDRESS 0x69
-#define RIGHTMOTORPIN 2
-#define LEFTMOTORPIN 19
+#define RIGHTMPUADDRESS 0x69
+#define LEFTMPUADDRESS 0x68
+#define RIGHTMOTORPIN 19
+#define LEFTMOTORPIN 2
 #define TOUCHBUTTONPIN 4
 #define TOUCHBUTTONTHRESHOLD 10
 
@@ -60,18 +60,18 @@ void mpuCallback(MPUValues value) {
   Serial.print("MPU Callback ");
   Serial.print(triggered);
   Serial.println(turnRight);
- 
+
 
   if (triggered) {
     if (turnRight) {
-      if(mpuLeft.isNearTrigger()){
+      if (mpuLeft.isNearTrigger()) {
         return;
       }
       ledRight->startBlink();
       motorRight.enqueue(true, 255, 250, 0);
     }
     else {
-       if(mpuRight.isNearTrigger()){
+      if (mpuRight.isNearTrigger()) {
         return;
       }
       ledLeft->startBlink();
@@ -158,10 +158,10 @@ void setup() {
   ledRight = new LEDController((Pololu::APA102Base*)&ledStripRIGHT);
   ledLeft = new LEDController((Pololu::APA102Base*)&ledStripLEFT);
   ledBack = new LEDController((Pololu::APA102Base*)&ledStripBACK);
-  
+
   Serial.println("leds!");
 
-  mpuRight.init(false, &mpuCallback);
+  mpuRight.init(true, &mpuCallback);
   mpuRight.enabledOutputToCallback(true);
   Serial.println("mpu1!");
 
@@ -184,6 +184,7 @@ void setup() {
 */
 void loop()
 {
+
   /* wait some time befor enabling BLE for improved system stability */
   if (!BLEEnabled) {
     if (millis() > BLEENABLETIME) {
@@ -194,7 +195,7 @@ void loop()
     }
   }
 
-  /* get the data from both MPUs */ 
+  /* get the data from both MPUs */
   boolean m1 = mpuRight.loop();
   boolean m2 = mpuLeft.loop();
   /* Only break, if both sensed a break */
@@ -208,10 +209,11 @@ void loop()
     ledRight->stopBreak();
     ledLeft->stopBreak();
   }
-
- /* loop over all instances */
+ 
+  /* loop over all instances */
   ledRight->loop();
   ledLeft->loop();
+  ledBack->loop();
   motorRight.loop();
   motorLeft.loop();
   heartbeat();
@@ -229,7 +231,7 @@ void heartbeat() {
     digitalWrite(LED_BUILTIN, led);
     timer = tempTimer;
     resetCount ++;
-    if(resetCount >= 10){
+    if (resetCount >= 10) {
       Wire.reset();
       resetCount = 0;
       Serial.println("wirereset");
