@@ -172,7 +172,7 @@ public class RouteChooserActivity extends AppCompatActivity implements ActivityC
 
 		@Override
 		protected String doInBackground(Location... locations) {
-			return Mapquest.getAddressFromLocation(locations[0]);
+			return Mapquest.getAddressFromLocation(locations[0]).toString();
 		}
 
 		@Override

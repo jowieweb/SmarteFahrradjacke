@@ -19,6 +19,8 @@ import java.util.Locale;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import fh.com.smartjacket.pojo.HomeAddress;
+
 /**
  * Created by jowie on 04.12.2017.
  */
@@ -142,18 +144,19 @@ public class Mapquest {
         return result;
     }
 
-    public static String getAddressFromLocation(Location location) {
-        String address = "";
+    public static HomeAddress getAddressFromLocation(Location location) {
+        HomeAddress retval = null;
+        //String address = "";
 
         String lat = String.format(Locale.US, "%.6f", location.getLatitude());
         String lng = String.format(Locale.US, "%.6f", location.getLongitude());
 
         String url = REVERSE_GEOCODING_API_BASE_URL + "?key=" + key + "&location=" + lat + "," + lng;
 
-        address = downloadStringFromUrl(url);
+        String value = downloadStringFromUrl(url);
 
         try {
-            JSONObject resultObj = new JSONObject(address);
+            JSONObject resultObj = new JSONObject(value);
             JSONArray results = resultObj.getJSONArray("results");
 
             if (results.length() > 0) {
@@ -165,15 +168,16 @@ public class Mapquest {
                     String street = firstLocation.getString("street");
                     String plz = firstLocation.getString("postalCode");
                     String city = firstLocation.getString("adminArea5");
-
+                    String houseNo="";
                     if (street.indexOf(' ') != -1 && street.substring(0, street.indexOf(' ')).matches("-?\\d+")) {
-                        String houseNo = street.substring(0, street.indexOf(' '));
+                        houseNo = street.substring(0, street.indexOf(' '));
                         street = street.substring(street.indexOf(' ') + 1);
-                        address = street + " " + houseNo + ", " + plz + " " + city;
+                      //  address = street + " " + houseNo + ", " + plz + " " + city;
 
                     } else {
-                        address = street + ", " + plz + " " + city;
+                       // address = street + ", " + plz + " " + city;
                     }
+                    retval = new HomeAddress(street,plz + " " + city, houseNo);
 
                 }
 
@@ -183,7 +187,7 @@ public class Mapquest {
             e.printStackTrace();
         }
 
-        return address;
+        return retval;
     }
 
     /**

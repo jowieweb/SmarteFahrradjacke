@@ -10,18 +10,18 @@ import org.json.JSONObject;
 public class HomeAddress {
     private String address;
     private String postcode;
-    private String hausnumber;
+    private String housenumber;
 
     public HomeAddress(String json){
         try {
             JSONObject js = new JSONObject(json);
             address = js.getString("address");
             postcode = js.getString("postcode");
-            hausnumber = js.getString("hausnumber");
+            housenumber = js.getString("hausnumber");
         }catch (Exception jse){
             address = "Artilleriestraße";
             postcode = "32427 Minden";
-            hausnumber = "15";
+            housenumber = "15";
         }
         if(address.length() == 0){
             address = " ";
@@ -29,14 +29,14 @@ public class HomeAddress {
         if(postcode.length() == 0){
             postcode = " ";
         }
-        if(hausnumber.length() == 0){
-            hausnumber = " ";
+        if(housenumber.length() == 0){
+            housenumber = " ";
         }
     }
 
-    public HomeAddress(String address, String postcode, String hausnumber){
+    public HomeAddress(String address, String postcode, String housenumber){
         this.address = address;
-        this.hausnumber = hausnumber;
+        this.housenumber = housenumber;
         this.postcode = postcode;
     }
 
@@ -46,7 +46,7 @@ public class HomeAddress {
         JSONObject json = new JSONObject();
         try {
             json.put("address", address);
-            json.put("hausnumber", hausnumber);
+            json.put("hausnumber", housenumber);
             json.put("postcode", postcode);
         }catch (JSONException jse ){
 
@@ -65,13 +65,13 @@ public class HomeAddress {
     }
 
     public String getHausnumber() {
-        return hausnumber;
+        return housenumber;
     }
 
 
     @Override
     public String toString(){
-        return address + " " + hausnumber + ", " + postcode;
+        return address + " " + housenumber + ", " + postcode;
     }
 
 

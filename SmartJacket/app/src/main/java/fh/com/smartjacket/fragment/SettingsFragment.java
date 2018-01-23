@@ -256,39 +256,23 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 	}
 
 
-	private class GetAddressFromLocationTask extends AsyncTask<Location, Void, String> {
+	private class GetAddressFromLocationTask extends AsyncTask<Location, Void, HomeAddress> {
 
 		@Override
-		protected String doInBackground(Location... locations) {
+		protected HomeAddress doInBackground(Location... locations) {
 			return Mapquest.getAddressFromLocation(locations[0]);
 		}
 
 		@Override
-		protected void onPostExecute(String pAddress) {
-			if (pAddress != null && !pAddress.isEmpty()) {
-				Log.e("SETTINGSFRAGMENT", pAddress);
+		protected void onPostExecute(HomeAddress pAddress) {
+			if (pAddress != null && !pAddress.toString().isEmpty()) {
+				Log.e("SETTINGSFRAGMENT", pAddress.toString());
 
-				String[] addressAndPlz = pAddress.split(",");
-				String[] addressAndHN = addressAndPlz[0].split(" ");
 
-				String hausnumber = "";
-				String localAddress ="";
-				String plz = addressAndPlz[addressAndPlz.length -1];
-				for(int i =0;i< addressAndHN.length;i++){
-					try {
-						int temp = Integer.parseInt(addressAndHN[i]);
-						hausnumber = ""+ temp;
-					}catch (Exception e){
-						if(localAddress.length()> 0){
-							localAddress += " ";
-						}
-						localAddress += addressAndHN[i];
-					}
-				}
 
-				postcode.setText(plz);
-				address.setText(localAddress);
-				houseNumber.setText(hausnumber);
+				postcode.setText(pAddress.getPostcode());
+				address.setText(pAddress.getAddress());
+				houseNumber.setText(pAddress.getHausnumber());
 
 				saveHomeAddress();
 			}
