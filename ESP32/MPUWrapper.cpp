@@ -48,7 +48,7 @@ void MPUWrapper::getData() {
   Vector norm = mpu.readNormalizeGyro();
 
   // Calculate Pitch, Roll and Yaw
-  pitch = pitch + norm.YAxis * timeStep;
+  pitch = norm.YAxis * timeStep;
   roll = roll + norm.XAxis * timeStep;
   yaw = yaw + norm.ZAxis * timeStep;
   String output = "p=";
@@ -57,7 +57,12 @@ void MPUWrapper::getData() {
   output += roll;
   output += " y=";
   output += yaw;
-  bool isTriggered = yaw > TRIGGERVALUE || yaw < -TRIGGERVALUE;
+  bool isTriggered = false;
+  if(i2cAddress == 0x69){
+    isTriggered = yaw > TRIGGERVALUE;
+  } else {
+    isTriggered = yaw < -TRIGGERVALUE;
+  }
 
 
   // Output raw
@@ -142,8 +147,17 @@ boolean MPUWrapper::getBreaking() {
 
   
 //  Vector ret = mpu.readRawAccel();
-  int16_t value = ret.XAxis + ret.YAxis + ret.ZAxis;
-  if (value > BREAKINGINTENSITY) {
+  int16_t value = ret.XAxis; //+ ret.YAxis + ret.ZAxis;
+  if(i2cAddress == 0x69){
+    //Serial.print("");
+    Serial.println(ret.XAxis);
+    //Serial.print(",");
+    //Serial.print(ret.YAxis);
+    //Serial.print(",");
+    //Serial.println(ret.ZAxis);
+  }
+  
+  if (value < BREAKINGINTENSITY) {
 
     long t_now = millis();
 
@@ -160,7 +174,7 @@ boolean MPUWrapper::getBreaking() {
       isBreaking = false;
     }
   } else {
-    if (value < BREAKINGSTOPINTENSITY) {
+    if (value > BREAKINGSTOPINTENSITY) {
       breakingStarted = false;
       breakStartTime = MAXTIME;
       isBreaking = false;

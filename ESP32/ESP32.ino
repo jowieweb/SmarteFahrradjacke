@@ -1,5 +1,5 @@
 
-//#define SENDMPUTOBLE
+#define SENDMPUTOBLE
 
 #include <APA102.h>
 #include "MPUWrapper.h"
@@ -11,6 +11,8 @@
 
 #include <ArduinoJson.h>
 
+
+//#define AGGRESIVEOUTPUT 1
 #define RIGHTLEDDATA 13
 #define RIGHTLEDCLOCK 14
 #define LEFTLEDDATA 23
@@ -19,10 +21,12 @@
 #define BACKLEDCLOCK 25
 #define RIGHTMPUADDRESS 0x69
 #define LEFTMPUADDRESS 0x68
-#define RIGHTMOTORPIN 19
-#define LEFTMOTORPIN 2
+#define RIGHTMOTORPIN 2
+#define LEFTMOTORPIN 19
 #define TOUCHBUTTONPIN 4
 #define TOUCHBUTTONTHRESHOLD 10
+#define TURNVIBRATIONLENGTH 250
+#define TURNVIBRATIONSTRENGTH 255
 
 #define BLEENABLETIME 2500
 
@@ -39,8 +43,8 @@ LEDController *ledRight;
 LEDController *ledLeft;
 LEDController *ledBack;
 
-MotorController motorRight(RIGHTMOTORPIN);
-MotorController motorLeft(LEFTMOTORPIN);
+MotorController motorRight(RIGHTMOTORPIN,0);
+MotorController motorLeft(LEFTMOTORPIN,1);
 
 
 boolean BLEEnabled = false;
@@ -48,6 +52,7 @@ long lastButtonDown = 0;
 long timer;
 bool led = false;
 int resetCount = 0;
+bool btnTriggered = false;
 
 
 /**
@@ -65,17 +70,19 @@ void mpuCallback(MPUValues value) {
   if (triggered) {
     if (turnRight) {
       if (mpuLeft.isNearTrigger()) {
+        Serial.println("NEAR TRIGGER1!");
         return;
       }
       ledRight->startBlink();
-      motorRight.enqueue(true, 255, 250, 0);
+      motorRight.enqueue(true, TURNVIBRATIONSTRENGTH, TURNVIBRATIONLENGTH, 0);
     }
     else {
       if (mpuRight.isNearTrigger()) {
+        Serial.println("NEAR TRIGGER2!");
         return;
       }
       ledLeft->startBlink();
-      motorLeft.enqueue(true, 255, 250, 0);
+      motorLeft.enqueue(true, TURNVIBRATIONSTRENGTH, TURNVIBRATIONLENGTH, 0);
     }
 
   }
@@ -160,20 +167,30 @@ void setup() {
   ledBack = new LEDController((Pololu::APA102Base*)&ledStripBACK);
 
   Serial.println("leds!");
-
+  
+  #ifdef AGGRESIVEOUTPUT
   mpuRight.init(true, &mpuCallback);
+  #else
+  mpuRight.init(false, &mpuCallback);
+  #endif
+  
   mpuRight.enabledOutputToCallback(true);
   Serial.println("mpu1!");
 
-  mpuLeft.init(false, &mpuCallback);
+  #ifdef AGGRESIVEOUTPUT
+    mpuLeft.init(true, &mpuCallback);
+  #else
+    mpuLeft.init(false, &mpuCallback);
+  #endif
   mpuLeft.enabledOutputToCallback(true);
   Serial.println("mpu2!");
   Serial.flush();
   /* offset both MPU timers slightly */
   mpuRight.loop();
+  mpuRight.loop();
 
   touchAttachInterrupt(TOUCHBUTTONPIN, ctxButtonDown, TOUCHBUTTONTHRESHOLD);
-  delay(25);
+  delay(5);
   ledBack->setToBack();
 }
 
@@ -184,7 +201,9 @@ void setup() {
 */
 void loop()
 {
-
+  #ifdef AGGRESIVEOUTPUT
+  long start = millis();
+  #endif
   /* wait some time befor enabling BLE for improved system stability */
   if (!BLEEnabled) {
     if (millis() > BLEENABLETIME) {
@@ -203,11 +222,11 @@ void loop()
   {
     Serial.println("BREAK!");
     ledRight->startBreak();
-    ledLeft->startBreak();
+    ledLeft->startBreak();   
   }
   else {
-    ledRight->stopBreak();
-    ledLeft->stopBreak();
+    //ledRight->stopBreak();
+    //ledLeft->stopBreak();
   }
  
   /* loop over all instances */
@@ -217,6 +236,22 @@ void loop()
   motorRight.loop();
   motorLeft.loop();
   heartbeat();
+  
+  #ifdef AGGRESIVEOUTPUT
+    Serial.print("loopTime: ");
+    Serial.println(millis() - start);
+  #endif
+
+  if(btnTriggered){
+    Serial.println("BTN DOWN");
+    btnTriggered = false;
+    if (BLEEnabled && ble){
+      if(!(lastButtonDown + 500 > millis())){
+        lastButtonDown = millis();
+        ble->sendText("btn");
+      }
+    }    
+  }
 
 }
 
@@ -243,18 +278,21 @@ void heartbeat() {
    callback for the TouchButton
 */
 void ctxButtonDown() {
-  Serial.println("\n\nbutton down\n\n");
-  if (!BLEEnabled || !ble) {
+  //Serial.println("\n\nbutton down\n\n");
+  //Serial.flush();
+  btnTriggered = true;
+  return;
+ /*
+  if (!BLEEnabled || !ble) { 
     return;
   }
-  /*debounce the button quite heavily by 500 ms */
+  //debounce the button quite heavily by 500 ms 
   if (lastButtonDown + 500 > millis()) {
     return;
   }
   lastButtonDown = millis();
-  ble->sendText("btn");
+  ble->sendText("btn"); */
 
 }
-
 
 

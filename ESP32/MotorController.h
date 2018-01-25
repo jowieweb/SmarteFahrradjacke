@@ -5,7 +5,7 @@
 class MotorController
 {
   public:
-    MotorController(int motorpin);
+    MotorController(int motorpin, int channel);
     void enqueue(bool fadein, byte dutyCycle, int lengthOnInMs, int lengthOffInMs);
     void spinMotor();
     void stopMotor();

@@ -4,9 +4,9 @@
 /**
  * constructor for the class
  */
-MotorController::MotorController(int motorpin) {
+MotorController::MotorController(int motorpin, int channel) {
   this->motorpin = motorpin;
-  usedChannel = this->pwmChannel;
+  usedChannel = channel;//this->pwmChannel;
   this->pwmChannel++;
 
   ledcSetup(usedChannel, freq, resolution);

@@ -44,6 +44,7 @@ void LEDController::loop() {
   if (breakStopTime < msTime) {
     update = true;
     breakStopTime = MAXTIME;
+    isBreaking = false;
     off.red = 0;
     off.brightness = 0;
     for (int i = 0; i < LEDCOUNT; i++) {
@@ -61,6 +62,7 @@ void LEDController::loop() {
   if (blinkActive) {
     if ( blinkStartTime + BLINKMSTIME < msTime) {
       blinkActive = false;
+      ledIndex = 0;
     }
 
     if (blinkTimer + BLINKSPEED < msTime) {
@@ -94,18 +96,17 @@ void LEDController::setBrightness(byte brightness) {
 }
 
 void LEDController::startBreak() {
-  if (isBreaking) {
-    return;
-  }
   update = true;
   isBreaking = true;
+  blinkActive = false;
 
-
+  breakStopTime = millis()+ 3500;
   off.red = 255;
   off.brightness = NORMALBRIGHTNESS;
   for (int i = 0; i < LEDCOUNT; i++) {
     colorOff[i] = off;
   }
+  
 
 }
 
@@ -115,13 +116,9 @@ void LEDController::stopBreak() {
 
   update = true;
   isBreaking = false;
-  breakStopTime = millis() + 1000;
-  /*
-    off.red = 0;
-    off.brightness = 0;
-    for (int i = 0; i < LEDCOUNT; i++) {
-      colorOff[i] = off;
-    } */
+  breakStopTime = millis() + 250;
+  
+
 }
 
 /**
@@ -129,18 +126,28 @@ void LEDController::stopBreak() {
 */
 void LEDController::startBlink() {
   Serial.println("START BLINK");
-  blinkActive = true;
-  blinkStartTime = millis();
-  blinkTimer = millis();
-  update = true;
+  //check for double trigger 
+  if(!blinkActive){
+    blinkActive = true;
+    blinkStartTime = millis();
+    blinkTimer = millis();
+    update = true;
+    ledIndex = 0;
+  }
 }
 
 void LEDController::setToBack(){
   isBack= true;
   off.red= BACKCOLORR;
   off.brightness = BACKCOLORBRIGHTNESS;
-  for (int i = 0; i < LEDCOUNT; i++) {
+  for (int i = 0; i < 25; i++) {
       colorOff[i] = off;
+  }
+  off.red = BACKCOLORR;
+  off.green = BACKCOLORR;
+  off.blue = BACKCOLORR;
+  for(int i = 25;i<LEDCOUNT;i++){
+    colorOff[i] = off;
   }
   strip->write(colorOff, LEDCOUNT, 1);
   refreshTimer=millis();
