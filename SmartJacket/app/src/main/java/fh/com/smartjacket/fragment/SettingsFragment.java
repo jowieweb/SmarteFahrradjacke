@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -183,11 +184,16 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 		String  jString = sharedPreferences.getString(getString(R.string.shared_preferences_home_address), null);
 		HomeAddress ha = new HomeAddress(jString);
 		try {
-			address.setText(ha.getAddress());
-			houseNumber.setText(ha.getHausnumber());
-			postcode.setText(ha.getPostcode());
+			new Handler().post(new Runnable() {
+				@Override
+				public void run() {
+					address.setText(ha.getAddress());
+					houseNumber.setText(ha.getHausnumber());
+					postcode.setText(ha.getPostcode());
+				}
+			});
 		}catch (Exception e){
-			
+
 		}
 		return ha;
 	}
