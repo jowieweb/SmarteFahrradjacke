@@ -59,7 +59,6 @@ void BLEWrapper::start(void (*callback)(String)) {
    pCharacteristicPower->addDescriptor(&pFormat);
    pCharacteristicPower->addDescriptor(&charConf);
    pCharacteristicPower->addDescriptor(new BLE2902());
-  //pServiceBattery->addCharacteristic(pCharacteristicPower);
   //L in asii = 75 -> 75 % Battery
   pCharacteristicPower->setValue("K");
 
