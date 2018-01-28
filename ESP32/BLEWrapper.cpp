@@ -27,10 +27,17 @@ void BLEWrapper::onDisconnect(BLEServer* pServer) {
  * start the BLE service
  */
 void BLEWrapper::start(void (*callback)(String)) {
+
   
   delay(10);
-  BLEDevice::init("UART Service");
+  BLEDevice::init("SmartJacket");
   this->callback = callback;
+
+
+  BLEDescriptor pFormat(BLEUUID((uint16_t)0x2904));
+  BLEDescriptor charConf(BLEUUID((uint16_t)0x2902));
+  pFormat.setValue("Percent from 0 to 100");
+  charConf.setValue("kp");
   
   // Create the BLE Server
   BLEServer *pServer = BLEDevice::createServer();
@@ -45,6 +52,18 @@ void BLEWrapper::start(void (*callback)(String)) {
   BLECharacteristic *pCharacteristic = pService->createCharacteristic(CHARACTERISTIC_UUID_RX,BLECharacteristic::PROPERTY_WRITE);
   pCharacteristic->setCallbacks(this);
 
+  BLEService *pServiceBattery = pServer->createService(BATTERYSERVICE);
+  BLECharacteristic *pCharacteristicPower = pServiceBattery->createCharacteristic(CHARACTERISTIC_BATTERY_LEVEL,BLECharacteristic::PROPERTY_READ);
+  pCharacteristicPower->setCallbacks(this);
+
+   pCharacteristicPower->addDescriptor(&pFormat);
+   pCharacteristicPower->addDescriptor(&charConf);
+   pCharacteristicPower->addDescriptor(new BLE2902());
+  //pServiceBattery->addCharacteristic(pCharacteristicPower);
+  //L in asii = 75 -> 75 % Battery
+  pCharacteristicPower->setValue("K");
+
+  pServiceBattery->start();
   // Start the service
   pService->start();
 
@@ -52,7 +71,9 @@ void BLEWrapper::start(void (*callback)(String)) {
   pServer->getAdvertising()->start();
 }
 
-
+void BLEWrapper::onRead(BLECharacteristic *pCharacteristic) {
+  Serial.println("ONREAD");
+}
 
 /**
  * called when a messaged is received
