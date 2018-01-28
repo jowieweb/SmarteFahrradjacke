@@ -50,6 +50,7 @@ void LEDController::loop() {
     for (int i = 0; i < LEDCOUNT; i++) {
       colorOff[i] = off;
     }
+    Serial.println("end Break");
   }
 
   if (!update) {
@@ -98,7 +99,6 @@ void LEDController::setBrightness(byte brightness) {
 void LEDController::startBreak() {
   update = true;
   isBreaking = true;
-  blinkActive = false;
 
   breakStopTime = millis()+ 3500;
   off.red = 255;
@@ -154,4 +154,5 @@ void LEDController::setToBack(){
   
   
 }
+
 

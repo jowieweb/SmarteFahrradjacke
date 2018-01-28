@@ -1,6 +1,5 @@
 #ifndef LEDCONTROLLER_H
   #define LEDCONTROLLER_H
-  #include "Adafruit_WS2801.h"
   #include <APA102.h>
   #define LEDCOUNT 72
   #define BLINKMSTIME 7000
@@ -46,3 +45,4 @@
       Pololu::rgb_color color_high;
   };
 #endif
+

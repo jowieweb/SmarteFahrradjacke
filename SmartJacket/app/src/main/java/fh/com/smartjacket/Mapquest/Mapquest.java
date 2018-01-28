@@ -57,7 +57,7 @@ public class Mapquest {
 
     public Route getRoute(LatLng from, LatLng to){
         String retval = getURL(from.getLatitude() + "%2C" + from.getLongitude(), to.getLatitude() +"%2C" +to.getLongitude());
-        Log.i(LOG_TAG,"CreateRout from " + retval);
+        Log.i(LOG_TAG,"CreateRoute from " + retval);
         RetrieveContentTask rct = new RetrieveContentTask();
         try {
             retval = rct.execute(retval).get();

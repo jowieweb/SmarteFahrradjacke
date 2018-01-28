@@ -10,6 +10,7 @@ class MotorController
     void spinMotor();
     void stopMotor();
     void loop();
+    void spinIntro(boolean start);
 
   private:
     int pwmChannel;

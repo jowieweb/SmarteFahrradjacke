@@ -43,12 +43,12 @@ LEDController *ledRight;
 LEDController *ledLeft;
 LEDController *ledBack;
 
-MotorController motorRight(RIGHTMOTORPIN,0);
-MotorController motorLeft(LEFTMOTORPIN,1);
+MotorController motorRight(RIGHTMOTORPIN, 0);
+MotorController motorLeft(LEFTMOTORPIN, 1);
 
 
 boolean BLEEnabled = false;
-long lastButtonDown = 0;
+long lastButtonDown = 10000;
 long timer;
 bool led = false;
 int resetCount = 0;
@@ -167,24 +167,36 @@ void setup() {
   ledBack = new LEDController((Pololu::APA102Base*)&ledStripBACK);
 
   Serial.println("leds!");
-  
-  #ifdef AGGRESIVEOUTPUT
+  delay(1000);
+  motorLeft.spinIntro(true);
+  motorRight.spinIntro(true);
+  delay(1000);
+  motorLeft.spinIntro(false);
+  motorRight.spinIntro(false);
+  delay(1000);
+#ifdef AGGRESIVEOUTPUT
   mpuRight.init(true, &mpuCallback);
-  #else
+#else
   mpuRight.init(false, &mpuCallback);
-  #endif
-  
+#endif
+
   mpuRight.enabledOutputToCallback(true);
   Serial.println("mpu1!");
 
-  #ifdef AGGRESIVEOUTPUT
-    mpuLeft.init(true, &mpuCallback);
-  #else
-    mpuLeft.init(false, &mpuCallback);
-  #endif
+#ifdef AGGRESIVEOUTPUT
+  mpuLeft.init(true, &mpuCallback);
+#else
+  mpuLeft.init(false, &mpuCallback);
+#endif
   mpuLeft.enabledOutputToCallback(true);
   Serial.println("mpu2!");
   Serial.flush();
+  motorLeft.spinIntro(true);
+  motorRight.spinIntro(true);
+  delay(200);
+  motorLeft.spinIntro(false);
+  motorRight.spinIntro(false);
+
   /* offset both MPU timers slightly */
   mpuRight.loop();
   mpuRight.loop();
@@ -201,9 +213,9 @@ void setup() {
 */
 void loop()
 {
-  #ifdef AGGRESIVEOUTPUT
+#ifdef AGGRESIVEOUTPUT
   long start = millis();
-  #endif
+#endif
   /* wait some time befor enabling BLE for improved system stability */
   if (!BLEEnabled) {
     if (millis() > BLEENABLETIME) {
@@ -222,13 +234,9 @@ void loop()
   {
     Serial.println("BREAK!");
     ledRight->startBreak();
-    ledLeft->startBreak();   
+    ledLeft->startBreak();
   }
-  else {
-    //ledRight->stopBreak();
-    //ledLeft->stopBreak();
-  }
- 
+
   /* loop over all instances */
   ledRight->loop();
   ledLeft->loop();
@@ -236,21 +244,22 @@ void loop()
   motorRight.loop();
   motorLeft.loop();
   heartbeat();
-  
-  #ifdef AGGRESIVEOUTPUT
-    Serial.print("loopTime: ");
-    Serial.println(millis() - start);
-  #endif
 
-  if(btnTriggered){
-    Serial.println("BTN DOWN");
+#ifdef AGGRESIVEOUTPUT
+  Serial.print("loopTime: ");
+  Serial.println(millis() - start);
+#endif
+
+  if (btnTriggered) {
+   
     btnTriggered = false;
-    if (BLEEnabled && ble){
-      if(!(lastButtonDown + 500 > millis())){
+    if (!(lastButtonDown + 500 > millis())) {
+       Serial.println("BTN DOWN");
+      if (BLEEnabled && ble) {
         lastButtonDown = millis();
         ble->sendText("btn");
       }
-    }    
+    }
   }
 
 }
@@ -278,21 +287,7 @@ void heartbeat() {
    callback for the TouchButton
 */
 void ctxButtonDown() {
-  //Serial.println("\n\nbutton down\n\n");
-  //Serial.flush();
   btnTriggered = true;
-  return;
- /*
-  if (!BLEEnabled || !ble) { 
-    return;
-  }
-  //debounce the button quite heavily by 500 ms 
-  if (lastButtonDown + 500 > millis()) {
-    return;
-  }
-  lastButtonDown = millis();
-  ble->sendText("btn"); */
-
 }
 
 

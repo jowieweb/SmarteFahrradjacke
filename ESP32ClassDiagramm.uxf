@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.2">
+  <zoom_level>10</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>230</x>
+      <y>240</y>
+      <w>230</w>
+      <h>310</h>
+    </coordinates>
+    <panel_attributes>ESP32
+--
+*ble: BLEWrapper
+ledStripRIGHT:Apa102&lt;&gt;
+ledStripLEFT:Apa102&lt;&gt;
+ledStripBack:Apa102&lt;&gt;
+mpuRight:MPUWrapper
+mpuLeft:MPUWrapper
+BLEEnabled:bool
+lastButtonDown:long
+timer:long
+resetCount:int
+btnTriggered:bool
+--
+mpuCallback(value: MPUValues)
+bleCallback(recv: String)
+heartbeat()
+ctxButtonDown()
+setup()
+loop()
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>490</x>
+      <y>240</y>
+      <w>300</w>
+      <h>220</h>
+    </coordinates>
+    <panel_attributes>BLEWrapper
+--
+-deviceConnected:bool
+-txValue:unit8_t
+-XDELAY: TickType_t
+-allowedToSend:long
+-*callback(String):void
+-*pCharacteristic:BLECharacteristic
+--
++start(*callback(String):void)
++onConnect(pServer:BLEServer*)
++onDisconnect(pServer:BLEServer*)
++onWrite(pCharacteristic:Characteristic*)
++sendText(text:String)
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>850</x>
+      <y>210</y>
+      <w>240</w>
+      <h>430</h>
+    </coordinates>
+    <panel_attributes>LedController
+--
+-brighness:byte
+-ledCount:int
+-blinkActive:bool
+-update:bool
+-isBack:bool
+-ledIndex:int
+-blinkHighLed:byte
+-refreshTimer:long
+-blinkTimer:long
+-breakStopTimer:long
+-isBreaking:bool
+-strip: APA102Byse*
+-colorOrange:rgb_color[]
+-colorOff:rgb_color[]
+-off:rgbColor
+-color_normal:rgbColor
+--
++LEDController(strip:Apa102Base*)
++loop()
++setBrightness(brightness:byte)
++isBlinking():bool
++startBlink()
++startBreak()
++stopBreak()
++setToBack()</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>200</x>
+      <y>620</y>
+      <w>280</w>
+      <h>230</h>
+    </coordinates>
+    <panel_attributes>MPUWrapper
+--
+-mpu:MPU6050
+-i2cAddress:int
+-pitch,roll,yaw:float
+--
++MPUWrapper(i2cAdress:int)
++init(printToSerial:bool, MPUValues:void*)
++loop()
++isTriggered():bool
++isNearTrigger:bool
+-getData()
+-checkReCal()
+-setto()
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>650</x>
+      <y>660</y>
+      <w>440</w>
+      <h>200</h>
+    </coordinates>
+    <panel_attributes>MotorController
+--
+-pwmChannel:int
+-motorPin:int
+-dutyCylce:int
+-dutyCycleToReach:int
+-timeToStop:long
+-myqueue:queue&lt;spin_t&gt;
+--
++MotorController:(motorpin:int, channel:int)
++enqueue(fadeind:bool, dutyCycle:byte, lengthOn:int, lengthoff:int)
++spinIntro(start:start)
+-getFromQueue()
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>450</x>
+      <y>450</y>
+      <w>230</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+1</panel_attributes>
+    <additional_attributes>210.0;10.0;210.0;60.0;10.0;60.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>450</x>
+      <y>510</y>
+      <w>420</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+3</panel_attributes>
+    <additional_attributes>400.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>250</x>
+      <y>540</y>
+      <w>140</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+2</panel_attributes>
+    <additional_attributes>10.0;80.0;120.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>450</x>
+      <y>530</y>
+      <w>220</w>
+      <h>190</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+2</panel_attributes>
+    <additional_attributes>200.0;170.0;10.0;10.0</additional_attributes>
+  </element>
+</diagram>

@@ -69,6 +69,17 @@ void MotorController::getFromQueue(){
   this->running = true;
 }
 
+void MotorController::spinIntro(boolean start){
+  if(start){
+    dutyCycle = 255;
+    ledcWrite(usedChannel, dutyCycle);
+  } else {
+    dutyCycle = 0;
+    ledcWrite(usedChannel, dutyCycle);
+  
+  }
+}
+
 /**
  * main loop function
  * has to be called constantly

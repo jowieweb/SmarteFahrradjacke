@@ -148,14 +148,7 @@ boolean MPUWrapper::getBreaking() {
   
 //  Vector ret = mpu.readRawAccel();
   int16_t value = ret.XAxis; //+ ret.YAxis + ret.ZAxis;
-  if(i2cAddress == 0x69){
-    //Serial.print("");
-    Serial.println(ret.XAxis);
-    //Serial.print(",");
-    //Serial.print(ret.YAxis);
-    //Serial.print(",");
-    //Serial.println(ret.ZAxis);
-  }
+  
   
   if (value < BREAKINGINTENSITY) {
 
