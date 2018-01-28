@@ -178,13 +178,17 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 		Toast.makeText(getActivity(),"Home address saved", Toast.LENGTH_SHORT).show();
 	}
 
-	public HomeAddress loadHomeAddress() {
+	public synchronized HomeAddress loadHomeAddress() {
 		SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
 		String  jString = sharedPreferences.getString(getString(R.string.shared_preferences_home_address), null);
 		HomeAddress ha = new HomeAddress(jString);
-		address.setText(ha.getAddress());
-		houseNumber.setText(ha.getHausnumber());
-		postcode.setText(ha.getPostcode());
+		try {
+			address.setText(ha.getAddress());
+			houseNumber.setText(ha.getHausnumber());
+			postcode.setText(ha.getPostcode());
+		}catch (Exception e){
+			
+		}
 		return ha;
 	}
 
