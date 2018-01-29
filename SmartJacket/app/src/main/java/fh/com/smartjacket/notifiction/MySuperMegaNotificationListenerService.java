@@ -12,10 +12,10 @@ import android.util.Log;
  * Created by nils on 21.12.17.
  */
 
-public class MyNotificationListenerService extends NotificationListenerService {
+public class MySuperMegaNotificationListenerService extends NotificationListenerService {
 	private static final String LOG_TAG = "MyNotificationListener";
 
-	public MyNotificationListenerService(){
+	public MySuperMegaNotificationListenerService(){
 		Log.i(LOG_TAG, "STARTED!");
 	}
 
@@ -33,13 +33,13 @@ public class MyNotificationListenerService extends NotificationListenerService {
 	public void onNotificationRemoved(StatusBarNotification statusBarNotification) {
 
 	}
+
 	@Override
 	public void onListenerConnected(){
 		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
 			getActiveNotifications();
 		Log.i(LOG_TAG, "CONNECTED!");
 	}
-
 	@TargetApi(Build.VERSION_CODES.N)
 	@Override
 	public void onListenerDisconnected(){

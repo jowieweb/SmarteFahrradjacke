@@ -232,6 +232,7 @@ public class MainActivity extends AppCompatActivity implements LocationChangeLis
             builder.create().show();
 
         } else {
+            Log.i(LOG_TAG, "NotificationListener started");
             this.notificationReceiver = new NotificationReceiver(this);
 
             IntentFilter filter = new IntentFilter();
