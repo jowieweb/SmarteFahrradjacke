@@ -6,7 +6,7 @@
 #define MAXTIME 999999999
 
 #define BREAKTIGGERTIME 10
-#define BREAKINGINTENSITY -5
+#define BREAKINGINTENSITY -3000
 #define BREAKINGSTOPINTENSITY 0
 
 #define TRIGGERVALUE 20
@@ -28,7 +28,7 @@ class MPUWrapper
   public:
 
     MPUWrapper(int i2cAddress);
-    void init(bool printToSerial, void (*)(MPUValues));
+    void init(bool printToSerial, void (*)(MPUValues),bool middel = false);
     void createTask(void (*func)(void*));
     void taskMPU();
     int getI2CAddress();
@@ -45,6 +45,7 @@ class MPUWrapper
     float pitch = 0;
     float roll = 0;
     float yaw = 0;
+    boolean middel = false;
 
     float pitch_last = 0;
     float roll_last = 0;
@@ -64,7 +65,8 @@ class MPUWrapper
     void getData();
     void checkReCal();
     void setto();
-
+    Vector oldAccel;
+    int sampleCount = 0;
 };
 
 #endif

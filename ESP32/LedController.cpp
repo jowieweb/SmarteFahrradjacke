@@ -22,6 +22,7 @@ LEDController::LEDController(Pololu::APA102Base* strip) {
     colorOrange[i] = off;
     colorOff[i] = off;
   }
+  loop();
 }
 
 /**

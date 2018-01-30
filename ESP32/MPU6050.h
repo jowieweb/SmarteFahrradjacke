@@ -158,7 +158,7 @@ class MPU6050
 {
     public:
 
-  bool begin(mpu6050_dps_t scale = MPU6050_SCALE_2000DPS, mpu6050_range_t range = MPU6050_RANGE_2G, int mpua = MPU6050_ADDRESS);
+  bool begin(mpu6050_dps_t scale = MPU6050_SCALE_2000DPS, mpu6050_range_t range = MPU6050_RANGE_2G, int mpua = MPU6050_ADDRESS,int sda=21, int scl=22);
 
   void setClockSource(mpu6050_clockSource_t source);
   void setScale(mpu6050_dps_t scale);
@@ -252,6 +252,8 @@ class MPU6050
 
   bool readRegisterBit(uint8_t reg, uint8_t pos);
   void writeRegisterBit(uint8_t reg, uint8_t pos, bool state);
+  TwoWire* myWire;
+  static TwoWire wire1;
 
 };
 

@@ -21,6 +21,7 @@
 #define BACKLEDCLOCK 25
 #define RIGHTMPUADDRESS 0x69
 #define LEFTMPUADDRESS 0x68
+#define MIDDELMPUADDRESS 0x68
 #define RIGHTMOTORPIN 2
 #define LEFTMOTORPIN 19
 #define TOUCHBUTTONPIN 4
@@ -38,6 +39,7 @@ APA102<BACKLEDDATA, BACKLEDCLOCK> ledStripBACK;
 
 MPUWrapper mpuRight(RIGHTMPUADDRESS);
 MPUWrapper mpuLeft(LEFTMPUADDRESS);
+MPUWrapper mpuMiddel(MIDDELMPUADDRESS);
 
 LEDController *ledRight;
 LEDController *ledLeft;
@@ -53,6 +55,7 @@ long timer;
 bool led = false;
 int resetCount = 0;
 bool btnTriggered = false;
+
 
 
 /**
@@ -165,6 +168,7 @@ void setup() {
   ledRight = new LEDController((Pololu::APA102Base*)&ledStripRIGHT);
   ledLeft = new LEDController((Pololu::APA102Base*)&ledStripLEFT);
   ledBack = new LEDController((Pololu::APA102Base*)&ledStripBACK);
+  
 
   Serial.println("leds!");
   delay(1000);
@@ -174,6 +178,9 @@ void setup() {
   motorLeft.spinIntro(false);
   motorRight.spinIntro(false);
   delay(1000);
+  mpuMiddel.init(true, &mpuCallback, true);
+
+  
 #ifdef AGGRESIVEOUTPUT
   mpuRight.init(true, &mpuCallback);
 #else
@@ -197,9 +204,6 @@ void setup() {
   motorLeft.spinIntro(false);
   motorRight.spinIntro(false);
 
-  /* offset both MPU timers slightly */
-  mpuRight.loop();
-  mpuRight.loop();
 
   touchAttachInterrupt(TOUCHBUTTONPIN, ctxButtonDown, TOUCHBUTTONTHRESHOLD);
   delay(5);
@@ -229,8 +233,9 @@ void loop()
   /* get the data from both MPUs */
   boolean m1 = mpuRight.loop();
   boolean m2 = mpuLeft.loop();
+  boolean m3 = mpuMiddel.loop();
   /* Only break, if both sensed a break */
-  if (m1 && m2)
+  if (m3)
   {
     Serial.println("BREAK!");
     ledRight->startBreak();

@@ -28,14 +28,20 @@
 #include <math.h>
 
 #include "MPU6050.h"
+TwoWire MPU6050::wire1(1);
 
-bool MPU6050::begin(mpu6050_dps_t scale, mpu6050_range_t range, int mpua)
+bool MPU6050::begin(mpu6050_dps_t scale, mpu6050_range_t range, int mpua,int sda, int scl)
 {
   // Set Address
   mpuAddress = mpua;
-
-  Wire.begin();//-1,-1, 50000);
-
+  if(sda ==21 && scl == 22){
+    myWire = &Wire;
+    myWire->begin();//-1,-1, 50000);
+   
+  } else {
+    myWire = &wire1;
+    wire1.begin(sda,scl, 100000);   
+  }
   // Reset calibrate values
   dg.XAxis = 0;
   dg.YAxis = 0;
@@ -352,18 +358,18 @@ Activites MPU6050::readActivites(void)
 
 Vector MPU6050::readRawAccel(void)
 {
-  Wire.beginTransmission(mpuAddress);
+  myWire->beginTransmission(mpuAddress);
 #if ARDUINO >= 100
-  Wire.write(MPU6050_REG_ACCEL_XOUT_H);
+  myWire->write(MPU6050_REG_ACCEL_XOUT_H);
 #else
-  Wire.send(MPU6050_REG_ACCEL_XOUT_H);
+  myWire->send(MPU6050_REG_ACCEL_XOUT_H);
 #endif
-  Wire.endTransmission();
+  myWire->endTransmission();
 
-  Wire.beginTransmission(mpuAddress);
-  Wire.requestFrom(mpuAddress, 6);
+  myWire->beginTransmission(mpuAddress);
+  myWire->requestFrom(mpuAddress, 6);
   int trycount = 0;
-  while (Wire.available() < 6 && trycount <50){
+  while (myWire->available() < 6 && trycount <50){
     trycount ++;
    // delayMicroseconds(1);
   }
@@ -372,19 +378,19 @@ Vector MPU6050::readRawAccel(void)
   }
 
 #if ARDUINO >= 100
-  uint8_t xha = Wire.read();
-  uint8_t xla = Wire.read();
-  uint8_t yha = Wire.read();
-  uint8_t yla = Wire.read();
-  uint8_t zha = Wire.read();
-  uint8_t zla = Wire.read();
+  uint8_t xha = myWire->read();
+  uint8_t xla = myWire->read();
+  uint8_t yha = myWire->read();
+  uint8_t yla = myWire->read();
+  uint8_t zha = myWire->read();
+  uint8_t zla = myWire->read();
 #else
-  uint8_t xha = Wire.receive();
-  uint8_t xla = Wire.receive();
-  uint8_t yha = Wire.receive();
-  uint8_t yla = Wire.receive();
-  uint8_t zha = Wire.receive();
-  uint8_t zla = Wire.receive();
+  uint8_t xha = myWire->receive();
+  uint8_t xla = myWire->receive();
+  uint8_t yha = myWire->receive();
+  uint8_t yla = myWire->receive();
+  uint8_t zha = myWire->receive();
+  uint8_t zla = myWire->receive();
 #endif
 
   ra.XAxis = xha << 8 | xla;
@@ -419,41 +425,41 @@ Vector MPU6050::readScaledAccel(void)
 
 Vector MPU6050::readRawGyro(void)
 {
-  Wire.beginTransmission(mpuAddress);
+  myWire->beginTransmission(mpuAddress);
 #if ARDUINO >= 100
-  Wire.write(MPU6050_REG_GYRO_XOUT_H);
+  myWire->write(MPU6050_REG_GYRO_XOUT_H);
 #else
-  Wire.send(MPU6050_REG_GYRO_XOUT_H);
+  myWire->send(MPU6050_REG_GYRO_XOUT_H);
 #endif
-  Wire.endTransmission();
+  myWire->endTransmission();
 
-  Wire.beginTransmission(mpuAddress);
-  Wire.requestFrom(mpuAddress, 6);
+  myWire->beginTransmission(mpuAddress);
+  myWire->requestFrom(mpuAddress, 6);
   int trycount = 0;
-  while (Wire.available() < 6 && trycount < 50){
+  while (myWire->available() < 6 && trycount < 50){
     trycount ++;
     //delayMicroseconds(1);
   }
   if(trycount>=49){
-    Serial.print("TRYCOUNT 431 ");
-    Serial.println(mpuAddress, HEX);
+    //Serial.print("TRYCOUNT 431 ");
+    //Serial.println(mpuAddress, HEX);
     
   }
 
 #if ARDUINO >= 100
-  uint8_t xha = Wire.read();
-  uint8_t xla = Wire.read();
-  uint8_t yha = Wire.read();
-  uint8_t yla = Wire.read();
-  uint8_t zha = Wire.read();
-  uint8_t zla = Wire.read();
+  uint8_t xha = myWire->read();
+  uint8_t xla = myWire->read();
+  uint8_t yha = myWire->read();
+  uint8_t yla = myWire->read();
+  uint8_t zha = myWire->read();
+  uint8_t zla = myWire->read();
 #else
-  uint8_t xha = Wire.receive();
-  uint8_t xla = Wire.receive();
-  uint8_t yha = Wire.receive();
-  uint8_t yla = Wire.receive();
-  uint8_t zha = Wire.receive();
-  uint8_t zla = Wire.receive();
+  uint8_t xha = myWire->receive();
+  uint8_t xla = myWire->receive();
+  uint8_t yha = myWire->receive();
+  uint8_t yla = myWire->receive();
+  uint8_t zha = myWire->receive();
+  uint8_t zla = myWire->receive();
 #endif
 
   rg.XAxis = xha << 8 | xla;
@@ -642,22 +648,22 @@ uint8_t MPU6050::fastRegister8(uint8_t reg)
 {
   uint8_t value;
 
-  Wire.beginTransmission(mpuAddress);
+  myWire->beginTransmission(mpuAddress);
 #if ARDUINO >= 100
-  Wire.write(reg);
+  myWire->write(reg);
 #else
-  Wire.send(reg);
+  myWire->send(reg);
 #endif
-  Wire.endTransmission();
+  myWire->endTransmission();
 
-  Wire.beginTransmission(mpuAddress);
-  Wire.requestFrom(mpuAddress, 1);
+  myWire->beginTransmission(mpuAddress);
+  myWire->requestFrom(mpuAddress, 1);
 #if ARDUINO >= 100
-  value = Wire.read();
+  value = myWire->read();
 #else
-  value = Wire.receive();
+  value = myWire->receive();
 #endif;
-  Wire.endTransmission();
+  myWire->endTransmission();
 
   return value;
 }
@@ -667,28 +673,28 @@ uint8_t MPU6050::readRegister8(uint8_t reg)
 {
   uint8_t value;
 
-  Wire.beginTransmission(mpuAddress);
+  myWire->beginTransmission(mpuAddress);
 #if ARDUINO >= 100
-  Wire.write(reg);
+  myWire->write(reg);
 #else
-  Wire.send(reg);
+  myWire->send(reg);
 #endif
-  Wire.endTransmission();
+  myWire->endTransmission();
 
-  Wire.beginTransmission(mpuAddress);
-  Wire.requestFrom(mpuAddress, 1);
+  myWire->beginTransmission(mpuAddress);
+  myWire->requestFrom(mpuAddress, 1);
   int trycount = 0;
-  while (!Wire.available() && trycount < 50) { trycount++;// delayMicroseconds(1);
+  while (!myWire->available() && trycount < 50) { trycount++;// delayMicroseconds(1);
   }
   if(trycount >=49){
       Serial.println("TRYCOUNT OUT");
   }
 #if ARDUINO >= 100
-  value = Wire.read();
+  value = myWire->read();
 #else
-  value = Wire.receive();
+  value = myWire->receive();
 #endif;
-  Wire.endTransmission();
+  myWire->endTransmission();
 
   return value;
 }
@@ -696,33 +702,33 @@ uint8_t MPU6050::readRegister8(uint8_t reg)
 // Write 8-bit to register
 void MPU6050::writeRegister8(uint8_t reg, uint8_t value)
 {
-  Wire.beginTransmission(mpuAddress);
+  myWire->beginTransmission(mpuAddress);
 
 #if ARDUINO >= 100
-  Wire.write(reg);
-  Wire.write(value);
+  myWire->write(reg);
+  myWire->write(value);
 #else
-  Wire.send(reg);
-  Wire.send(value);
+  myWire->send(reg);
+  myWire->send(value);
 #endif
-  Wire.endTransmission();
+  myWire->endTransmission();
 }
 
 int16_t MPU6050::readRegister16(uint8_t reg)
 {
   int16_t value;
-  Wire.beginTransmission(mpuAddress);
+  myWire->beginTransmission(mpuAddress);
 #if ARDUINO >= 100
-  Wire.write(reg);
+  myWire->write(reg);
 #else
-  Wire.send(reg);
+  myWire->send(reg);
 #endif
-  Wire.endTransmission();
+  myWire->endTransmission();
 
-  Wire.beginTransmission(mpuAddress);
-  Wire.requestFrom(mpuAddress, 2);
+  myWire->beginTransmission(mpuAddress);
+  myWire->requestFrom(mpuAddress, 2);
   int trycount = 0;
-  while (!Wire.available()&& trycount <=49) {
+  while (!myWire->available()&& trycount <=49) {
     trycount++;
    // delayMicroseconds(1);
    }
@@ -730,13 +736,13 @@ int16_t MPU6050::readRegister16(uint8_t reg)
     Serial.println("TRYCOUNT 718");
    }
 #if ARDUINO >= 100
-  uint8_t vha = Wire.read();
-  uint8_t vla = Wire.read();
+  uint8_t vha = myWire->read();
+  uint8_t vla = myWire->read();
 #else
-  uint8_t vha = Wire.receive();
-  uint8_t vla = Wire.receive();
+  uint8_t vha = myWire->receive();
+  uint8_t vla = myWire->receive();
 #endif;
-  Wire.endTransmission();
+  myWire->endTransmission();
 
   value = vha << 8 | vla;
 
@@ -745,18 +751,18 @@ int16_t MPU6050::readRegister16(uint8_t reg)
 
 void MPU6050::writeRegister16(uint8_t reg, int16_t value)
 {
-  Wire.beginTransmission(mpuAddress);
+  myWire->beginTransmission(mpuAddress);
 
 #if ARDUINO >= 100
-  Wire.write(reg);
-  Wire.write((uint8_t)(value >> 8));
-  Wire.write((uint8_t)value);
+  myWire->write(reg);
+  myWire->write((uint8_t)(value >> 8));
+  myWire->write((uint8_t)value);
 #else
-  Wire.send(reg);
-  Wire.send((uint8_t)(value >> 8));
-  Wire.send((uint8_t)value);
+  myWire->send(reg);
+  myWire->send((uint8_t)(value >> 8));
+  myWire->send((uint8_t)value);
 #endif
-  Wire.endTransmission();
+  myWire->endTransmission();
 }
 
 // Read register bit

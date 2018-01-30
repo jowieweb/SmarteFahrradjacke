@@ -10,9 +10,17 @@ MPUWrapper::MPUWrapper(int i2cAddress) {
 /**
     initiate the mpu
 */
-void MPUWrapper::init(bool printToSerial, void (*callback)(MPUValues)) {
+void MPUWrapper::init(bool printToSerial, void (*callback)(MPUValues), bool middel) {
 
-  while (!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G, i2cAddress))
+
+  int sda = 21;
+  int scl = 22;
+  this->middel = middel;
+  if (middel) {
+    sda = 33;
+    scl = 27;
+  }
+  while (!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G, i2cAddress, sda, scl))
   {
     Serial.print("Could not find a valid MPU6050 sensor at address ");
     Serial.print(i2cAddress, HEX);
@@ -24,6 +32,7 @@ void MPUWrapper::init(bool printToSerial, void (*callback)(MPUValues)) {
   mpu.calibrateGyro();
   mpu.setThreshold(1);
   this->callback = callback;
+ 
 
 }
 
@@ -58,7 +67,7 @@ void MPUWrapper::getData() {
   output += " y=";
   output += yaw;
   bool isTriggered = false;
-  if(i2cAddress == 0x69){
+  if (i2cAddress == 0x69) {
     isTriggered = yaw > TRIGGERVALUE;
   } else {
     isTriggered = yaw < -TRIGGERVALUE;
@@ -96,12 +105,16 @@ boolean MPUWrapper::loop() {
   if (tempTimer < timer) {
     return isBreaking;
   }
-
-  getData();
+  if (!middel) {
+    getData();
+  }
   checkReCal();
 
   long timeNow = millis();
   timer = timeNow + INTERVALTIME; //(timeStep * 1000) + timeNow - (timeNow - tempTimer); //(timeStep * 1000) - (millis() - tempTimer);
+  if (!middel) {
+    return false;
+  }
   return getBreaking();
   //return false;
 }
@@ -143,39 +156,49 @@ void MPUWrapper::checkReCal() {
    get the acceleration data from the MPU
 */
 boolean MPUWrapper::getBreaking() {
+  // Vector ret = mpu.readNormalizeAccel();
+  
+
+  bool retval = false;
   Vector ret = mpu.readNormalizeAccel();
+  float value = ret.XAxis;//sqrt( (ret.XAxis * ret.XAxis) +  (ret.YAxis * ret.YAxis) +  (ret.ZAxis * ret.ZAxis) -96.2361);
+  oldAccel.XAxis += ret.XAxis;
+  oldAccel.YAxis += ret.YAxis;
+  oldAccel.ZAxis += (ret.ZAxis+1);
+  sampleCount++;
 
-  
-//  Vector ret = mpu.readRawAccel();
-  int16_t value = ret.XAxis; //+ ret.YAxis + ret.ZAxis;
-  
-  
-  if (value < BREAKINGINTENSITY) {
-
-    long t_now = millis();
-
-    if (breakingStarted) {
-
-      if (t_now > breakStartTime + BREAKTIGGERTIME) {
-        isBreaking = true;
-        return true;
-
-      }
-    } else {
-      breakingStarted = true;
-      breakStartTime = t_now;
-      isBreaking = false;
+  if (sampleCount > 25) {
+    oldAccel.XAxis /= sampleCount;
+    oldAccel.YAxis /= sampleCount;
+    oldAccel.ZAxis /= sampleCount;
+    Serial.print("");
+    Serial.print(  oldAccel.XAxis);
+    Serial.print(",");
+    Serial.print(  oldAccel.YAxis);
+    Serial.print(",");
+    Serial.print(  oldAccel.ZAxis);
+    if(oldAccel.ZAxis< -2){
+      Serial.print(",10");
+      retval = true;
+    }else {
+       Serial.print(",0");
     }
-  } else {
-    if (value > BREAKINGSTOPINTENSITY) {
-      breakingStarted = false;
-      breakStartTime = MAXTIME;
-      isBreaking = false;
-    }
-
+    Serial.println();
+    sampleCount = 1;
+    oldAccel.XAxis = ret.XAxis;
+    oldAccel.YAxis = ret.YAxis;
+    oldAccel.ZAxis = ret.ZAxis;
   }
 
-  return false; 
+
+
+
+
+
+
+
+
+  return retval;
 }
 
 
@@ -187,8 +210,13 @@ void MPUWrapper::setto() {
   yaw_last = yaw;
 }
 
-boolean MPUWrapper::isNearTrigger(){
-  return yaw > NEARTRIGGERVALUE || yaw < -NEARTRIGGERVALUE;
+boolean MPUWrapper::isNearTrigger() {
+    if (i2cAddress == 0x69) {
+    return yaw > NEARTRIGGERVALUE;
+  } else {
+    return yaw < -NEARTRIGGERVALUE;
+  }
+  //return yaw > NEARTRIGGERVALUE || yaw < -NEARTRIGGERVALUE;
 }
 
 boolean MPUWrapper::isTriggerd() {
