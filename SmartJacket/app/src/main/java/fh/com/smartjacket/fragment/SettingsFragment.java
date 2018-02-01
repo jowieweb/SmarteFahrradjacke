@@ -50,9 +50,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 	private EditText houseNumber;
 	private EditText postcode;
 	private Location currentLocation = new Location("");
+	private HomeAddress hA = null;
 
 	public SettingsFragment() {
 		// Required empty public constructor
+
 	}
 
 	@Override
@@ -173,30 +175,39 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 	private void saveHomeAddress(){
 		SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPreferences.edit();
-		HomeAddress ha = new HomeAddress(address.getText().toString(), houseNumber.getText().toString(), postcode.getText().toString());
+		HomeAddress ha = new HomeAddress(address.getText().toString(), postcode.getText().toString(), houseNumber.getText().toString());
 		editor.putString(getString(R.string.shared_preferences_home_address), ha.toJsonString());
 		editor.apply();
 		Toast.makeText(getActivity(),"Home address saved", Toast.LENGTH_SHORT).show();
+		readHomeAddress();
 	}
 
 	public synchronized HomeAddress loadHomeAddress() {
+		if(hA == null)
+		{
+			HomeAddress ha = null;
+			try {
+
+				readHomeAddress();
+
+			}catch (Exception e){
+				String asd = e.toString();
+			}
+			hA = ha;
+		}
+		return  hA;
+	}
+	public  HomeAddress readHomeAddress() {
 		SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
 		String  jString = sharedPreferences.getString(getString(R.string.shared_preferences_home_address), null);
-		HomeAddress ha = new HomeAddress(jString);
-		try {
-			new Handler().post(new Runnable() {
-				@Override
-				public void run() {
-					address.setText(ha.getAddress());
-					houseNumber.setText(ha.getHausnumber());
-					postcode.setText(ha.getPostcode());
-				}
-			});
-		}catch (Exception e){
-
-		}
-		return ha;
+		HomeAddress haa = new HomeAddress(jString);
+		address.setText(haa.getAddress());
+		houseNumber.setText(haa.getHausnumber());
+		postcode.setText(haa.getPostcode());
+		hA = haa;
+		return  hA;
 	}
+
 
 	@Override
 	public void onClick(View view) {
